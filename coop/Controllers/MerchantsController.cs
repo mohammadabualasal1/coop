@@ -1,4 +1,5 @@
-﻿using coop.Dtos.MerchantsController;
+﻿using coop.Dtos.MerchantBranchesController;
+using coop.Dtos.MerchantsController;
 using coop.Enums;
 using coop.Model;
 using Microsoft.AspNetCore.Http;
@@ -114,7 +115,39 @@ namespace coop.Controllers
             });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> AddBranch([FromBody] CreateBranchRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
 
+            if (merchant.VerificationStatus != VerificationStatus.Approved)
+                return StatusCode(403, "يجب ان يتم توثيق حسابك قبل إضافة فروع");
+            var isFirstBranch = !await _dbcontext.MerchantBranches.AnyAsync(b => b.MerchantId == merchant.Id);
+
+            var newBranch = new MerchantBranch
+            {
+                Id = Guid.NewGuid(),
+                MerchantId = merchant.Id,
+                Name = dto.Name,
+                Address = dto.Address,
+                CreatedAt = DateTime.UtcNow,
+                City= dto.City,
+                Area = dto.Area,
+                Latitude= dto.Latitude,
+                Longitude= dto.Longitude,
+                OpeningTime = dto.OpeningTime,
+                ClosingTime = dto.ClosingTime,
+                DeliveryRadiusKm = dto.DeliveryRadiusKm,
+                MinimumOrderAmount=dto.MinimumOrderAmount,
+                BaseDeliveryFee=dto.BaseDeliveryFee,
+            };
+            _dbcontext.MerchantBranches.Add(newBranch);
+            await _dbcontext.SaveChangesAsync();
+            return Ok(newBranch);
+        }
 
 
 

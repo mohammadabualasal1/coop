@@ -1,6 +1,6 @@
 ﻿namespace coop.Dtos.MerchantBranchesController
 {
-    public class CreateBranchRequest
+    public class CreateBranchRequestDto
     {
         public string Name { get; set; }
         public string Address { get; set; }
