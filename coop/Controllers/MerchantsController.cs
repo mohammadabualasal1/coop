@@ -2,6 +2,7 @@
 using coop.Dtos.MerchantsController;
 using coop.Enums;
 using coop.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ namespace coop.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Merchant")]
     public class MerchantsController : ControllerBase
     {
         private readonly CoopDbContext _dbcontext;
