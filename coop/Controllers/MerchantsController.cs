@@ -76,7 +76,26 @@ namespace coop.Controllers
 
         }
 
+        [HttpPost("my/submit-verification")]
+        public async Task<IActionResult> SubmitVerification()
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
 
+            if (merchant.VerificationStatus != VerificationStatus.Rejected &&
+                merchant.VerificationStatus != VerificationStatus.NeedsInformation)
+                return BadRequest("طلبك أصلاً قيد المراجعة أو تمت الموافقة عليه");
+
+            var hasDocuments = await _dbcontext.VerificationDocuments.AnyAsync(d => d.MerchantId == merchant.Id);
+            if (!hasDocuments)
+                return BadRequest("لازم ترفع وثيقة تحقق واحدة على الأقل");
+            merchant.VerificationStatus = VerificationStatus.Pending;
+            merchant.RejectionReason = null;
+            await _dbcontext.SaveChangesAsync();
+            return Ok(merchant);
+        }
 
 
 
