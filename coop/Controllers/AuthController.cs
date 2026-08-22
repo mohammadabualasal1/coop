@@ -6,7 +6,8 @@ using coop.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using System.Security.Cryptography;
+using System.Text;
 namespace coop.Controllers
 {
     [ApiController]
@@ -73,6 +74,177 @@ namespace coop.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(await GenerateAuthResponseAsync(user));
+        }
+        [Authorize]
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequestDto dto)
+        {
+            var user = await _context.Users.FindAsync(GetCurrentUserId());
+            if (user == null) return NotFound();
+
+            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+                return BadRequest("كلمة المرور الحالية غير صحيحة.");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await RevokeAllRefreshTokensAsync(user.Id);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "تم تغيير كلمة المرور بنجاح." });
+        }
+
+        [Authorize]
+        [HttpPut("profile")]
+        public async Task<ActionResult<CurrentUserResponseDto>> UpdateProfile(UpdateProfileRequestDto dto)
+        {
+            var user = await _context.Users.FindAsync(GetCurrentUserId());
+            if (user == null) return NotFound();
+
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber) && dto.PhoneNumber != user.PhoneNumber)
+            {
+                var phoneTaken = await _context.Users.AnyAsync(u => u.PhoneNumber == dto.PhoneNumber && u.Id != user.Id);
+                if (phoneTaken)
+                    return Conflict("رقم الهاتف مستخدم مسبقاً.");
+            }
+
+            user.FullName = dto.FullName.Trim();
+            user.PhoneNumber = dto.PhoneNumber.Trim();
+            user.ProfileImageUrl = dto.ProfileImageUrl;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(MapToCurrentUserDto(user));
+        }
+
+        [HttpPost("send-verification-code")]
+        public async Task<IActionResult> SendVerificationCode(SendVerificationCodeRequestDto dto)
+        {
+            var destination = dto.Destination.Trim();
+
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.Email.ToLower() == destination.ToLower() || u.PhoneNumber == destination);
+
+            var code = GenerateNumericCode();
+
+            _context.VerificationCodes.Add(new VerificationCode
+            {
+                Id = Guid.NewGuid(),
+                UserId = user?.Id,
+                Destination = destination,
+                Purpose = dto.Purpose,
+                CodeHash = HashCode(code),
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10),
+                AttemptCount = 0,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+
+            // محاكاة الإرسال فقط - بالإنتاج الحقيقي هون بيتبعت SMS/Email فعلي بدل ما يرجع بالـ response
+            return Ok(new { message = "تم إرسال رمز التحقق.", simulatedCode = code });
+        }
+
+        [HttpPost("verify-code")]
+        public async Task<IActionResult> VerifyCode(VerifyCodeRequestDto dto)
+        {
+            var record = await _context.VerificationCodes
+                .Where(v => v.Destination == dto.Destination && v.Purpose == dto.Purpose && v.UsedAt == null)
+                .OrderByDescending(v => v.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (record == null)
+                return BadRequest("لا يوجد رمز تحقق فعال لهذه الوجهة.");
+
+            if (record.ExpiresAt < DateTime.UtcNow)
+                return BadRequest("انتهت صلاحية رمز التحقق.");
+
+            if (record.AttemptCount >= 5)
+                return BadRequest("تم تجاوز عدد المحاولات المسموح، اطلب رمز جديد.");
+
+            if (record.CodeHash != HashCode(dto.Code))
+            {
+                record.AttemptCount++;
+                await _context.SaveChangesAsync();
+                return BadRequest("رمز التحقق غير صحيح.");
+            }
+
+            record.UsedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "تم التحقق من الرمز بنجاح." });
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequestDto dto)
+        {
+            var normalizedEmail = dto.Email.Trim().ToLower();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
+
+            // رسالة عامة سواء وجد الإيميل أو لا، عشان ما نكشف أي إيميلات مسجلة
+            if (user == null)
+                return Ok(new { message = "إذا كان البريد الإلكتروني مسجلاً، تم إرسال رمز إعادة التعيين." });
+
+            var code = GenerateNumericCode();
+
+            _context.VerificationCodes.Add(new VerificationCode
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                Destination = normalizedEmail,
+                Purpose = VerificationCodePurpose.PasswordReset,
+                CodeHash = HashCode(code),
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10),
+                AttemptCount = 0,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "إذا كان البريد الإلكتروني مسجلاً، تم إرسال رمز إعادة التعيين.", simulatedCode = code });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequestDto dto)
+        {
+            var normalizedEmail = dto.Email.Trim().ToLower();
+
+            var record = await _context.VerificationCodes
+                .Where(v => v.Destination == normalizedEmail
+                         && v.Purpose == VerificationCodePurpose.PasswordReset
+                         && v.UsedAt == null)
+                .OrderByDescending(v => v.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (record == null)
+                return BadRequest("لا يوجد رمز إعادة تعيين فعال لهذا البريد.");
+
+            if (record.ExpiresAt < DateTime.UtcNow)
+                return BadRequest("انتهت صلاحية رمز إعادة التعيين.");
+
+            if (record.AttemptCount >= 5)
+                return BadRequest("تم تجاوز عدد المحاولات المسموح، اطلب رمز جديد.");
+
+            if (record.CodeHash != HashCode(dto.Code))
+            {
+                record.AttemptCount++;
+                await _context.SaveChangesAsync();
+                return BadRequest("رمز التحقق غير صحيح.");
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
+            if (user == null)
+                return BadRequest("المستخدم غير موجود.");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+            record.UsedAt = DateTime.UtcNow;
+
+            await RevokeAllRefreshTokensAsync(user.Id);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "تم تحديث كلمة المرور بنجاح." });
         }
 
         [HttpPost("refresh")]
@@ -185,5 +357,30 @@ namespace coop.Controllers
 
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+
+        private static string GenerateNumericCode()
+        {
+            var value = RandomNumberGenerator.GetInt32(0, 1000000);
+            return value.ToString("D6");
+        }
+
+        private static string HashCode(string code)
+        {
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(code));
+            return Convert.ToBase64String(bytes);
+        }
+
+        private async Task RevokeAllRefreshTokensAsync(Guid userId)
+        {
+            var activeTokens = await _context.RefreshTokens
+                .Where(rt => rt.UserId == userId && rt.RevokedAt == null)
+                .ToListAsync();
+
+            foreach (var token in activeTokens)
+                token.RevokedAt = DateTime.UtcNow;
+        }
+
     }
+
 }
