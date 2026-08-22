@@ -11,7 +11,7 @@ builder.Services.AddControllers();
 
 // Database (single registration)
 builder.Services.AddDbContext<CoopDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("CoopDbContext")));
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
