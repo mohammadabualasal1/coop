@@ -1,20 +1,20 @@
+using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Scalar.AspNetCore;
 using coop;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 
-// Database
+// Database (single registration)
 builder.Services.AddDbContext<CoopDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddDbContext<CoopDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("CoopDbContext")));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
