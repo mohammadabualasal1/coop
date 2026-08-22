@@ -84,6 +84,61 @@ namespace coop.Controllers
 
             return Ok(documents);
         }
+        [Authorize(Roles = "Merchant")]
+        [HttpGet("{id}")]
+        public async Task<ActionResult<VerificationDocumentResponseDto>> GetById(Guid id)
+        {
+            var userId = GetCurrentUserId();
+
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+            {
+                return BadRequest("لا يوجد حساب تاجر مرتبط بهذا المستخدم.");
+            }
+            var document = await _dbcontext.VerificationDocuments.FirstOrDefaultAsync(d => d.Id == id && d.MerchantId == merchant.Id);
+
+            if (document == null)
+            {
+                return NotFound();
+            }
+            var response = new VerificationDocumentResponseDto
+            {
+                Id = document.Id,
+                DocumentType = document.DocumentType,
+                FileUrl = document.FileUrl,
+                Status = document.Status,
+                ReviewNote = document.ReviewNote,
+                UploadedAt = document.UploadedAt,
+                ReviewedAt = document.ReviewedAt
+            };
+
+            return Ok(response);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         private Guid GetCurrentUserId() =>
