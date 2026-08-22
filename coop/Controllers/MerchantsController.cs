@@ -42,13 +42,31 @@ namespace coop.Controllers
                 IsActive = true,
                 RegistrationNumber = dto.RegistrationNumber,
 
-
-
             };
             _dbcontext.Merchants.Add(newMerchant);
             await _dbcontext.SaveChangesAsync();
             return Ok(newMerchant);
         }
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyMerchant()
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+            return Ok(merchant);
+        }
+
+
+
+
+
+
+
+
+
+
+
 
         private Guid GetCurrentUserId() =>
           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
