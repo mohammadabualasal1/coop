@@ -205,6 +205,25 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             return Ok(branch);
         }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeactivateBranch(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var branch = await _dbcontext.MerchantBranches.FirstOrDefaultAsync(b => b.Id == id && b.MerchantId == merchant.Id);
+            if (branch == null)
+                return NotFound("الفرع غير موجود");
+
+            if (branch.IsMainBranch)
+                return BadRequest("لا يمكن تعطيل الفرع الرئيسي، عيّن فرع رئيسي آخر أولاً");
+
+            branch.IsActive = false;
+            await _dbcontext.SaveChangesAsync();
+            return NoContent();
+        }
 
         private Guid GetCurrentUserId() =>
           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
