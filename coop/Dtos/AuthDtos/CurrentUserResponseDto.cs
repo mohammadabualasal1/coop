@@ -2,7 +2,7 @@
 
 namespace coop.Dtos.AuthController
 {
-    public class CurrentUserResponse
+    public class CurrentUserResponseDto
     {
         public Guid Id { get; set; }
         public string FullName { get; set; }

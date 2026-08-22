@@ -1,6 +1,6 @@
 ﻿namespace coop.Dtos.AuthController
 {
-    public class ResetPasswordRequest
+    public class ResetPasswordRequestDto
     {
         public string Email { get; set; }
         public string Code { get; set; }

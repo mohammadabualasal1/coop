@@ -1,6 +1,6 @@
 ﻿namespace coop.Dtos.AuthController
 {
-    public class LoginRequest
+    public class LoginRequestDto
     {
         public string Email { get; set; }
         public string Password { get; set; }
