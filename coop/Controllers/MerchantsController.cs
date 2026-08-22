@@ -5,6 +5,7 @@ using coop.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 using System.Security.Claims;
 
 namespace coop.Controllers
@@ -176,6 +177,34 @@ namespace coop.Controllers
             return Ok(branch);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateBranch(Guid id, [FromBody] UpdateBranchRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var branch = await _dbcontext.MerchantBranches.FirstOrDefaultAsync(b => b.Id == id && b.MerchantId == merchant.Id);
+            if (branch == null)
+                return NotFound("الفرع غير موجود");
+
+            branch.Name = dto.Name;
+            branch.Address = dto.Address;
+            branch.City = dto.City;
+            branch.Area = dto.Area;
+            branch.Latitude = dto.Latitude;
+            branch.Longitude = dto.Longitude;
+            branch.PhoneNumber = dto.PhoneNumber;
+            branch.OpeningTime = dto.OpeningTime;
+            branch.ClosingTime = dto.ClosingTime;
+            branch.DeliveryRadiusKm = dto.DeliveryRadiusKm;
+            branch.MinimumOrderAmount = dto.MinimumOrderAmount;
+            branch.BaseDeliveryFee = dto.BaseDeliveryFee;
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(branch);
+        }
 
         private Guid GetCurrentUserId() =>
           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
