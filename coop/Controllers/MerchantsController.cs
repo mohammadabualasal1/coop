@@ -56,7 +56,25 @@ namespace coop.Controllers
                 return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
             return Ok(merchant);
         }
+        [HttpPut("my")]
+        public async Task<IActionResult> UpdateMyMerchant([FromBody] UpdateMerchantRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+          var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
 
+
+            merchant.Name = dto.Name;
+            merchant.Description = dto.Description;
+            merchant.ContactEmail = dto.ContactEmail;
+            merchant.ContactPhone = dto.ContactPhone;
+            merchant.CoverImageUrl = dto.CoverImageUrl;
+            merchant.LogoUrl = dto.LogoUrl;
+            await _dbcontext.SaveChangesAsync();
+            return Ok(merchant);
+
+        }
 
 
 
