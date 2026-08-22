@@ -163,6 +163,18 @@ namespace coop.Controllers
 
             return Ok(branches);
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetBranchById(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+            var branch = await _dbcontext.MerchantBranches.Where(b => b.MerchantId == merchant.Id && b.Id == id).FirstOrDefaultAsync();
+            if (branch == null)
+                return NotFound("الفرع غير موجود");
+            return Ok(branch);
+        }
 
 
         private Guid GetCurrentUserId() =>
