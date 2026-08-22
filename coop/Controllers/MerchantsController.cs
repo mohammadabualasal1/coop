@@ -149,6 +149,20 @@ namespace coop.Controllers
             return Ok(newBranch);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetMyBranches()
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var branches = await _dbcontext.MerchantBranches
+                .Where(b => b.MerchantId == merchant.Id && b.IsActive)
+                .ToListAsync();
+
+            return Ok(branches);
+        }
 
 
         private Guid GetCurrentUserId() =>
