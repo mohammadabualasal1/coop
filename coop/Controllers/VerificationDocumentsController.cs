@@ -114,32 +114,36 @@ namespace coop.Controllers
 
             return Ok(response);
         }
+        [Authorize(Roles = "Merchant")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var userId = GetCurrentUserId();
 
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+            {
+                return BadRequest("لا يوجد حساب تاجر مرتبط بهذا المستخدم.");
+            }
 
+            var document = await _dbcontext.VerificationDocuments
+                .FirstOrDefaultAsync(d => d.Id == id && d.MerchantId == merchant.Id);
 
+            if (document == null)
+            {
+                return NotFound();
+            }
 
+            if (document.Status != VerificationStatus.Pending)
+            {
+                return BadRequest("لا يمكن حذف الوثيقة بعد مراجعتها من قبل الأدمن.");
+            }
 
+            _dbcontext.VerificationDocuments.Remove(document);
+            await _dbcontext.SaveChangesAsync();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            return NoContent();
+        }
 
         private Guid GetCurrentUserId() =>
            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
