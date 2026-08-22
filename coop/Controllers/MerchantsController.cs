@@ -224,6 +224,31 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             return NoContent();
         }
+        [HttpPut("{id}/set-main")]
+        public async Task<IActionResult> SetMainBranch(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var branch = await _dbcontext.MerchantBranches.FirstOrDefaultAsync(b => b.Id == id && b.MerchantId == merchant.Id);
+            if (branch == null)
+                return NotFound("الفرع غير موجود");
+
+            if (!branch.IsActive)
+                return BadRequest("لا يمكن تعيين فرع معطّل كفرع رئيسي");
+
+            var allBranches = await _dbcontext.MerchantBranches
+                .Where(b => b.MerchantId == merchant.Id)
+                .ToListAsync();
+
+            foreach (var b in allBranches)
+                b.IsMainBranch = (b.Id == id);
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(branch);
+        }
 
         private Guid GetCurrentUserId() =>
           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
