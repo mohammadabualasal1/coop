@@ -24,7 +24,7 @@ namespace coop.Controllers
         [HttpPost]
         public async Task<ActionResult<VerificationDocumentResponseDto>> Upload(UploadVerificationDocumentRequestDto dto)
         {
-            var userId = GetCurrentUserId();
+            var userId = GetCurrentUserId();    // token
 
             var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
             if (merchant == null)
@@ -54,11 +54,39 @@ namespace coop.Controllers
                 UploadedAt = document.UploadedAt,
                 ReviewedAt = document.ReviewedAt
             };
-
             return Ok(response);
         }
 
+        [Authorize(Roles = "Merchant")]
+        [HttpGet("my")]
+        public async Task<ActionResult<List<VerificationDocumentResponseDto>>> GetMyDocuments()
+        {
+            var userId = GetCurrentUserId();
+
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+            {
+                return BadRequest("لا يوجد حساب تاجر مرتبط بهذا المستخدم.");
+            }
+            var documents = await _dbcontext.VerificationDocuments
+                           .Where(d => d.MerchantId == merchant.Id)
+                           .OrderBy(d => d.UploadedAt)
+                           .Select(d => new VerificationDocumentResponseDto
+                           {
+                           Id = d.Id,
+                           DocumentType = d.DocumentType,
+                           FileUrl = d.FileUrl,
+                           Status = d.Status,
+                           ReviewNote = d.ReviewNote,
+                           UploadedAt = d.UploadedAt,
+                           ReviewedAt = d.ReviewedAt
+                          }).ToListAsync();
+
+            return Ok(documents);
+        }
+
+
         private Guid GetCurrentUserId() =>
-            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
 }
