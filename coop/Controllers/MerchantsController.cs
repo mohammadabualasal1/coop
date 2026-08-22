@@ -99,7 +99,20 @@ namespace coop.Controllers
 
 
 
-
+        [HttpGet("my/verification-status")]
+        public async Task<IActionResult> GetVerificationStatus()
+        {
+           var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+            return Ok(new VerificationStatusResponseDto
+            {
+                VerificationStatus = merchant.VerificationStatus,
+                RejectionReason = merchant.RejectionReason,
+                VerifiedAt = merchant.VerifiedAt
+            });
+        }
 
 
 
