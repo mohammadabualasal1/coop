@@ -1,7 +1,7 @@
 ﻿using coop.Enums;
 namespace coop.Dtos.AuthController
 {
-    public class RegisterRequest
+    public class RegisterRequestDto
     {
         public string FullName { get; set; }
         public string Email { get; set; }

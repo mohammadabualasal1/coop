@@ -1,6 +1,6 @@
 ﻿namespace coop.Dtos.AuthController
 {
-    public class UpdateProfileRequest
+    public class UpdateProfileRequestDto
     {
         public string FullName { get; set; }
         public string PhoneNumber { get; set; }
