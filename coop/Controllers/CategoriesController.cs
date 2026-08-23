@@ -1,7 +1,8 @@
 ﻿using coop.Dtos.CategoriesController;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using coop.Dtos.MarketplaceController;
+using coop.Enums;
 namespace coop.Controllers
 {
     [ApiController]
@@ -47,8 +48,42 @@ namespace coop.Controllers
                     lookup[category.ParentCategoryId.Value].Children.Add(category);
                 }
             }
-
             return Ok(rootCategories);
         }
+        [HttpGet("{id}/offers")]
+        public async Task<IActionResult> GetCategoryOffers(Guid id)
+        {
+            var categoryExists = await _dbcontext.Categories.AnyAsync(c => c.Id == id && c.IsActive);
+            if (categoryExists==null)
+                return NotFound("الفئة غير موجودة");
+            var now = DateTime.UtcNow;
+
+            var offers = await _dbcontext.Offers
+                .Where(o => o.Product.CategoryId == id
+                         && o.Status == OfferStatus.Active
+                         && o.StartAt <= now
+                         && o.EndAt >= now
+                         && _dbcontext.BranchOffers.Any(bo => bo.OfferId == o.Id
+                                                           && bo.IsAvailable
+                                                           && bo.TotalStock - bo.ReservedStock - bo.SoldStock > 0))
+                .OrderByDescending(o => o.DiscountPercentage)
+                .Select(o => new OfferSummaryResponse
+                {
+                    Id = o.Id,
+                    Title = o.Title,
+                    MerchantId = o.MerchantId,
+                    MerchantName = o.Merchant.Name,
+                    MainImageUrl = o.Product.MainImageUrl,
+                    OriginalPrice = o.OriginalPrice,
+                    DiscountedPrice = o.DiscountedPrice,
+                    DiscountPercentage = o.DiscountPercentage,
+                    EndAt = o.EndAt,
+                    DistanceKm = null
+                })
+                .ToListAsync();
+
+            return Ok(offers);
+        }
+
     }
 }
