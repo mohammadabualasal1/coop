@@ -254,6 +254,29 @@ namespace coop.Controllers
                 IsAvailable = branchOffer.IsAvailable
             });
         }
+        [HttpDelete("{id}/branches/{branchOfferId}")]
+        public async Task<IActionResult> RemoveBranchFromOffer(Guid id, Guid branchOfferId)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            var branchOffer = await _dbcontext.BranchOffers.FirstOrDefaultAsync(bo => bo.Id == branchOfferId && bo.OfferId == id);
+            if (branchOffer == null)
+                return NotFound("الفرع غير مضاف لهذا العرض");
+
+            if (branchOffer.ReservedStock > 0)
+                return BadRequest("لا يمكن إزالة الفرع، يوجد كمية محجوزة على طلبات قائمة");
+
+            _dbcontext.BranchOffers.Remove(branchOffer);
+            await _dbcontext.SaveChangesAsync();
+            return NoContent();
+        }
 
         private Guid GetCurrentUserId() =>
           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
