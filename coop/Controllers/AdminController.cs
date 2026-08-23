@@ -38,7 +38,25 @@ namespace coop.Controllers
 
             return Ok(pendingMerchants);
         }
+        [HttpPost("merchants/{id}/approve")]
+        public async Task<IActionResult> ApproveMerchant(Guid id)
+        {
+            var adminId = GetCurrentUserId();
 
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.Id == id);
+            if (merchant == null)
+            {
+                return NotFound("التاجر غير موجود");
+            }
+            merchant.VerificationStatus = VerificationStatus.Approved;
+            merchant.VerifiedAt = DateTime.UtcNow;
+            merchant.VerifiedByUserId = adminId;
+            merchant.RejectionReason = null;
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(merchant);
+
+        }
 
         private Guid GetCurrentUserId() =>
            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
