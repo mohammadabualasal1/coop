@@ -147,6 +147,28 @@ namespace coop.Controllers
             return Ok(offer);
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteOffer(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            if (offer.Status != OfferStatus.Draft)
+                return BadRequest("لا يمكن حذف العرض إلا وهو مسودة، استخدم الإلغاء بدلاً من ذلك");
+
+            var branchOffers = await _dbcontext.BranchOffers.Where(bo => bo.OfferId == id).ToListAsync();
+            _dbcontext.BranchOffers.RemoveRange(branchOffers);
+            _dbcontext.Offers.Remove(offer);
+
+            await _dbcontext.SaveChangesAsync();
+            return NoContent();
+        }
 
         private Guid GetCurrentUserId() =>
           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
