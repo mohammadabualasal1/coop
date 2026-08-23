@@ -143,6 +143,24 @@ namespace coop.Controllers
 
             return Ok(category);
         }
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCategory(Guid id)
+        {
+            var category = await _dbcontext.Categories.FirstOrDefaultAsync(c => c.Id == id);
+            if (category == null)
+                return NotFound("الفئة غير موجودة");
 
+            var hasActiveChildren = await _dbcontext.Categories
+                .AnyAsync(c => c.ParentCategoryId == id && c.IsActive);
+
+            if (hasActiveChildren)
+                return BadRequest("لا يمكن حذف فئة تحتوي على فئات فرعية نشطة");
+
+            category.IsActive = false;
+            await _dbcontext.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }
