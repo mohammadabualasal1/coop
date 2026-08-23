@@ -74,6 +74,27 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             return Ok(merchant);
         }
+        [HttpGet("offers/pending")]
+        public async Task<IActionResult> GetPendingOffers()
+        {
+            var offers = await _dbcontext.Offers
+                .Where(o => o.Status == OfferStatus.PendingApproval)
+                .OrderBy(o => o.UpdatedAt)
+                .Select(o => new PendingOfferResponseDto
+                {
+                    Id = o.Id,
+                    Title = o.Title,
+                    MerchantName = o.Merchant.Name,
+                    DiscountPercentage = o.DiscountPercentage,
+                    SubmittedAt = o.UpdatedAt
+                })
+                .ToListAsync();
+
+            return Ok(offers);
+        }
+
+
+
         private Guid GetCurrentUserId() =>
            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
