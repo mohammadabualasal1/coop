@@ -1,8 +1,10 @@
 ﻿using coop.Dtos.CategoriesController;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using coop.Dtos.MarketplaceController;
 using coop.Enums;
+using coop.Model;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 namespace coop.Controllers
 {
     [ApiController]
@@ -83,6 +85,34 @@ namespace coop.Controllers
                 .ToListAsync();
 
             return Ok(offers);
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> CreateCategory(CreateCategoryRequestDto dto)
+        {
+            if (dto.ParentCategoryId != null)
+            {
+                var parentExists = await _dbcontext.Categories.AnyAsync(c => c.Id == dto.ParentCategoryId);
+                if (!parentExists)
+                    return BadRequest("الفئة الرئيسية غير موجودة");
+            }
+
+            var category = new Category
+            {
+                Id = Guid.NewGuid(),
+                ParentCategoryId = dto.ParentCategoryId,
+                NameEn = dto.NameEn,
+                NameAr = dto.NameAr,
+                Description = dto.Description,
+                ImageUrl = dto.ImageUrl,
+                DisplayOrder = dto.DisplayOrder,
+                IsActive = true
+            };
+
+            _dbcontext.Categories.Add(category);
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(category);
         }
 
     }
