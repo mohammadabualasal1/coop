@@ -306,7 +306,27 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             return Ok(offer);
         }
+        [HttpPost("{id}/pause")]
+        public async Task<IActionResult> PauseOffer(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
 
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            if (offer.Status != OfferStatus.Active && offer.Status != OfferStatus.Scheduled)
+                return BadRequest("لا يمكن إيقاف العرض إلا وهو نشط أو مجدول");
+
+            offer.Status = OfferStatus.Paused;
+            offer.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(offer);
+        }
         private Guid GetCurrentUserId() =>
           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
