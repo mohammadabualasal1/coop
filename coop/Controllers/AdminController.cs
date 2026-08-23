@@ -57,7 +57,23 @@ namespace coop.Controllers
             return Ok(merchant);
 
         }
+        [HttpPost("merchants/{id}/reject")]
+        public async Task<IActionResult> RejectMerchant(Guid id, RejectRequestDto dto)
+        {
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.Id == id);
+            if (merchant == null)
+            {
+                return NotFound("التاجر غير موجود");
+            }
 
+            merchant.VerificationStatus = VerificationStatus.Rejected;
+            merchant.RejectionReason = dto.Reason;
+            merchant.VerifiedAt = null;
+            merchant.VerifiedByUserId = null;
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(merchant);
+        }
         private Guid GetCurrentUserId() =>
            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
