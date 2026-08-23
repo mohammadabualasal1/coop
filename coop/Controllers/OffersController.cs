@@ -84,7 +84,33 @@ namespace coop.Controllers
 
 
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOfferById(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
 
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            var branchOffers = await _dbcontext.BranchOffers
+                .Where(bo => bo.OfferId == id)
+                .Select(bo => new BranchOfferResponse
+                {
+                    Id = bo.Id,
+                    MerchantBranchId = bo.MerchantBranchId,
+                    TotalStock = bo.TotalStock,
+                    ReservedStock = bo.ReservedStock,
+                    SoldStock = bo.SoldStock,
+                    IsAvailable = bo.IsAvailable
+                })
+                .ToListAsync();
+
+            return Ok(new { offer, branches = branchOffers });
+        }
 
 
 
