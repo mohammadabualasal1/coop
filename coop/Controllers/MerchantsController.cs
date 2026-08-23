@@ -141,11 +141,14 @@ namespace coop.Controllers
                 Area = dto.Area,
                 Latitude= dto.Latitude,
                 Longitude= dto.Longitude,
+                PhoneNumber = dto.PhoneNumber,
                 OpeningTime = dto.OpeningTime,
                 ClosingTime = dto.ClosingTime,
                 DeliveryRadiusKm = dto.DeliveryRadiusKm,
                 MinimumOrderAmount=dto.MinimumOrderAmount,
                 BaseDeliveryFee=dto.BaseDeliveryFee,
+                IsMainBranch = isFirstBranch,   
+                IsActive = true,               
             };
             _dbcontext.MerchantBranches.Add(newBranch);
             await _dbcontext.SaveChangesAsync();
