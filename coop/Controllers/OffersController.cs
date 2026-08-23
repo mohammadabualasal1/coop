@@ -66,7 +66,21 @@ namespace coop.Controllers
             return Ok(newOffer);
         }
 
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyOffers()
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
 
+            var offers = await _dbcontext.Offers
+                .Where(o => o.MerchantId == merchant.Id)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+
+            return Ok(offers);
+        }
 
 
 
