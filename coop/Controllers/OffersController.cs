@@ -277,7 +277,105 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             return NoContent();
         }
+        [HttpPost("{id}/submit")]
+        public async Task<IActionResult> SubmitOffer(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
 
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            if (offer.Status != OfferStatus.Draft && offer.Status != OfferStatus.Rejected)
+                return BadRequest("لا يمكن تقديم العرض إلا وهو مسودة أو مرفوض");
+
+            if (offer.EndAt <= DateTime.UtcNow)
+                return BadRequest("انتهت مدة العرض، عدّل التواريخ قبل التقديم");
+
+            var hasStock = await _dbcontext.BranchOffers.AnyAsync(bo => bo.OfferId == id && bo.TotalStock > 0);
+            if (!hasStock)
+                return BadRequest("يجب إضافة فرع واحد على الأقل مع كمية قبل التقديم");
+
+            offer.Status = OfferStatus.PendingApproval;
+            offer.AdminReviewNote = null;
+            offer.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(offer);
+        }
+        [HttpPost("{id}/pause")]
+        public async Task<IActionResult> PauseOffer(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            if (offer.Status != OfferStatus.Active && offer.Status != OfferStatus.Scheduled)
+                return BadRequest("لا يمكن إيقاف العرض إلا وهو نشط أو مجدول");
+
+            offer.Status = OfferStatus.Paused;
+            offer.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(offer);
+        }
+        [HttpPost("{id}/resume")]
+        public async Task<IActionResult> ResumeOffer(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            if (offer.Status != OfferStatus.Paused)
+                return BadRequest("العرض غير موقوف");
+
+            if (offer.EndAt <= DateTime.UtcNow)
+                return BadRequest("انتهت مدة العرض، لا يمكن إعادة تفعيله");
+
+            offer.Status = offer.StartAt > DateTime.UtcNow ? OfferStatus.Scheduled : OfferStatus.Active;
+            offer.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(offer);
+        }
+        [HttpPost("{id}/cancel")]
+        public async Task<IActionResult> CancelOffer(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            if (offer.Status == OfferStatus.Cancelled || offer.Status == OfferStatus.Expired)
+                return BadRequest("العرض ملغي أو منتهي بالفعل");
+
+            var hasReservedStock = await _dbcontext.BranchOffers.AnyAsync(bo => bo.OfferId == id && bo.ReservedStock > 0);
+            if (hasReservedStock)
+                return BadRequest("لا يمكن إلغاء العرض، يوجد كميات محجوزة على طلبات قائمة");
+
+            offer.Status = OfferStatus.Cancelled;
+            offer.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(offer);
+        }
         private Guid GetCurrentUserId() =>
           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
