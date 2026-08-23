@@ -92,7 +92,30 @@ namespace coop.Controllers
 
             return Ok(offers);
         }
+        [HttpPost("offers/{id}/approve")]
+        public async Task<IActionResult> ApproveOffer(Guid id)
+        {
+            var adminId = GetCurrentUserId();
 
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            var now = DateTime.UtcNow;
+
+            offer.Status = offer.StartAt <= now && offer.EndAt >= now
+                ? OfferStatus.Active
+                : OfferStatus.Scheduled;
+
+            offer.ApprovedAt = now;
+            offer.ApprovedByUserId = adminId;
+            offer.AdminReviewNote = null;
+            offer.UpdatedAt = now;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(offer);
+        }
 
 
         private Guid GetCurrentUserId() =>
