@@ -134,6 +134,24 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             return Ok(product);
         }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeactivateProduct(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var product = await _dbcontext.Products.FirstOrDefaultAsync(p => p.Id == id && p.MerchantId == merchant.Id);
+            if (product == null)
+                return NotFound("المنتج غير موجود");
+
+            product.IsActive = false;
+            product.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+            return NoContent();
+        }
 
 
         private Guid GetCurrentUserId() =>
