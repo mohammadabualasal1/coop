@@ -154,6 +154,37 @@ namespace coop.Controllers
         }
 
 
+        [HttpPost("{id}/images")]
+        public async Task<IActionResult> AddProductImage(Guid id, [FromBody] UploadProductImageRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var product = await _dbcontext.Products.FirstOrDefaultAsync(p => p.Id == id && p.MerchantId == merchant.Id);
+            if (product == null)
+                return NotFound("المنتج غير موجود");
+
+            var newImage = new ProductImage
+            {
+                Id = Guid.NewGuid(),
+                ProductId = id,
+                FileUrl = dto.FileUrl,
+                DisplayOrder = dto.DisplayOrder,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _dbcontext.ProductImages.Add(newImage);
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new ProductImageResponseDto
+            {
+                Id = newImage.Id,
+                FileUrl = newImage.FileUrl,
+                DisplayOrder = newImage.DisplayOrder
+            });
+        }
         private Guid GetCurrentUserId() =>
           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
