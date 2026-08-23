@@ -112,7 +112,40 @@ namespace coop.Controllers
             return Ok(new { offer, branches = branchOffers });
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateOffer(Guid id, [FromBody] UpdateOfferRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
 
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            if (offer.Status != OfferStatus.Draft && offer.Status != OfferStatus.Rejected)
+                return BadRequest("لا يمكن تعديل العرض بعد تقديمه للمراجعة");
+
+            if (dto.DiscountedPrice <= 0 || dto.DiscountedPrice >= dto.OriginalPrice)
+                return BadRequest("السعر بعد الخصم يجب أن يكون أكبر من صفر وأقل من السعر الأصلي");
+
+            if (dto.StartAt >= dto.EndAt)
+                return BadRequest("تاريخ البداية يجب أن يكون قبل تاريخ النهاية");
+
+            offer.Title = dto.Title;
+            offer.Description = dto.Description;
+            offer.OriginalPrice = dto.OriginalPrice;
+            offer.DiscountedPrice = dto.DiscountedPrice;
+            offer.DiscountPercentage = Math.Round((dto.OriginalPrice - dto.DiscountedPrice) / dto.OriginalPrice * 100, 2);
+            offer.StartAt = dto.StartAt;
+            offer.EndAt = dto.EndAt;
+            offer.MaximumQuantityPerCustomer = dto.MaximumQuantityPerCustomer;
+            offer.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(offer);
+        }
 
 
         private Guid GetCurrentUserId() =>
