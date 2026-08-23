@@ -114,6 +114,35 @@ namespace coop.Controllers
 
             return Ok(category);
         }
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCategory(Guid id, UpdateCategoryRequestDto dto)
+        {
+            var category = await _dbcontext.Categories.FirstOrDefaultAsync(c => c.Id == id);
+            if (category == null)
+                return NotFound("الفئة غير موجودة");
+
+            if (dto.ParentCategoryId == id)
+                return BadRequest("لا يمكن أن تكون الفئة الرئيسية رئيسة لنفسها");
+
+            if (dto.ParentCategoryId != null)
+            {
+                var parentExists = await _dbcontext.Categories.AnyAsync(c => c.Id == dto.ParentCategoryId);
+                if (!parentExists)
+                    return BadRequest("الفئة الرئيسية غير موجودة");
+            }
+
+            category.ParentCategoryId = dto.ParentCategoryId;
+            category.NameEn = dto.NameEn;
+            category.NameAr = dto.NameAr;
+            category.Description = dto.Description;
+            category.ImageUrl = dto.ImageUrl;
+            category.DisplayOrder = dto.DisplayOrder;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(category);
+        }
 
     }
 }
