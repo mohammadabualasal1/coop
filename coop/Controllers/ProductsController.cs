@@ -53,7 +53,20 @@ namespace coop.Controllers
             return Ok(newProduct);
         }
 
-        
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyProducts()
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var products = await _dbcontext.Products
+                .Where(p => p.MerchantId == merchant.Id && p.IsActive)
+                .ToListAsync();
+
+            return Ok(products);
+        }
         private Guid GetCurrentUserId() =>
           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
