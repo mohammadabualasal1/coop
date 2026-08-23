@@ -169,6 +169,91 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             return NoContent();
         }
+        [HttpPost("{id}/branches")]
+        public async Task<IActionResult> AddBranchStock(Guid id, [FromBody] AddBranchStockRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            var branch = await _dbcontext.MerchantBranches
+                .FirstOrDefaultAsync(b => b.Id == dto.MerchantBranchId && b.MerchantId == merchant.Id && b.IsActive);
+            if (branch == null)
+                return NotFound("الفرع غير موجود");
+
+            var alreadyAdded = await _dbcontext.BranchOffers
+                .AnyAsync(bo => bo.OfferId == id && bo.MerchantBranchId == dto.MerchantBranchId);
+            if (alreadyAdded)
+                return Conflict("هذا الفرع مضاف للعرض بالفعل");
+
+            if (dto.TotalStock <= 0)
+                return BadRequest("الكمية يجب أن تكون أكبر من صفر");
+
+            var branchOffer = new BranchOffer
+            {
+                Id = Guid.NewGuid(),
+                OfferId = id,
+                MerchantBranchId = dto.MerchantBranchId,
+                TotalStock = dto.TotalStock,
+                ReservedStock = 0,
+                SoldStock = 0,
+                IsAvailable = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _dbcontext.BranchOffers.Add(branchOffer);
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new BranchOfferResponse
+            {
+                Id = branchOffer.Id,
+                MerchantBranchId = branchOffer.MerchantBranchId,
+                TotalStock = branchOffer.TotalStock,
+                ReservedStock = branchOffer.ReservedStock,
+                SoldStock = branchOffer.SoldStock,
+                IsAvailable = branchOffer.IsAvailable
+            });
+        }
+
+        [HttpPut("{id}/branches/{branchOfferId}")]
+        public async Task<IActionResult> UpdateBranchStock(Guid id, Guid branchOfferId, [FromBody] UpdateBranchStockRequest dto)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            var branchOffer = await _dbcontext.BranchOffers.FirstOrDefaultAsync(bo => bo.Id == branchOfferId && bo.OfferId == id);
+            if (branchOffer == null)
+                return NotFound("الفرع غير مضاف لهذا العرض");
+
+            if (dto.TotalStock < branchOffer.ReservedStock + branchOffer.SoldStock)
+                return BadRequest("الكمية الجديدة أقل من الكمية المحجوزة والمباعة");
+
+            branchOffer.TotalStock = dto.TotalStock;
+            branchOffer.IsAvailable = dto.IsAvailable;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new BranchOfferResponse
+            {
+                Id = branchOffer.Id,
+                MerchantBranchId = branchOffer.MerchantBranchId,
+                TotalStock = branchOffer.TotalStock,
+                ReservedStock = branchOffer.ReservedStock,
+                SoldStock = branchOffer.SoldStock,
+                IsAvailable = branchOffer.IsAvailable
+            });
+        }
 
         private Guid GetCurrentUserId() =>
           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
