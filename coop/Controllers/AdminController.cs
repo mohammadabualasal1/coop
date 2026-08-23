@@ -117,7 +117,23 @@ namespace coop.Controllers
             return Ok(offer);
         }
 
+        [HttpPost("offers/{id}/reject")]
+        public async Task<IActionResult> RejectOffer(Guid id, RejectRequestDto dto)
+        {
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id);
+            if (offer == null)
+                return NotFound("العرض غير موجود");
 
+            offer.Status = OfferStatus.Rejected;
+            offer.AdminReviewNote = dto.Reason;
+            offer.ApprovedAt = null;
+            offer.ApprovedByUserId = null;
+            offer.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(offer);
+        }
         private Guid GetCurrentUserId() =>
            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
