@@ -185,6 +185,28 @@ namespace coop.Controllers
                 DisplayOrder = newImage.DisplayOrder
             });
         }
+        [HttpDelete("{id}/images/{imageId}")]
+        public async Task<IActionResult> DeleteProductImage(Guid id, Guid imageId)
+        {
+            var userId = GetCurrentUserId();
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var product = await _dbcontext.Products.FirstOrDefaultAsync(p => p.Id == id && p.MerchantId == merchant.Id);
+            if (product == null)
+                return NotFound("المنتج غير موجود");
+
+            var image = await _dbcontext.ProductImages.FirstOrDefaultAsync(i => i.Id == imageId && i.ProductId == id);
+            if (image == null)
+                return NotFound("الصورة غير موجودة");
+
+            _dbcontext.ProductImages.Remove(image);
+            await _dbcontext.SaveChangesAsync();
+            return NoContent();
+        }
+    
+
         private Guid GetCurrentUserId() =>
           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
