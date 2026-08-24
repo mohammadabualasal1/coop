@@ -19,7 +19,7 @@ builder.Services.AddDbContext<CoopDbContext>(options =>
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
+builder.Services.AddHostedService<OfferStatusService>();
 // ---- JWT ----
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddScoped<IJwtService, JwtService>();
