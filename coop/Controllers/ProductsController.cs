@@ -12,7 +12,7 @@ namespace coop.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly CoopDbContext _dbcontext;
+        private CoopDbContext _dbcontext;
 
         public ProductsController(CoopDbContext dbcontext)
         {

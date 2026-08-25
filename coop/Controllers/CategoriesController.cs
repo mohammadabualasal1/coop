@@ -11,7 +11,7 @@ namespace coop.Controllers
     [Route("api/categories")]
     public class CategoriesController : ControllerBase
     {
-        private readonly CoopDbContext _dbcontext;
+        private CoopDbContext _dbcontext;
 
         public CategoriesController(CoopDbContext dbcontext)
         {

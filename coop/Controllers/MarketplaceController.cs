@@ -9,7 +9,7 @@ namespace coop.Controllers
     [Route("api/marketplace")]
     public class MarketplaceController : ControllerBase
     {
-        private readonly CoopDbContext _dbcontext;
+        private CoopDbContext _dbcontext;
 
         public MarketplaceController(CoopDbContext dbcontext)
         {

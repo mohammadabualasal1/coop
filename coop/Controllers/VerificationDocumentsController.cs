@@ -13,7 +13,7 @@ namespace coop.Controllers
     [Route("api/verification-documents")]
     public class VerificationDocumentsController : ControllerBase
     {
-        private readonly CoopDbContext _dbcontext;
+        private CoopDbContext _dbcontext;
 
         public VerificationDocumentsController(CoopDbContext dbcontext)
         {

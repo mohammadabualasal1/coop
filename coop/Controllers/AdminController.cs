@@ -12,7 +12,7 @@ namespace coop.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {
-        private readonly CoopDbContext _dbcontext;
+        private CoopDbContext _dbcontext;
 
         public AdminController(CoopDbContext dbcontext)
         {
