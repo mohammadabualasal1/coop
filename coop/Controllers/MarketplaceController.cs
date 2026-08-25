@@ -257,6 +257,49 @@ namespace coop.Controllers
 
             return Ok(offers);
         }
+        [HttpGet("offers/{id}")]
+        public async Task<IActionResult> GetOfferById(Guid id)
+        {
+            var now = DateTime.UtcNow;
 
+            var offer = await _dbcontext.Offers
+                .Where(o => o.Id == id)
+                .Where(o => o.Status == OfferStatus.Active)
+                .Where(o => o.StartAt <= now && o.EndAt >= now)
+                .Select(o => new OfferDetailResponseDto
+                {
+                    Id = o.Id,
+                    Title = o.Title,
+                    Description = o.Description,
+                    ProductId = o.ProductId,
+                    MerchantId = o.MerchantId,
+                    MerchantName = o.Merchant.Name,
+                    OriginalPrice = o.OriginalPrice,
+                    DiscountedPrice = o.DiscountedPrice,
+                    DiscountPercentage = o.DiscountPercentage,
+                    StartAt = o.StartAt,
+                    EndAt = o.EndAt,
+                    Status = o.Status,
+                    MaximumQuantityPerCustomer = o.MaximumQuantityPerCustomer,
+                    Branches = _dbcontext.BranchOffers
+                        .Where(bo => bo.OfferId == o.Id && bo.MerchantBranch.IsActive)
+                        .Select(bo => new BranchStockResponse
+                        {
+                            MerchantBranchId = bo.MerchantBranchId,
+                            BranchName = bo.MerchantBranch.Name,
+                            City = bo.MerchantBranch.City,
+                            TotalStock = bo.TotalStock,
+                            AvailableStock = bo.TotalStock - bo.ReservedStock - bo.SoldStock,
+                            IsAvailable = bo.IsAvailable && bo.TotalStock - bo.ReservedStock - bo.SoldStock > 0
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            if (offer == null)
+                return NotFound("العرض غير موجود أو غير متاح");
+
+            return Ok(offer);
+        }
     }
 }
