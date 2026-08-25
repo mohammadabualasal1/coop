@@ -77,18 +77,21 @@ namespace coop.Controllers
                 CreatedAt = favorite.CreatedAt
             });
         }
+        [HttpDelete("{offerId}")]
+        public async Task<IActionResult> RemoveFavorite(Guid offerId)
+        {
+            var userId = GetCurrentUserId();
 
+            var favorite = await _dbcontext.FavoriteOffers
+                .FirstOrDefaultAsync(f => f.CustomerUserId == userId && f.OfferId == offerId);
 
+            if (favorite == null)
+                return NotFound("العرض غير موجود في المفضلة");
 
-
-
-
-
-
-
-
-
-
+            _dbcontext.FavoriteOffers.Remove(favorite);
+            await _dbcontext.SaveChangesAsync();
+            return NoContent();
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
