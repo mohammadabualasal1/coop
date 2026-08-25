@@ -56,8 +56,9 @@ namespace coop.Controllers
         public async Task<IActionResult> GetCategoryOffers(Guid id)
         {
             var categoryExists = await _dbcontext.Categories.AnyAsync(c => c.Id == id && c.IsActive);
-            if (categoryExists==null)
+            if (!categoryExists)
                 return NotFound("الفئة غير موجودة");
+
             var now = DateTime.UtcNow;
 
             var offers = await _dbcontext.Offers
