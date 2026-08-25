@@ -185,6 +185,45 @@ namespace coop.Controllers
 
             return earthRadiusKm * c;
         }
+        [HttpGet("offers/ending-soon")]
+        public async Task<IActionResult> GetEndingSoonOffers([FromQuery] int hoursWindow = 48, [FromQuery] int limit = 20)
+        {
+            var now = DateTime.UtcNow;
+
+            if (hoursWindow < 1 || hoursWindow > 720)
+                hoursWindow = 48;
+
+            if (limit < 1 || limit > 100)
+                limit = 20;
+
+            var windowEnd = now.AddHours(hoursWindow);
+
+            var offers = await _dbcontext.Offers
+                .Where(o => o.Status == OfferStatus.Active)
+                .Where(o => o.StartAt <= now && o.EndAt >= now)
+                .Where(o => o.EndAt <= windowEnd)
+                .Where(o => _dbcontext.BranchOffers.Any(bo => bo.OfferId == o.Id
+                                                           && bo.IsAvailable
+                                                           && bo.TotalStock - bo.ReservedStock - bo.SoldStock > 0))
+                .OrderBy(o => o.EndAt)
+                .Take(limit)
+                .Select(o => new OfferSummaryResponse
+                {
+                    Id = o.Id,
+                    Title = o.Title,
+                    MerchantId = o.MerchantId,
+                    MerchantName = o.Merchant.Name,
+                    MainImageUrl = o.Product.MainImageUrl,
+                    OriginalPrice = o.OriginalPrice,
+                    DiscountedPrice = o.DiscountedPrice,
+                    DiscountPercentage = o.DiscountPercentage,
+                    EndAt = o.EndAt,
+                    DistanceKm = null
+                })
+                .ToListAsync();
+
+            return Ok(offers);
+        }
 
     }
 }
