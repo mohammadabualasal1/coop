@@ -78,6 +78,22 @@ namespace coop.Controllers
                 CreatedAt = follow.CreatedAt
             });
         }
+        [HttpDelete("{merchantId}")]
+        public async Task<IActionResult> UnfollowMerchant(Guid merchantId)
+        {
+            var userId = GetCurrentUserId();
+
+            var follow = await _dbcontext.FollowedMerchants
+                .FirstOrDefaultAsync(f => f.CustomerUserId == userId && f.MerchantId == merchantId);
+
+            if (follow == null)
+                return NotFound("أنت لا تتابع هذا التاجر");
+
+            _dbcontext.FollowedMerchants.Remove(follow);
+            await _dbcontext.SaveChangesAsync();
+
+            return NoContent();
+        }
 
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
