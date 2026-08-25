@@ -301,5 +301,92 @@ namespace coop.Controllers
 
             return Ok(offer);
         }
+        [HttpGet("merchants")]
+        public async Task<IActionResult> SearchMerchants([FromQuery] MerchantSearchRequestDto request)
+        {
+            var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
+            var pageSize = request.PageSize < 1 || request.PageSize > 100 ? 20 : request.PageSize;
+
+            var query = _dbcontext.Merchants
+                .Where(m => m.IsActive)
+                .Where(m => m.VerificationStatus == VerificationStatus.Approved);
+
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                var search = request.Search.Trim().ToLower();
+                query = query.Where(m => m.Name.ToLower().Contains(search));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.City))
+            {
+                var city = request.City.Trim().ToLower();
+                query = query.Where(m => _dbcontext.MerchantBranches
+                    .Any(b => b.MerchantId == m.Id && b.IsActive && b.City.ToLower() == city));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(m => m.AverageRating)
+                .ThenBy(m => m.Name)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(m => new MerchantSummaryResponseDto
+                {
+                    Id = m.Id,
+                    Name = m.Name,
+                    LogoUrl = m.LogoUrl,
+                    AverageRating = m.AverageRating
+                })
+                .ToListAsync();
+
+            return Ok(new PagedResponse<MerchantSummaryResponseDto>
+            {
+                Items = items,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            });
+        }
+        [HttpGet("merchants/{id}")]
+        public async Task<IActionResult> GetMerchantById(Guid id)
+        {
+            var merchant = await _dbcontext.Merchants
+                .Where(m => m.Id == id)
+                .Where(m => m.IsActive)
+                .Where(m => m.VerificationStatus == VerificationStatus.Approved)
+                .Select(m => new MerchantDetailResponseDto
+                {
+                    Id = m.Id,
+                    Name = m.Name,
+                    Description = m.Description,
+                    LogoUrl = m.LogoUrl,
+                    CoverImageUrl = m.CoverImageUrl,
+                    ContactEmail = m.ContactEmail,
+                    ContactPhone = m.ContactPhone,
+                    AverageRating = m.AverageRating,
+                    Branches = _dbcontext.MerchantBranches
+                        .Where(b => b.MerchantId == m.Id && b.IsActive)
+                        .OrderByDescending(b => b.IsMainBranch)
+                        .ThenBy(b => b.Name)
+                        .Select(b => new MerchantBranchSummaryResponseDto
+                        {
+                            Id = b.Id,
+                            Name = b.Name,
+                            City = b.City,
+                            Area = b.Area,
+                            Latitude = b.Latitude,
+                            Longitude = b.Longitude
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            if (merchant == null)
+                return NotFound("التاجر غير موجود أو غير متاح");
+
+            return Ok(merchant);
+        }
     }
 }
