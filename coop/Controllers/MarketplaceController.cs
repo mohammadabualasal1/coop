@@ -224,6 +224,39 @@ namespace coop.Controllers
 
             return Ok(offers);
         }
+        [HttpGet("offers/top-discounts")]
+        public async Task<IActionResult> GetTopDiscountOffers([FromQuery] int limit = 20)
+        {
+            var now = DateTime.UtcNow;
+
+            if (limit < 1 || limit > 100)
+                limit = 20;
+
+            var offers = await _dbcontext.Offers
+                .Where(o => o.Status == OfferStatus.Active)
+                .Where(o => o.StartAt <= now && o.EndAt >= now)
+                .Where(o => _dbcontext.BranchOffers.Any(bo => bo.OfferId == o.Id
+                                                           && bo.IsAvailable
+                                                           && bo.TotalStock - bo.ReservedStock - bo.SoldStock > 0))
+                .OrderByDescending(o => o.DiscountPercentage)
+                .Take(limit)
+                .Select(o => new OfferSummaryResponse
+                {
+                    Id = o.Id,
+                    Title = o.Title,
+                    MerchantId = o.MerchantId,
+                    MerchantName = o.Merchant.Name,
+                    MainImageUrl = o.Product.MainImageUrl,
+                    OriginalPrice = o.OriginalPrice,
+                    DiscountedPrice = o.DiscountedPrice,
+                    DiscountPercentage = o.DiscountPercentage,
+                    EndAt = o.EndAt,
+                    DistanceKm = null
+                })
+                .ToListAsync();
+
+            return Ok(offers);
+        }
 
     }
 }
