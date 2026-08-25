@@ -388,5 +388,45 @@ namespace coop.Controllers
 
             return Ok(merchant);
         }
+        [HttpGet("merchants/{id}/offers")]
+        public async Task<IActionResult> GetMerchantOffers(Guid id, [FromQuery] int limit = 50)
+        {
+            var now = DateTime.UtcNow;
+
+            if (limit < 1 || limit > 100)
+                limit = 50;
+
+            var merchantExists = await _dbcontext.Merchants
+                .AnyAsync(m => m.Id == id && m.IsActive && m.VerificationStatus == VerificationStatus.Approved);
+
+            if (!merchantExists)
+                return NotFound("التاجر غير موجود أو غير متاح");
+
+            var offers = await _dbcontext.Offers
+                .Where(o => o.MerchantId == id)
+                .Where(o => o.Status == OfferStatus.Active)
+                .Where(o => o.StartAt <= now && o.EndAt >= now)
+                .Where(o => _dbcontext.BranchOffers.Any(bo => bo.OfferId == o.Id
+                                                           && bo.IsAvailable
+                                                           && bo.TotalStock - bo.ReservedStock - bo.SoldStock > 0))
+                .OrderByDescending(o => o.DiscountPercentage)
+                .Take(limit)
+                .Select(o => new OfferSummaryResponse
+                {
+                    Id = o.Id,
+                    Title = o.Title,
+                    MerchantId = o.MerchantId,
+                    MerchantName = o.Merchant.Name,
+                    MainImageUrl = o.Product.MainImageUrl,
+                    OriginalPrice = o.OriginalPrice,
+                    DiscountedPrice = o.DiscountedPrice,
+                    DiscountPercentage = o.DiscountPercentage,
+                    EndAt = o.EndAt,
+                    DistanceKm = null
+                })
+                .ToListAsync();
+
+            return Ok(offers);
+        }
     }
 }
