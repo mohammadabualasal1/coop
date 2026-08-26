@@ -281,6 +281,36 @@ namespace coop.Controllers
                 EstimatedTotal = responseSubtotal - responseTotalDiscount
             });
         }
+        [HttpDelete("items/{itemId}")]
+        public async Task<IActionResult> RemoveItem(Guid itemId)
+        {
+            var userId = GetCurrentUserId();
+
+            var cart = await _dbcontext.Carts.FirstOrDefaultAsync(c => c.CustomerUserId == userId);
+            if (cart == null)
+                return NotFound("السلة فارغة");
+
+            var item = await _dbcontext.CartItems
+                .FirstOrDefaultAsync(ci => ci.Id == itemId && ci.CartId == cart.Id);
+
+            if (item == null)
+                return NotFound("الصنف غير موجود في السلة");
+
+            _dbcontext.CartItems.Remove(item);
+            await _dbcontext.SaveChangesAsync();
+
+            var remainingCount = await _dbcontext.CartItems.CountAsync(ci => ci.CartId == cart.Id);
+
+            if (remainingCount == 0)
+                _dbcontext.Carts.Remove(cart);
+            else
+                cart.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
