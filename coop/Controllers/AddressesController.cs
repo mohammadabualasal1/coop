@@ -101,7 +101,37 @@ namespace coop.Controllers
                 CreatedAt = address.CreatedAt
             });
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAddressById(Guid id)
+        {
+            var userId = GetCurrentUserId();
 
+            var address = await _dbcontext.CustomerAddresses
+                .Where(a => a.Id == id && a.CustomerUserId == userId)
+                .Select(a => new AddressResponseDto
+                {
+                    Id = a.Id,
+                    Label = a.Label,
+                    ContactName = a.ContactName,
+                    ContactPhone = a.ContactPhone,
+                    City = a.City,
+                    Area = a.Area,
+                    Street = a.Street,
+                    Building = a.Building,
+                    Floor = a.Floor,
+                    AdditionalDirections = a.AdditionalDirections,
+                    Latitude = a.Latitude,
+                    Longitude = a.Longitude,
+                    IsDefault = a.IsDefault,
+                    CreatedAt = a.CreatedAt
+                })
+                .FirstOrDefaultAsync();
+
+            if (address == null)
+                return NotFound("العنوان غير موجود");
+
+            return Ok(address);
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
