@@ -330,6 +330,125 @@ namespace coop.Controllers
 
             return NoContent();
         }
+        [HttpGet("validate")]
+        public async Task<IActionResult> ValidateCart()
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
+
+            var cart = await _dbcontext.Carts.FirstOrDefaultAsync(c => c.CustomerUserId == userId);
+
+            if (cart == null)
+            {
+                return Ok(new CartValidationResponse
+                {
+                    IsValid = false,
+                    Issues = new List<string> { "السلة فارغة" },
+                    Cart = new CartResponseDto
+                    {
+                        Id = Guid.Empty,
+                        MerchantBranchId = Guid.Empty,
+                        Items = new List<CartItemResponse>(),
+                        Subtotal = 0,
+                        TotalDiscount = 0,
+                        EstimatedTotal = 0
+                    }
+                });
+            }
+
+            var issues = new List<string>();
+
+            if (cart.ExpiresAt < now)
+                issues.Add("انتهت صلاحية السلة، الرجاء مراجعة الأصناف");
+
+            var branch = await _dbcontext.MerchantBranches
+                .FirstOrDefaultAsync(b => b.Id == cart.MerchantBranchId);
+
+            if (branch == null || !branch.IsActive)
+                issues.Add("الفرع غير متاح حالياً");
+
+            var cartItems = await _dbcontext.CartItems
+                .Where(ci => ci.CartId == cart.Id)
+                .OrderBy(ci => ci.CreatedAt)
+                .Select(ci => new
+                {
+                    ci.Id,
+                    ci.OfferId,
+                    ci.Quantity,
+                    OfferTitle = ci.Offer.Title,
+                    ci.Offer.Status,
+                    ci.Offer.StartAt,
+                    ci.Offer.EndAt,
+                    ci.Offer.OriginalPrice,
+                    ci.Offer.DiscountedPrice,
+                    ci.Offer.MaximumQuantityPerCustomer
+                })
+                .ToListAsync();
+
+            if (cartItems.Count == 0)
+                issues.Add("السلة فارغة");
+
+            foreach (var item in cartItems)
+            {
+                if (item.Status != OfferStatus.Active || item.StartAt > now || item.EndAt < now)
+                {
+                    issues.Add($"العرض \"{item.OfferTitle}\" لم يعد متاحاً");
+                    continue;
+                }
+
+                var branchOffer = await _dbcontext.BranchOffers
+                    .FirstOrDefaultAsync(bo => bo.OfferId == item.OfferId
+                                            && bo.MerchantBranchId == cart.MerchantBranchId);
+
+                if (branchOffer == null || !branchOffer.IsAvailable)
+                {
+                    issues.Add($"العرض \"{item.OfferTitle}\" لم يعد متاحاً في هذا الفرع");
+                    continue;
+                }
+
+                var availableStock = branchOffer.TotalStock - branchOffer.ReservedStock - branchOffer.SoldStock;
+
+                if (availableStock < item.Quantity)
+                    issues.Add($"الكمية المتاحة من \"{item.OfferTitle}\" هي {availableStock} فقط");
+
+                if (item.MaximumQuantityPerCustomer != null && item.Quantity > item.MaximumQuantityPerCustomer)
+                    issues.Add($"الحد الأقصى لـ \"{item.OfferTitle}\" هو {item.MaximumQuantityPerCustomer} لكل زبون");
+            }
+
+            if (branch != null && branch.IsActive)
+            {
+                var itemsTotal = cartItems.Sum(i => i.DiscountedPrice * i.Quantity);
+
+                if (itemsTotal < branch.MinimumOrderAmount)
+                    issues.Add($"الحد الأدنى للطلب من هذا الفرع هو {branch.MinimumOrderAmount}");
+            }
+
+            var subtotal = cartItems.Sum(i => i.OriginalPrice * i.Quantity);
+            var totalDiscount = cartItems.Sum(i => (i.OriginalPrice - i.DiscountedPrice) * i.Quantity);
+
+            return Ok(new CartValidationResponse
+            {
+                IsValid = issues.Count == 0,
+                Issues = issues,
+                Cart = new CartResponseDto
+                {
+                    Id = cart.Id,
+                    MerchantBranchId = cart.MerchantBranchId,
+                    Items = cartItems.Select(i => new CartItemResponse
+                    {
+                        Id = i.Id,
+                        OfferId = i.OfferId,
+                        Title = i.OfferTitle,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.DiscountedPrice,
+                        LineTotal = i.DiscountedPrice * i.Quantity
+                    }).ToList(),
+                    Subtotal = subtotal,
+                    TotalDiscount = totalDiscount,
+                    EstimatedTotal = subtotal - totalDiscount
+                }
+            });
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
