@@ -199,7 +199,88 @@ namespace coop.Controllers
                 EstimatedTotal = responseSubtotal - responseTotalDiscount
             });
         }
+        [HttpPut("items/{itemId}")]
+        public async Task<IActionResult> UpdateItemQuantity(Guid itemId, UpdateCartItemRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
 
+            if (dto.Quantity < 1)
+                return BadRequest("الكمية يجب أن تكون 1 أو أكثر");
+
+            var cart = await _dbcontext.Carts.FirstOrDefaultAsync(c => c.CustomerUserId == userId);
+            if (cart == null)
+                return NotFound("السلة فارغة");
+
+            var item = await _dbcontext.CartItems
+                .FirstOrDefaultAsync(ci => ci.Id == itemId && ci.CartId == cart.Id);
+
+            if (item == null)
+                return NotFound("الصنف غير موجود في السلة");
+
+            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == item.OfferId);
+            if (offer == null)
+                return BadRequest("العرض لم يعد موجوداً");
+
+            if (offer.Status != OfferStatus.Active || offer.StartAt > now || offer.EndAt < now)
+                return BadRequest("العرض غير متاح حالياً");
+
+            var branchOffer = await _dbcontext.BranchOffers
+                .FirstOrDefaultAsync(bo => bo.OfferId == item.OfferId
+                                        && bo.MerchantBranchId == cart.MerchantBranchId
+                                        && bo.IsAvailable);
+
+            if (branchOffer == null)
+                return BadRequest("العرض لم يعد متاحاً في هذا الفرع");
+
+            var availableStock = branchOffer.TotalStock - branchOffer.ReservedStock - branchOffer.SoldStock;
+
+            if (dto.Quantity > availableStock)
+                return BadRequest($"الكمية المتاحة من هذا العرض هي {availableStock} فقط");
+
+            if (offer.MaximumQuantityPerCustomer != null && dto.Quantity > offer.MaximumQuantityPerCustomer)
+                return BadRequest($"الحد الأقصى لهذا العرض هو {offer.MaximumQuantityPerCustomer} لكل زبون");
+
+            item.Quantity = dto.Quantity;
+            item.UpdatedAt = now;
+
+            cart.UpdatedAt = now;
+            cart.ExpiresAt = now.AddHours(24);
+
+            await _dbcontext.SaveChangesAsync();
+
+            var responseItems = await _dbcontext.CartItems
+                .Where(ci => ci.CartId == cart.Id)
+                .OrderBy(ci => ci.CreatedAt)
+                .Select(ci => new CartItemResponse
+                {
+                    Id = ci.Id,
+                    OfferId = ci.OfferId,
+                    Title = ci.Offer.Title,
+                    Quantity = ci.Quantity,
+                    UnitPrice = ci.Offer.DiscountedPrice,
+                    LineTotal = ci.Offer.DiscountedPrice * ci.Quantity
+                })
+                .ToListAsync();
+
+            var responseSubtotal = await _dbcontext.CartItems
+                .Where(ci => ci.CartId == cart.Id)
+                .SumAsync(ci => ci.Offer.OriginalPrice * ci.Quantity);
+
+            var responseTotalDiscount = await _dbcontext.CartItems
+                .Where(ci => ci.CartId == cart.Id)
+                .SumAsync(ci => (ci.Offer.OriginalPrice - ci.Offer.DiscountedPrice) * ci.Quantity);
+
+            return Ok(new CartResponseDto
+            {
+                Id = cart.Id,
+                MerchantBranchId = cart.MerchantBranchId,
+                Items = responseItems,
+                Subtotal = responseSubtotal,
+                TotalDiscount = responseTotalDiscount,
+                EstimatedTotal = responseSubtotal - responseTotalDiscount
+            });
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
