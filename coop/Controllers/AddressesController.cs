@@ -132,6 +132,91 @@ namespace coop.Controllers
 
             return Ok(address);
         }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAddress(Guid id, UpdateAddressRequest dto)
+        {
+            var userId = GetCurrentUserId();
+
+            if (dto.Latitude < -90 || dto.Latitude > 90 ||
+                dto.Longitude < -180 || dto.Longitude > 180)
+                return BadRequest("الإحداثيات غير صحيحة");
+
+            var address = await _dbcontext.CustomerAddresses
+                .FirstOrDefaultAsync(a => a.Id == id && a.CustomerUserId == userId);
+
+            if (address == null)
+                return NotFound("العنوان غير موجود");
+
+            address.Label = dto.Label;
+            address.ContactName = dto.ContactName;
+            address.ContactPhone = dto.ContactPhone;
+            address.City = dto.City;
+            address.Area = dto.Area;
+            address.Street = dto.Street;
+            address.Building = dto.Building;
+            address.Floor = dto.Floor;
+            address.AdditionalDirections = dto.AdditionalDirections;
+            address.Latitude = dto.Latitude;
+            address.Longitude = dto.Longitude;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new AddressResponseDto
+            {
+                Id = address.Id,
+                Label = address.Label,
+                ContactName = address.ContactName,
+                ContactPhone = address.ContactPhone,
+                City = address.City,
+                Area = address.Area,
+                Street = address.Street,
+                Building = address.Building,
+                Floor = address.Floor,
+                AdditionalDirections = address.AdditionalDirections,
+                Latitude = address.Latitude,
+                Longitude = address.Longitude,
+                IsDefault = address.IsDefault,
+                CreatedAt = address.CreatedAt
+            });
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAddress(Guid id)
+        {
+            var userId = GetCurrentUserId();
+
+            var address = await _dbcontext.CustomerAddresses
+                .FirstOrDefaultAsync(a => a.Id == id && a.CustomerUserId == userId);
+
+            if (address == null)
+                return NotFound("العنوان غير موجود");
+
+            var isUsedInOrders = await _dbcontext.Orders
+                .AnyAsync(o => o.CustomerAddressId == id);
+
+            if (isUsedInOrders)
+                return BadRequest("لا يمكن حذف عنوان مرتبط بطلبات سابقة");
+
+            var wasDefault = address.IsDefault;
+
+            _dbcontext.CustomerAddresses.Remove(address);
+            await _dbcontext.SaveChangesAsync();
+
+            if (wasDefault)
+            {
+                var newDefault = await _dbcontext.CustomerAddresses
+                    .Where(a => a.CustomerUserId == userId)
+                    .OrderByDescending(a => a.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (newDefault != null)
+                {
+                    newDefault.IsDefault = true;
+                    await _dbcontext.SaveChangesAsync();
+                }
+            }
+
+            return NoContent();
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
