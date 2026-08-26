@@ -310,7 +310,26 @@ namespace coop.Controllers
 
             return NoContent();
         }
+        [HttpDelete]
+        public async Task<IActionResult> ClearCart()
+        {
+            var userId = GetCurrentUserId();
 
+            var cart = await _dbcontext.Carts.FirstOrDefaultAsync(c => c.CustomerUserId == userId);
+            if (cart == null)
+                return NoContent();
+
+            var items = await _dbcontext.CartItems
+                .Where(ci => ci.CartId == cart.Id)
+                .ToListAsync();
+
+            _dbcontext.CartItems.RemoveRange(items);
+            _dbcontext.Carts.Remove(cart);
+
+            await _dbcontext.SaveChangesAsync();
+
+            return NoContent();
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
