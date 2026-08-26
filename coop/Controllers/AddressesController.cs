@@ -217,6 +217,42 @@ namespace coop.Controllers
 
             return NoContent();
         }
+        [HttpPut("{id}/set-default")]
+        public async Task<IActionResult> SetDefaultAddress(Guid id)
+        {
+            var userId = GetCurrentUserId();
+
+            var addresses = await _dbcontext.CustomerAddresses
+                .Where(a => a.CustomerUserId == userId)
+                .ToListAsync();
+
+            var target = addresses.FirstOrDefault(a => a.Id == id);
+            if (target == null)
+                return NotFound("العنوان غير موجود");
+
+            foreach (var address in addresses)
+                address.IsDefault = (address.Id == id);
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new AddressResponseDto
+            {
+                Id = target.Id,
+                Label = target.Label,
+                ContactName = target.ContactName,
+                ContactPhone = target.ContactPhone,
+                City = target.City,
+                Area = target.Area,
+                Street = target.Street,
+                Building = target.Building,
+                Floor = target.Floor,
+                AdditionalDirections = target.AdditionalDirections,
+                Latitude = target.Latitude,
+                Longitude = target.Longitude,
+                IsDefault = target.IsDefault,
+                CreatedAt = target.CreatedAt
+            });
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
