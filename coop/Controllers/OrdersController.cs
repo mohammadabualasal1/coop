@@ -169,6 +169,33 @@ namespace coop.Controllers
                 throw;
             }
         }
+
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetMyOrders()
+        {
+            var userId = GetCurrentUserId();
+
+            var orders = await _dbcontext.Orders
+                .Where(o => o.CustomerUserId == userId)
+                .OrderByDescending(o => o.PlacedAt)
+                .Select(o => new
+                {
+                    o.Id,
+                    o.OrderNumber,
+                    o.Status,
+                    o.PaymentMethod,
+                    o.TotalAmount,
+                    o.PlacedAt,
+                    MerchantName = o.Merchant.Name,
+                    BranchName = o.MerchantBranch.Name
+                })
+                .ToListAsync();
+
+            return Ok(orders);
+        }
         private Guid GetCurrentUserId() =>
          Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
