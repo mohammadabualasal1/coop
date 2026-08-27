@@ -107,7 +107,36 @@ namespace coop.Controllers
                 PaidAt = payment.PaidAt
             });
         }
+        [HttpGet("{orderId}")]
+        public async Task<IActionResult> GetPaymentStatus(Guid orderId)
+        {
+            var userId = GetCurrentUserId();
 
+            var orderExists = await _dbcontext.Orders
+                .AnyAsync(o => o.Id == orderId && o.CustomerUserId == userId);
+
+            if (!orderExists)
+                return NotFound("الطلب غير موجود");
+
+            var payment = await _dbcontext.Payments
+                .Where(p => p.OrderId == orderId)
+                .Select(p => new PaymentResponse
+                {
+                    Id = p.Id,
+                    OrderId = p.OrderId,
+                    Method = p.Method,
+                    Status = p.Status,
+                    Amount = p.Amount,
+                    TransactionReference = p.TransactionReference,
+                    PaidAt = p.PaidAt
+                })
+                .FirstOrDefaultAsync();
+
+            if (payment == null)
+                return NotFound("لا يوجد سجل دفع لهذا الطلب");
+
+            return Ok(payment);
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
