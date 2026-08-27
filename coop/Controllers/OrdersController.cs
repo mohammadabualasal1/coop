@@ -196,6 +196,49 @@ namespace coop.Controllers
 
             return Ok(orders);
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOrderById(Guid id)
+        {
+            var userId = GetCurrentUserId();
+
+            var order = await _dbcontext.Orders
+                .FirstOrDefaultAsync(o => o.Id == id && o.CustomerUserId == userId);
+
+            if (order == null)
+                return NotFound("الطلب غير موجود");
+
+            var items = await _dbcontext.OrderItems
+                .Where(oi => oi.OrderId == id)
+                .Select(oi => new OrderItemResponseDto
+                {
+                    Id = oi.Id,
+                    ProductNameSnapshot = oi.ProductNameSnapshot,
+                    OriginalUnitPrice = oi.OriginalUnitPrice,
+                    DiscountedUnitPrice = oi.DiscountedUnitPrice,
+                    Quantity = oi.Quantity,
+                    LineTotal = oi.LineTotal
+                })
+                .ToListAsync();
+
+            return Ok(new OrderDetailResponseDto
+            {
+                Id = order.Id,
+                OrderNumber = order.OrderNumber,
+                Status = order.Status,
+                PaymentMethod = order.PaymentMethod,
+                Subtotal = order.Subtotal,
+                TotalDiscount = order.TotalDiscount,
+                DeliveryFee = order.DeliveryFee,
+                TotalAmount = order.TotalAmount,
+                CustomerNotes = order.CustomerNotes,
+                PlacedAt = order.PlacedAt,
+                AcceptedAt = order.AcceptedAt,
+                ReadyAt = order.ReadyAt,
+                DeliveredAt = order.DeliveredAt,
+                CompletedAt = order.CompletedAt,
+                Items = items
+            });
+        }
         private Guid GetCurrentUserId() =>
          Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
