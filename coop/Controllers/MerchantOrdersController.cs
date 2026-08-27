@@ -1,4 +1,5 @@
 ﻿using coop.Dtos.MerchantOrdersController;
+using coop.Dtos.MerchantOrdersDtos;
 using coop.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -50,7 +51,52 @@ namespace coop.Controllers
 
             return Ok(orders);
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOrderById(Guid id)
+        {
+            var userId = GetCurrentUserId();
 
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var order = await _dbcontext.Orders
+                .Where(o => o.Id == id && o.MerchantId == merchant.Id)
+                .Select(o => new MerchantOrderDetailResponseDto
+                {
+                    Id = o.Id,
+                    OrderNumber = o.OrderNumber,
+                    CustomerName = o.CustomerUser.FullName,
+                    CustomerPhone = o.CustomerUser.PhoneNumber,
+                    Status = o.Status,
+                    PaymentMethod = o.PaymentMethod,
+                    Subtotal = o.Subtotal,
+                    TotalDiscount = o.TotalDiscount,
+                    DeliveryFee = o.DeliveryFee,
+                    TotalAmount = o.TotalAmount,
+                    CustomerNotes = o.CustomerNotes,
+                    PlacedAt = o.PlacedAt,
+                    AcceptedAt = o.AcceptedAt,
+                    ReadyAt = o.ReadyAt,
+                    Items = _dbcontext.OrderItems
+                        .Where(oi => oi.OrderId == o.Id)
+                        .Select(oi => new MerchantOrderItemResponseDto
+                        {
+                            Id = oi.Id,
+                            ProductName = oi.ProductNameSnapshot,
+                            Quantity = oi.Quantity,
+                            DiscountedUnitPrice = oi.DiscountedUnitPrice,
+                            LineTotal = oi.LineTotal
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            if (order == null)
+                return NotFound("الطلب غير موجود");
+
+            return Ok(order);
+        }
 
 
         private Guid GetCurrentUserId() =>
