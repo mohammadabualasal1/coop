@@ -91,6 +91,7 @@ namespace coop.Controllers
                 return BadRequest("العرض غير متاح حالياً");
 
             var cart = await _dbcontext.Carts.FirstOrDefaultAsync(c => c.CustomerUserId == userId);
+            var isNewCart = cart == null;
 
             var branchOfferQuery = _dbcontext.BranchOffers
                 .Where(bo => bo.OfferId == offer.Id
@@ -113,7 +114,6 @@ namespace coop.Controllers
             }
 
             var availableStock = branchOffer.TotalStock - branchOffer.ReservedStock - branchOffer.SoldStock;
-
             if (availableStock < 1)
                 return BadRequest("نفد مخزون هذا العرض");
 
@@ -128,12 +128,15 @@ namespace coop.Controllers
                     UpdatedAt = now,
                     ExpiresAt = now.AddHours(24)
                 };
-
                 _dbcontext.Carts.Add(cart);
             }
 
-            var existingItem = await _dbcontext.CartItems
-                .FirstOrDefaultAsync(ci => ci.CartId == cart.Id && ci.OfferId == offer.Id);
+            CartItem? existingItem = null;
+            if (!isNewCart)
+            {
+                existingItem = await _dbcontext.CartItems
+                    .FirstOrDefaultAsync(ci => ci.CartId == cart.Id && ci.OfferId == offer.Id);
+            }
 
             var newQuantity = (existingItem?.Quantity ?? 0) + dto.Quantity;
 
@@ -199,6 +202,7 @@ namespace coop.Controllers
                 EstimatedTotal = responseSubtotal - responseTotalDiscount
             });
         }
+
         [HttpPut("items/{itemId}")]
         public async Task<IActionResult> UpdateItemQuantity(Guid itemId, UpdateCartItemRequestDto dto)
         {
@@ -214,7 +218,6 @@ namespace coop.Controllers
 
             var item = await _dbcontext.CartItems
                 .FirstOrDefaultAsync(ci => ci.Id == itemId && ci.CartId == cart.Id);
-
             if (item == null)
                 return NotFound("الصنف غير موجود في السلة");
 
@@ -229,7 +232,6 @@ namespace coop.Controllers
                 .FirstOrDefaultAsync(bo => bo.OfferId == item.OfferId
                                         && bo.MerchantBranchId == cart.MerchantBranchId
                                         && bo.IsAvailable);
-
             if (branchOffer == null)
                 return BadRequest("العرض لم يعد متاحاً في هذا الفرع");
 
@@ -243,7 +245,6 @@ namespace coop.Controllers
 
             item.Quantity = dto.Quantity;
             item.UpdatedAt = now;
-
             cart.UpdatedAt = now;
             cart.ExpiresAt = now.AddHours(24);
 
@@ -281,6 +282,7 @@ namespace coop.Controllers
                 EstimatedTotal = responseSubtotal - responseTotalDiscount
             });
         }
+
         [HttpDelete("items/{itemId}")]
         public async Task<IActionResult> RemoveItem(Guid itemId)
         {
@@ -292,14 +294,13 @@ namespace coop.Controllers
 
             var item = await _dbcontext.CartItems
                 .FirstOrDefaultAsync(ci => ci.Id == itemId && ci.CartId == cart.Id);
-
             if (item == null)
                 return NotFound("الصنف غير موجود في السلة");
 
             _dbcontext.CartItems.Remove(item);
-            await _dbcontext.SaveChangesAsync();
 
-            var remainingCount = await _dbcontext.CartItems.CountAsync(ci => ci.CartId == cart.Id);
+            var remainingCount = await _dbcontext.CartItems
+                .CountAsync(ci => ci.CartId == cart.Id && ci.Id != itemId);
 
             if (remainingCount == 0)
                 _dbcontext.Carts.Remove(cart);
@@ -307,9 +308,9 @@ namespace coop.Controllers
                 cart.UpdatedAt = DateTime.UtcNow;
 
             await _dbcontext.SaveChangesAsync();
-
             return NoContent();
         }
+
         [HttpDelete]
         public async Task<IActionResult> ClearCart()
         {
@@ -327,9 +328,9 @@ namespace coop.Controllers
             _dbcontext.Carts.Remove(cart);
 
             await _dbcontext.SaveChangesAsync();
-
             return NoContent();
         }
+
         [HttpGet("validate")]
         public async Task<IActionResult> ValidateCart()
         {
@@ -337,7 +338,6 @@ namespace coop.Controllers
             var now = DateTime.UtcNow;
 
             var cart = await _dbcontext.Carts.FirstOrDefaultAsync(c => c.CustomerUserId == userId);
-
             if (cart == null)
             {
                 return Ok(new CartValidationResponse
@@ -375,6 +375,7 @@ namespace coop.Controllers
                     ci.Id,
                     ci.OfferId,
                     ci.Quantity,
+                    ci.AddedUnitPrice,
                     OfferTitle = ci.Offer.Title,
                     ci.Offer.Status,
                     ci.Offer.StartAt,
@@ -413,12 +414,14 @@ namespace coop.Controllers
 
                 if (item.MaximumQuantityPerCustomer != null && item.Quantity > item.MaximumQuantityPerCustomer)
                     issues.Add($"الحد الأقصى لـ \"{item.OfferTitle}\" هو {item.MaximumQuantityPerCustomer} لكل زبون");
+
+                if (item.AddedUnitPrice != item.DiscountedPrice)
+                    issues.Add($"تغيّر سعر \"{item.OfferTitle}\"، السعر الحالي {item.DiscountedPrice}");
             }
 
             if (branch != null && branch.IsActive)
             {
                 var itemsTotal = cartItems.Sum(i => i.DiscountedPrice * i.Quantity);
-
                 if (itemsTotal < branch.MinimumOrderAmount)
                     issues.Add($"الحد الأدنى للطلب من هذا الفرع هو {branch.MinimumOrderAmount}");
             }
@@ -449,6 +452,7 @@ namespace coop.Controllers
                 }
             });
         }
+
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
