@@ -1,4 +1,4 @@
-﻿namespace coop.Dtos.OrdersController
+﻿namespace coop.Dtos.OrdersDtos 
 {
     public class CancelOrderRequestDto
     {

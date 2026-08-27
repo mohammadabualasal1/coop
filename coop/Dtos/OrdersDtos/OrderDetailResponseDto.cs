@@ -1,6 +1,6 @@
 ﻿using coop.Enums;
 
-namespace coop.Dtos.OrdersController
+namespace coop.Dtos.OrdersDtos
 {
     public class OrderDetailResponseDto
     {
