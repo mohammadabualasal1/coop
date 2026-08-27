@@ -101,8 +101,6 @@ namespace coop.Controllers
             return Ok(merchant);
         }
 
-
-
         [HttpGet("my/verification-status")]
         public async Task<IActionResult> GetVerificationStatus()
         {
