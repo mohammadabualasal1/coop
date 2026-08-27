@@ -52,6 +52,7 @@ namespace coop.Controllers
 
             return Ok(orders);
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderById(Guid id)
         {
@@ -149,6 +150,7 @@ namespace coop.Controllers
                 PlacedAt = order.PlacedAt
             });
         }
+
         [HttpPost("{id}/reject")]
         public async Task<IActionResult> RejectOrder(Guid id, RejectOrderRequestDto dto)
         {
@@ -184,6 +186,17 @@ namespace coop.Controllers
                 reservation.ReleasedAt = now;
             }
 
+            var payment = await _dbcontext.Payments
+                .FirstOrDefaultAsync(p => p.OrderId == order.Id);
+
+            if (payment != null && payment.Status == PaymentStatus.Paid)
+            {
+                payment.Status = PaymentStatus.Refunded;
+                payment.RefundedAt = now;
+                payment.FailureReason = "تم رفض الطلب من قبل التاجر";
+                payment.UpdatedAt = now;
+            }
+
             var oldStatus = order.Status;
 
             order.Status = OrderStatus.Rejected;
@@ -217,6 +230,56 @@ namespace coop.Controllers
             });
         }
 
+        [HttpPost("{id}/ready")]
+        public async Task<IActionResult> MarkReadyForPickup(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
+
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var order = await _dbcontext.Orders
+                .FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+
+            if (order == null)
+                return NotFound("الطلب غير موجود");
+
+            if (order.Status != OrderStatus.Preparing)
+                return BadRequest("يجب أن يكون الطلب قيد التجهيز أولاً");
+
+            var oldStatus = order.Status;
+
+            order.Status = OrderStatus.ReadyForPickup;
+            order.ReadyAt = now;
+            order.UpdatedAt = now;
+
+            _dbcontext.OrderStatusHistories.Add(new OrderStatusHistory
+            {
+                Id = Guid.NewGuid(),
+                OrderId = order.Id,
+                OldStatus = oldStatus,
+                NewStatus = OrderStatus.ReadyForPickup,
+                ChangedByUserId = userId,
+                CreatedAt = now
+            });
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new MerchantOrderResponse
+            {
+                Id = order.Id,
+                OrderNumber = order.OrderNumber,
+                CustomerName = await _dbcontext.Users
+                    .Where(u => u.Id == order.CustomerUserId)
+                    .Select(u => u.FullName)
+                    .FirstAsync(),
+                Status = order.Status,
+                TotalAmount = order.TotalAmount,
+                PlacedAt = order.PlacedAt
+            });
+        }
 
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
