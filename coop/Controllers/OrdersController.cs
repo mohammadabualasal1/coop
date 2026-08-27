@@ -340,6 +340,64 @@ namespace coop.Controllers
                 History = history
             });
         }
+        [HttpPost("{id}/confirm-delivery")]
+        public async Task<IActionResult> ConfirmDelivery(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
+
+            var order = await _dbcontext.Orders
+                .FirstOrDefaultAsync(o => o.Id == id && o.CustomerUserId == userId);
+
+            if (order == null)
+                return NotFound("الطلب غير موجود");
+
+            if (order.Status != OrderStatus.Delivered)
+                return BadRequest("الطلب لم يُسلّم بعد");
+
+            using var transaction = await _dbcontext.Database.BeginTransactionAsync();
+
+            try
+            {
+                var reservations = await _dbcontext.StockReservations
+                    .Where(sr => sr.OrderId == order.Id && sr.Status == StockReservationStatus.Active)
+                    .Include(sr => sr.BranchOffer)
+                    .ToListAsync();
+
+                foreach (var reservation in reservations)
+                {
+                    reservation.BranchOffer.ReservedStock -= reservation.Quantity;
+                    reservation.BranchOffer.SoldStock += reservation.Quantity;
+                    reservation.Status = StockReservationStatus.Confirmed;
+                }
+
+                var oldStatus = order.Status;
+                order.Status = OrderStatus.Completed;
+                order.CompletedAt = now;
+                order.UpdatedAt = now;
+
+                _dbcontext.OrderStatusHistories.Add(new OrderStatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order.Id,
+                    OldStatus = oldStatus,
+                    NewStatus = OrderStatus.Completed,
+                    ChangedByUserId = userId,
+                    Note = "أكّد الزبون الاستلام",
+                    CreatedAt = now
+                });
+
+                await _dbcontext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new { order.Id, order.OrderNumber, order.Status });
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
         private Guid GetCurrentUserId() =>
          Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
