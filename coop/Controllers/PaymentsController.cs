@@ -10,7 +10,7 @@ namespace coop.Controllers
 {
     [Route("api/payments")]
     [ApiController]
-    [Authorize(Roles = "Customer")]
+    [Authorize]
     public class PaymentsController : ControllerBase
     {
         private readonly CoopDbContext _dbcontext;
@@ -20,6 +20,7 @@ namespace coop.Controllers
             _dbcontext = dbcontext;
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpPost("mock-charge")]
         public async Task<IActionResult> MockCharge(MockPaymentRequestDto dto)
         {
@@ -107,6 +108,8 @@ namespace coop.Controllers
                 PaidAt = payment.PaidAt
             });
         }
+
+        [Authorize(Roles = "Customer")]
         [HttpGet("{orderId}")]
         public async Task<IActionResult> GetPaymentStatus(Guid orderId)
         {
@@ -137,6 +140,39 @@ namespace coop.Controllers
 
             return Ok(payment);
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("{id}/refund")]
+        public async Task<IActionResult> RefundPayment(Guid id, MockRefundRequestDto dto)
+        {
+            var now = DateTime.UtcNow;
+
+            var payment = await _dbcontext.Payments.FirstOrDefaultAsync(p => p.Id == id);
+            if (payment == null)
+                return NotFound("سجل الدفع غير موجود");
+
+            if (payment.Status != PaymentStatus.Paid)
+                return BadRequest("لا يمكن استرجاع دفعة غير مدفوعة");
+
+            payment.Status = PaymentStatus.Refunded;
+            payment.RefundedAt = now;
+            payment.FailureReason = dto.Reason;
+            payment.UpdatedAt = now;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new PaymentResponse
+            {
+                Id = payment.Id,
+                OrderId = payment.OrderId,
+                Method = payment.Method,
+                Status = payment.Status,
+                Amount = payment.Amount,
+                TransactionReference = payment.TransactionReference,
+                PaidAt = payment.PaidAt
+            });
+        }
+
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
