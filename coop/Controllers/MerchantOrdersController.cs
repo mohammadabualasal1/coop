@@ -1,6 +1,7 @@
 ﻿using coop.Dtos.MerchantOrdersController;
 using coop.Dtos.MerchantOrdersDtos;
 using coop.Enums;
+using coop.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -98,7 +99,56 @@ namespace coop.Controllers
             return Ok(order);
         }
 
+        [HttpPost("{id}/accept")]
+        public async Task<IActionResult> AcceptOrder(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
 
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var order = await _dbcontext.Orders
+                .FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+
+            if (order == null)
+                return NotFound("الطلب غير موجود");
+
+            if (order.Status != OrderStatus.PendingMerchantConfirmation)
+                return BadRequest("لا يمكن قبول هذا الطلب في حالته الحالية");
+
+            var oldStatus = order.Status;
+
+            order.Status = OrderStatus.Preparing;
+            order.AcceptedAt = now;
+            order.UpdatedAt = now;
+
+            _dbcontext.OrderStatusHistories.Add(new OrderStatusHistory
+            {
+                Id = Guid.NewGuid(),
+                OrderId = order.Id,
+                OldStatus = oldStatus,
+                NewStatus = OrderStatus.Preparing,
+                ChangedByUserId = userId,
+                CreatedAt = now
+            });
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new MerchantOrderResponse
+            {
+                Id = order.Id,
+                OrderNumber = order.OrderNumber,
+                CustomerName = await _dbcontext.Users
+                    .Where(u => u.Id == order.CustomerUserId)
+                    .Select(u => u.FullName)
+                    .FirstAsync(),
+                Status = order.Status,
+                TotalAmount = order.TotalAmount,
+                PlacedAt = order.PlacedAt
+            });
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
