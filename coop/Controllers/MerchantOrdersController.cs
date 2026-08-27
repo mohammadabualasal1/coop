@@ -51,6 +51,8 @@ namespace coop.Controllers
             return Ok(orders);
         }
 
+
+
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
