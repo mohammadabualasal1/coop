@@ -239,6 +239,71 @@ namespace coop.Controllers
                 Items = items
             });
         }
+        [HttpPost("{id}/cancel")]
+        public async Task<IActionResult> CancelOrder(Guid id, CancelOrderRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
+
+            var order = await _dbcontext.Orders
+                .FirstOrDefaultAsync(o => o.Id == id && o.CustomerUserId == userId);
+
+            if (order == null)
+                return NotFound("الطلب غير موجود");
+
+            var cancellableStatuses = new[]
+            {
+        OrderStatus.PendingPayment,
+        OrderStatus.PendingMerchantConfirmation,
+        OrderStatus.Accepted
+    };
+
+            if (!cancellableStatuses.Contains(order.Status))
+                return BadRequest("لا يمكن إلغاء الطلب في هذه المرحلة");
+
+            using var transaction = await _dbcontext.Database.BeginTransactionAsync();
+
+            try
+            {
+                var reservations = await _dbcontext.StockReservations
+                    .Where(sr => sr.OrderId == order.Id && sr.Status == StockReservationStatus.Active)
+                    .Include(sr => sr.BranchOffer)
+                    .ToListAsync();
+
+                foreach (var reservation in reservations)
+                {
+                    reservation.BranchOffer.ReservedStock -= reservation.Quantity;
+                    reservation.Status = StockReservationStatus.Released;
+                    reservation.ReleasedAt = now;
+                }
+
+                var oldStatus = order.Status;
+                order.Status = OrderStatus.Cancelled;
+                order.CancellationReason = dto.Reason;
+                order.UpdatedAt = now;
+
+                _dbcontext.OrderStatusHistories.Add(new OrderStatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order.Id,
+                    OldStatus = oldStatus,
+                    NewStatus = OrderStatus.Cancelled,
+                    ChangedByUserId = userId,
+                    Note = dto.Reason ?? "ألغى الزبون الطلب",
+                    CreatedAt = now
+                });
+
+                await _dbcontext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new { order.Id, order.OrderNumber, order.Status });
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
         private Guid GetCurrentUserId() =>
          Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
