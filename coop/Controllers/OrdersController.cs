@@ -304,6 +304,42 @@ namespace coop.Controllers
                 throw;
             }
         }
+        [HttpGet("{id}/tracking")]
+        public async Task<IActionResult> GetOrderTracking(Guid id)
+        {
+            var userId = GetCurrentUserId();
+
+            var order = await _dbcontext.Orders
+                .FirstOrDefaultAsync(o => o.Id == id && o.CustomerUserId == userId);
+
+            if (order == null)
+                return NotFound("الطلب غير موجود");
+
+            var history = await _dbcontext.OrderStatusHistories
+                .Where(h => h.OrderId == id)
+                .OrderBy(h => h.CreatedAt)
+                .Select(h => new OrderStatusHistoryResponseDto
+                {
+                    OldStatus = h.OldStatus,
+                    NewStatus = h.NewStatus,
+                    Note = h.Note,
+                    CreatedAt = h.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                order.Id,
+                order.OrderNumber,
+                order.Status,
+                order.PlacedAt,
+                order.AcceptedAt,
+                order.ReadyAt,
+                order.DeliveredAt,
+                order.CompletedAt,
+                History = history
+            });
+        }
         private Guid GetCurrentUserId() =>
          Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
