@@ -343,6 +343,20 @@ namespace coop.Controllers
                 })
                 .ToListAsync();
 
+            var task = await _dbcontext.DeliveryTasks
+                .Where(t => t.OrderId == id)
+                .Select(t => new
+                {
+                    t.Id,
+                    t.Status,
+                    DriverName = t.DriverProfile != null ? t.DriverProfile.User.FullName : null,
+                    DriverPhone = t.DriverProfile != null ? t.DriverProfile.User.PhoneNumber : null,
+                    DriverLatitude = t.DriverProfile != null ? t.DriverProfile.CurrentLatitude : null,
+                    DriverLongitude = t.DriverProfile != null ? t.DriverProfile.CurrentLongitude : null,
+                    LastUpdatedAt = t.DriverProfile != null ? t.DriverProfile.LastLocationAt : null
+                })
+                .FirstOrDefaultAsync();
+
             return Ok(new
             {
                 order.Id,
@@ -353,6 +367,15 @@ namespace coop.Controllers
                 order.ReadyAt,
                 order.DeliveredAt,
                 order.CompletedAt,
+                Delivery = task == null ? null : new OrderTrackingResponse
+                {
+                    Status = task.Status,
+                    DriverName = task.DriverName,
+                    DriverLatitude = task.DriverLatitude,
+                    DriverLongitude = task.DriverLongitude,
+                    LastUpdatedAt = task.LastUpdatedAt
+                },
+                DriverPhone = task?.DriverPhone,
                 History = history
             });
         }
