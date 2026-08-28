@@ -84,7 +84,36 @@ namespace coop.Controllers
                 CompletedDeliveries = profile.CompletedDeliveries
             });
         }
+        [HttpPut("my")]
+        public async Task<IActionResult> UpdateMyDriverProfile([FromBody] UpdateDriverProfileRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
 
+            var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (profile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            if (dto.MaximumCapacity < 1)
+                return BadRequest("السعة القصوى يجب أن تكون 1 أو أكثر");
+
+            profile.VehicleType = dto.VehicleType;
+            profile.VehiclePlateNumber = dto.VehiclePlateNumber;
+            profile.MaximumCapacity = dto.MaximumCapacity;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new DriverProfileResponse
+            {
+                Id = profile.Id,
+                VehicleType = profile.VehicleType,
+                VehiclePlateNumber = profile.VehiclePlateNumber,
+                MaximumCapacity = profile.MaximumCapacity,
+                VerificationStatus = profile.VerificationStatus,
+                IsAvailable = profile.IsAvailable,
+                AverageRating = profile.AverageRating,
+                CompletedDeliveries = profile.CompletedDeliveries
+            });
+        }
 
 
         private Guid GetCurrentUserId() =>
