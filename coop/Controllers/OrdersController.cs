@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace coop.Controllers
 {
@@ -338,6 +340,49 @@ namespace coop.Controllers
                 order.DeliveredAt,
                 order.CompletedAt,
                 History = history
+            });
+        }
+
+        [HttpGet("{id}/delivery-code")]
+        public async Task<IActionResult> GetDeliveryCode(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
+            var order = await _dbcontext.Orders
+                .FirstOrDefaultAsync(o => o.Id == id && o.CustomerUserId == userId);
+            if (order == null)
+                return NotFound("الطلب غير موجود");
+            if (order.Status != OrderStatus.OutForDelivery)
+                return BadRequest("الطلب ليس في طريقه إليك بعد");
+            var task = await _dbcontext.DeliveryTasks
+                .FirstOrDefaultAsync(t => t.OrderId == order.Id);
+            if (task == null)
+                return BadRequest("لا توجد مهمة توصيل لهذا الطلب");
+            var oldTokens = await _dbcontext.ConfirmationTokens
+                .Where(t => t.DeliveryTaskId == task.Id
+                         && t.Type == ConfirmationTokenType.CustomerDelivery
+                         && t.UsedAt == null
+                         && !t.IsRevoked)
+                .ToListAsync();
+            foreach (var oldToken in oldTokens)
+                oldToken.IsRevoked = true;
+            var code = RandomNumberGenerator.GetInt32(0, 1000000).ToString("D6");
+            var expiresAt = now.AddMinutes(30);
+            _dbcontext.ConfirmationTokens.Add(new ConfirmationToken
+            {
+                Id = Guid.NewGuid(),
+                DeliveryTaskId = task.Id,
+                Type = ConfirmationTokenType.CustomerDelivery,
+                TokenHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(code))),
+                ExpiresAt = expiresAt,
+                IsRevoked = false,
+                CreatedAt = now
+            });
+            await _dbcontext.SaveChangesAsync();
+            return Ok(new DeliveryCodeResponseDto
+            {
+                Code = code,
+                ExpiresAt = expiresAt
             });
         }
         [HttpPost("{id}/confirm-delivery")]
