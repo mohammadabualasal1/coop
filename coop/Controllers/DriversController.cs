@@ -137,6 +137,17 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             return Ok(new { profile.VerificationStatus });
         }
+        [HttpGet("my/verification-status")]
+        public async Task<IActionResult> GetVerificationStatus()
+        {
+            var userId = GetCurrentUserId();
+
+            var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (profile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            return Ok(new { profile.VerificationStatus });
+        }
 
         private Guid GetCurrentUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
