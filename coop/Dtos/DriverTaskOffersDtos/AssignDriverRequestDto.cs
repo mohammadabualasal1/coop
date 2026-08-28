@@ -1,4 +1,4 @@
-﻿namespace coop.Dtos.DriverTaskOffersController
+﻿namespace coop.Dtos.DriverTaskOffersDtos
 {
     public class AssignDriverRequest
     {

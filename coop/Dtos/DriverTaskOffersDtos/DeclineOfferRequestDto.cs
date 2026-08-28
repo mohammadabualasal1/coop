@@ -1,8 +1,7 @@
 ﻿namespace coop.Dtos.DriverTaskOffersDtos
 {
-    public class RejectTaskOfferRequest
+    public class DeclineOfferRequestDto
     {
         public string? Reason { get; set; }
-
     }
 }

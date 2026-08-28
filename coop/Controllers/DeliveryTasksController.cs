@@ -1,9 +1,12 @@
 ﻿using coop.Dtos.DeliveryTasksController;
-using coop.Dtos.DriverTaskOffersController;
+using coop.Dtos.DriverTaskOffersDtos;
+using coop.Dtos.DriverTaskOffersDtos;
 using coop.Enums;
+using coop.Hubs;
 using coop.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -17,10 +20,12 @@ namespace coop.Controllers
     public class DeliveryTasksController : ControllerBase
     {
         private readonly CoopDbContext _dbcontext;
+        private readonly IHubContext<TrackingHub> _hubContext;
 
-        public DeliveryTasksController(CoopDbContext dbcontext)
+        public DeliveryTasksController(CoopDbContext dbcontext, IHubContext<TrackingHub> hubContext)
         {
             _dbcontext = dbcontext;
+            _hubContext = hubContext;
         }
 
         [HttpGet("offers")]
@@ -56,6 +61,7 @@ namespace coop.Controllers
 
             return Ok(offers);
         }
+
         [HttpPost("offers/{id}/accept")]
         public async Task<IActionResult> AcceptOffer(Guid id)
         {
@@ -146,6 +152,34 @@ namespace coop.Controllers
 
             await _dbcontext.SaveChangesAsync();
 
+            var driverUser = await _dbcontext.Users.FirstAsync(u => u.Id == userId);
+
+            await _hubContext.Clients
+                .Group(TrackingHub.OrderGroup(task.OrderId))
+                .SendAsync("delivery.driver.assigned", new
+                {
+                    OrderId = task.OrderId,
+                    DeliveryTaskId = task.Id,
+                    DriverName = driverUser.FullName,
+                    DriverPhone = driverUser.PhoneNumber,
+                    driverProfile.VehicleType,
+                    driverProfile.VehiclePlateNumber,
+                    AssignedAt = now
+                });
+
+            if (order != null)
+            {
+                await _hubContext.Clients
+                    .Group(TrackingHub.OrderGroup(task.OrderId))
+                    .SendAsync("order.status.changed", new
+                    {
+                        OrderId = order.Id,
+                        order.OrderNumber,
+                        NewStatus = order.Status,
+                        ChangedAt = now
+                    });
+            }
+
             return Ok(new DeliveryTaskResponseDto
             {
                 Id = task.Id,
@@ -157,6 +191,37 @@ namespace coop.Controllers
                 DriverEarning = task.DriverEarning
             });
         }
+
+        [HttpPost("offers/{id}/decline")]
+        public async Task<IActionResult> DeclineOffer(Guid id, DeclineOfferRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
+
+            var driverProfile = await _dbcontext.DriverProfiles
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (driverProfile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            var offer = await _dbcontext.DriverTaskOffers
+                .FirstOrDefaultAsync(o => o.Id == id && o.DriverProfileId == driverProfile.Id);
+
+            if (offer == null)
+                return NotFound("العرض غير موجود");
+
+            if (offer.Status != DriverTaskOfferStatus.Pending)
+                return BadRequest("تم الرد على هذا العرض مسبقاً");
+
+            offer.Status = DriverTaskOfferStatus.Rejected;
+            offer.RespondedAt = now;
+            offer.RejectionReason = dto.Reason;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         [HttpGet("my")]
         public async Task<IActionResult> GetMyTasks()
         {
@@ -188,6 +253,7 @@ namespace coop.Controllers
 
             return Ok(tasks);
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTaskById(Guid id)
         {
@@ -209,13 +275,11 @@ namespace coop.Controllers
                     Status = t.Status,
                     DeliveryFee = t.DeliveryFee,
                     DriverEarning = t.DriverEarning,
-
                     BranchName = t.PickupBranch.Name,
                     BranchAddress = t.PickupBranch.Address,
                     BranchPhone = t.PickupBranch.PhoneNumber,
                     BranchLatitude = t.PickupBranch.Latitude,
                     BranchLongitude = t.PickupBranch.Longitude,
-
                     CustomerName = t.CustomerAddress.ContactName,
                     CustomerPhone = t.CustomerAddress.ContactPhone,
                     CustomerCity = t.CustomerAddress.City,
@@ -226,12 +290,10 @@ namespace coop.Controllers
                     AdditionalDirections = t.CustomerAddress.AdditionalDirections,
                     CustomerLatitude = t.CustomerAddress.Latitude,
                     CustomerLongitude = t.CustomerAddress.Longitude,
-
                     PaymentMethod = t.Order.PaymentMethod,
                     AmountToCollect = t.Order.PaymentMethod == PaymentMethod.CashOnDelivery
                         ? t.Order.TotalAmount
                         : 0,
-
                     AssignedAt = t.AssignedAt,
                     ArrivedAtMerchantAt = t.ArrivedAtMerchantAt,
                     PickedUpAt = t.PickedUpAt,
@@ -244,6 +306,7 @@ namespace coop.Controllers
 
             return Ok(task);
         }
+
         [HttpPost("{id}/arrived-at-merchant")]
         public async Task<IActionResult> ArrivedAtMerchant(Guid id)
         {
@@ -271,6 +334,16 @@ namespace coop.Controllers
 
             await _dbcontext.SaveChangesAsync();
 
+            await _hubContext.Clients
+                .Group(TrackingHub.OrderGroup(task.OrderId))
+                .SendAsync("delivery.status.changed", new
+                {
+                    OrderId = task.OrderId,
+                    DeliveryTaskId = task.Id,
+                    NewStatus = task.Status,
+                    ChangedAt = now
+                });
+
             return Ok(new DeliveryTaskResponseDto
             {
                 Id = task.Id,
@@ -282,6 +355,7 @@ namespace coop.Controllers
                 DriverEarning = task.DriverEarning
             });
         }
+
         [HttpPost("{id}/confirm-pickup")]
         public async Task<IActionResult> ConfirmPickup(Guid id, ConfirmPickupRequestDto dto)
         {
@@ -302,6 +376,11 @@ namespace coop.Controllers
 
             if (task.Status != DeliveryStatus.ArrivedAtMerchant)
                 return BadRequest("يجب تسجيل الوصول للفرع أولاً");
+
+            var order = await _dbcontext.Orders.FirstOrDefaultAsync(o => o.Id == task.OrderId);
+
+            if (order != null && order.Status != OrderStatus.ReadyForPickup && order.Status != OrderStatus.DriverAssigned)
+                return BadRequest("الطلب لم يجهّز بعد");
 
             var codeHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(dto.Code)));
 
@@ -325,8 +404,6 @@ namespace coop.Controllers
             task.PickedUpAt = now;
             task.UpdatedAt = now;
 
-            var order = await _dbcontext.Orders.FirstOrDefaultAsync(o => o.Id == task.OrderId);
-
             if (order != null)
             {
                 var oldStatus = order.Status;
@@ -346,6 +423,29 @@ namespace coop.Controllers
 
             await _dbcontext.SaveChangesAsync();
 
+            await _hubContext.Clients
+                .Group(TrackingHub.OrderGroup(task.OrderId))
+                .SendAsync("delivery.status.changed", new
+                {
+                    OrderId = task.OrderId,
+                    DeliveryTaskId = task.Id,
+                    NewStatus = task.Status,
+                    ChangedAt = now
+                });
+
+            if (order != null)
+            {
+                await _hubContext.Clients
+                    .Group(TrackingHub.OrderGroup(task.OrderId))
+                    .SendAsync("order.status.changed", new
+                    {
+                        OrderId = order.Id,
+                        order.OrderNumber,
+                        NewStatus = order.Status,
+                        ChangedAt = now
+                    });
+            }
+
             return Ok(new DeliveryTaskResponseDto
             {
                 Id = task.Id,
@@ -357,6 +457,7 @@ namespace coop.Controllers
                 DriverEarning = task.DriverEarning
             });
         }
+
         [HttpPost("{id}/arrived-at-customer")]
         public async Task<IActionResult> ArrivedAtCustomer(Guid id)
         {
@@ -384,6 +485,16 @@ namespace coop.Controllers
 
             await _dbcontext.SaveChangesAsync();
 
+            await _hubContext.Clients
+                .Group(TrackingHub.OrderGroup(task.OrderId))
+                .SendAsync("delivery.status.changed", new
+                {
+                    OrderId = task.OrderId,
+                    DeliveryTaskId = task.Id,
+                    NewStatus = task.Status,
+                    ChangedAt = now
+                });
+
             return Ok(new DeliveryTaskResponseDto
             {
                 Id = task.Id,
@@ -395,6 +506,7 @@ namespace coop.Controllers
                 DriverEarning = task.DriverEarning
             });
         }
+
         [HttpPost("{id}/complete")]
         public async Task<IActionResult> CompleteDelivery(Guid id, ConfirmDeliveryRequestDto dto)
         {
@@ -431,80 +543,218 @@ namespace coop.Controllers
             if (token.ExpiresAt < now)
                 return BadRequest("انتهت صلاحية كود التسليم");
 
-            token.UsedAt = now;
-            token.UsedByUserId = userId;
+            using var transaction = await _dbcontext.Database.BeginTransactionAsync();
 
-            task.Status = DeliveryStatus.Delivered;
-            task.DeliveredAt = now;
-            task.UpdatedAt = now;
-
-            var order = await _dbcontext.Orders.FirstOrDefaultAsync(o => o.Id == task.OrderId);
-
-            if (order != null)
+            try
             {
-                var oldStatus = order.Status;
-                order.Status = OrderStatus.Delivered;
-                order.DeliveredAt = now;
-                order.UpdatedAt = now;
+                token.UsedAt = now;
+                token.UsedByUserId = userId;
 
-                _dbcontext.OrderStatusHistories.Add(new OrderStatusHistory
+                task.Status = DeliveryStatus.Delivered;
+                task.DeliveredAt = now;
+                task.UpdatedAt = now;
+
+                var order = await _dbcontext.Orders.FirstOrDefaultAsync(o => o.Id == task.OrderId);
+
+                if (order != null)
                 {
-                    Id = Guid.NewGuid(),
-                    OrderId = order.Id,
-                    OldStatus = oldStatus,
-                    NewStatus = OrderStatus.Delivered,
-                    ChangedByUserId = userId,
-                    CreatedAt = now
-                });
+                    var oldStatus = order.Status;
+                    order.Status = OrderStatus.Delivered;
+                    order.DeliveredAt = now;
+                    order.UpdatedAt = now;
 
-                // تحويل المخزون المحجوز إلى مباع
-                var reservations = await _dbcontext.StockReservations
-                    .Where(r => r.OrderId == order.Id && r.Status == StockReservationStatus.Active)
-                    .ToListAsync();
-
-                foreach (var reservation in reservations)
-                {
-                    var branchOffer = await _dbcontext.BranchOffers
-                        .FirstOrDefaultAsync(bo => bo.Id == reservation.BranchOfferId);
-
-                    if (branchOffer != null)
+                    _dbcontext.OrderStatusHistories.Add(new OrderStatusHistory
                     {
-                        branchOffer.ReservedStock -= reservation.Quantity;
-                        branchOffer.SoldStock += reservation.Quantity;
+                        Id = Guid.NewGuid(),
+                        OrderId = order.Id,
+                        OldStatus = oldStatus,
+                        NewStatus = OrderStatus.Delivered,
+                        ChangedByUserId = userId,
+                        CreatedAt = now
+                    });
+
+                    // تحويل المخزون المحجوز إلى مباع
+                    var reservations = await _dbcontext.StockReservations
+                        .Where(r => r.OrderId == order.Id && r.Status == StockReservationStatus.Active)
+                        .Include(r => r.BranchOffer)
+                        .ToListAsync();
+
+                    foreach (var reservation in reservations)
+                    {
+                        reservation.BranchOffer.ReservedStock -= reservation.Quantity;
+                        reservation.BranchOffer.SoldStock += reservation.Quantity;
+                        reservation.Status = StockReservationStatus.Confirmed;
                     }
 
-                    reservation.Status = StockReservationStatus.Confirmed;
+                    // الدفع عند الاستلام يصبح مدفوعاً
+                    var payment = await _dbcontext.Payments
+                        .FirstOrDefaultAsync(p => p.OrderId == order.Id);
+
+                    if (payment != null
+                        && payment.Method == PaymentMethod.CashOnDelivery
+                        && payment.Status == PaymentStatus.Pending)
+                    {
+                        payment.Status = PaymentStatus.Paid;
+                        payment.PaidAt = now;
+                        payment.UpdatedAt = now;
+                    }
                 }
 
-                // الدفع عند الاستلام يصبح مدفوعاً
-                var payment = await _dbcontext.Payments
-                    .FirstOrDefaultAsync(p => p.OrderId == order.Id);
+                driverProfile.CompletedDeliveries += 1;
 
-                if (payment != null
-                    && payment.Method == PaymentMethod.CashOnDelivery
-                    && payment.Status == PaymentStatus.Pending)
+                await _dbcontext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                await _hubContext.Clients
+                    .Group(TrackingHub.OrderGroup(task.OrderId))
+                    .SendAsync("delivery.status.changed", new
+                    {
+                        OrderId = task.OrderId,
+                        DeliveryTaskId = task.Id,
+                        NewStatus = task.Status,
+                        ChangedAt = now
+                    });
+
+                if (order != null)
                 {
-                    payment.Status = PaymentStatus.Paid;
-                    payment.PaidAt = now;
-                    payment.UpdatedAt = now;
+                    await _hubContext.Clients
+                        .Group(TrackingHub.OrderGroup(task.OrderId))
+                        .SendAsync("order.status.changed", new
+                        {
+                            OrderId = order.Id,
+                            order.OrderNumber,
+                            NewStatus = order.Status,
+                            ChangedAt = now
+                        });
                 }
+
+                return Ok(new DeliveryTaskResponseDto
+                {
+                    Id = task.Id,
+                    OrderId = task.OrderId,
+                    Status = task.Status,
+                    PickupBranchId = task.PickupBranchId,
+                    CustomerAddressId = task.CustomerAddressId,
+                    DeliveryFee = task.DeliveryFee,
+                    DriverEarning = task.DriverEarning
+                });
             }
-
-            driverProfile.CompletedDeliveries += 1;
-
-            await _dbcontext.SaveChangesAsync();
-
-            return Ok(new DeliveryTaskResponseDto
+            catch
             {
-                Id = task.Id,
-                OrderId = task.OrderId,
-                Status = task.Status,
-                PickupBranchId = task.PickupBranchId,
-                CustomerAddressId = task.CustomerAddressId,
-                DeliveryFee = task.DeliveryFee,
-                DriverEarning = task.DriverEarning
-            });
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
+
+        [HttpPost("{id}/report-failure")]
+        public async Task<IActionResult> ReportFailure(Guid id, ReportDeliveryFailureRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
+
+            var driverProfile = await _dbcontext.DriverProfiles
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (driverProfile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            var task = await _dbcontext.DeliveryTasks
+                .FirstOrDefaultAsync(t => t.Id == id && t.DriverProfileId == driverProfile.Id);
+
+            if (task == null)
+                return NotFound("المهمة غير موجودة");
+
+            if (task.Status == DeliveryStatus.Delivered
+                || task.Status == DeliveryStatus.Failed
+                || task.Status == DeliveryStatus.Cancelled)
+                return BadRequest("المهمة منتهية بالفعل");
+
+            using var transaction = await _dbcontext.Database.BeginTransactionAsync();
+
+            try
+            {
+                task.Status = DeliveryStatus.Failed;
+                task.FailureReason = dto.Reason;
+                task.UpdatedAt = now;
+
+                var order = await _dbcontext.Orders.FirstOrDefaultAsync(o => o.Id == task.OrderId);
+
+                if (order != null)
+                {
+                    var oldStatus = order.Status;
+                    order.Status = OrderStatus.DeliveryFailed;
+                    order.UpdatedAt = now;
+
+                    _dbcontext.OrderStatusHistories.Add(new OrderStatusHistory
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderId = order.Id,
+                        OldStatus = oldStatus,
+                        NewStatus = OrderStatus.DeliveryFailed,
+                        ChangedByUserId = userId,
+                        Note = dto.Reason,
+                        CreatedAt = now
+                    });
+
+                    // تحرير المخزون المحجوز
+                    var reservations = await _dbcontext.StockReservations
+                        .Where(r => r.OrderId == order.Id && r.Status == StockReservationStatus.Active)
+                        .Include(r => r.BranchOffer)
+                        .ToListAsync();
+
+                    foreach (var reservation in reservations)
+                    {
+                        reservation.BranchOffer.ReservedStock -= reservation.Quantity;
+                        reservation.Status = StockReservationStatus.Released;
+                        reservation.ReleasedAt = now;
+                    }
+                }
+
+                await _dbcontext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                await _hubContext.Clients
+                    .Group(TrackingHub.OrderGroup(task.OrderId))
+                    .SendAsync("delivery.status.changed", new
+                    {
+                        OrderId = task.OrderId,
+                        DeliveryTaskId = task.Id,
+                        NewStatus = task.Status,
+                        FailureReason = dto.Reason,
+                        ChangedAt = now
+                    });
+
+                if (order != null)
+                {
+                    await _hubContext.Clients
+                        .Group(TrackingHub.OrderGroup(task.OrderId))
+                        .SendAsync("order.status.changed", new
+                        {
+                            OrderId = order.Id,
+                            order.OrderNumber,
+                            NewStatus = order.Status,
+                            ChangedAt = now
+                        });
+                }
+
+                return Ok(new DeliveryTaskResponseDto
+                {
+                    Id = task.Id,
+                    OrderId = task.OrderId,
+                    Status = task.Status,
+                    PickupBranchId = task.PickupBranchId,
+                    CustomerAddressId = task.CustomerAddressId,
+                    DeliveryFee = task.DeliveryFee,
+                    DriverEarning = task.DriverEarning
+                });
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
