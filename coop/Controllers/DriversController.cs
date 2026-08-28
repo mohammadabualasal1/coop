@@ -364,33 +364,33 @@ namespace coop.Controllers
             return NoContent();
         }
         [HttpGet("my/stats")]
-        public async Task<IActionResult> GetMyStats()
-        {
-            var userId = GetCurrentUserId();
+public async Task<IActionResult> GetMyStats()
+{
+    var userId = GetCurrentUserId();
 
-            var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
-            if (profile == null)
-                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+    var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+    if (profile == null)
+        return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
 
-            var totalTasks = await _dbcontext.DeliveryTasks
-                .CountAsync(t => t.DriverProfileId == profile.Id);
+    var totalTasks = await _dbcontext.DeliveryTasks
+        .CountAsync(t => t.DriverProfileId == profile.Id);
 
-            var deliveredTasks = await _dbcontext.DeliveryTasks
-                .CountAsync(t => t.DriverProfileId == profile.Id && t.Status == DeliveryStatus.Delivered);
+    var deliveredTasks = await _dbcontext.DeliveryTasks
+        .CountAsync(t => t.DriverProfileId == profile.Id && t.Status == DeliveryStatus.Delivered);
 
-            var failedTasks = await _dbcontext.DeliveryTasks
-                .CountAsync(t => t.DriverProfileId == profile.Id && t.Status == DeliveryStatus.Failed);
+    var failedTasks = await _dbcontext.DeliveryTasks
+        .CountAsync(t => t.DriverProfileId == profile.Id && t.Status == DeliveryStatus.Failed);
 
-            return Ok(new
-            {
-                profile.CompletedDeliveries,
-                profile.AverageRating,
-                profile.IsAvailable,
-                TotalTasks = totalTasks,
-                DeliveredTasks = deliveredTasks,
-                FailedTasks = failedTasks
-            });
-        }
+    return Ok(new
+    {
+        profile.CompletedDeliveries,
+        profile.AverageRating,
+        profile.IsAvailable,
+        TotalTasks = totalTasks,
+        DeliveredTasks = deliveredTasks,
+        FailedTasks = failedTasks
+    });
+}
         private Guid GetCurrentUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }

@@ -251,7 +251,6 @@ namespace coop.Controllers
                 PlacedAt = order.PlacedAt
             });
         }
-
         [HttpPost("{id}/ready")]
         public async Task<IActionResult> MarkReadyForPickup(Guid id)
         {
@@ -286,6 +285,25 @@ namespace coop.Controllers
                 ChangedByUserId = userId,
                 CreatedAt = now
             });
+
+            // إنشاء مهمة التوصيل ليلتقطها DriverMatchingService
+            var taskExists = await _dbcontext.DeliveryTasks.AnyAsync(t => t.OrderId == order.Id);
+            if (!taskExists)
+            {
+                _dbcontext.DeliveryTasks.Add(new DeliveryTask
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order.Id,
+                    DriverProfileId = null,
+                    PickupBranchId = order.MerchantBranchId,
+                    CustomerAddressId = order.CustomerAddressId,
+                    Status = DeliveryStatus.SearchingDriver,
+                    DeliveryFee = order.DeliveryFee,
+                    DriverEarning = order.DeliveryFee,
+                    CreatedAt = now,
+                    UpdatedAt = now
+                });
+            }
 
             await _dbcontext.SaveChangesAsync();
 
