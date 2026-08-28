@@ -233,6 +233,30 @@ namespace coop.Controllers
             return Ok(new { profile.CurrentLatitude, profile.CurrentLongitude, profile.LastLocationAt });
         }
 
+        [HttpGet("my/schedule")]
+        public async Task<IActionResult> GetMySchedule()
+        {
+            var userId = GetCurrentUserId();
+
+            var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (profile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            var schedule = await _dbcontext.DriverAvailabilities
+                .Where(a => a.DriverProfileId == profile.Id)
+                .OrderBy(a => a.DayOfWeek).ThenBy(a => a.StartTime)
+                .Select(a => new AvailabilityScheduleResponse
+                {
+                    Id = a.Id,
+                    DayOfWeek = a.DayOfWeek,
+                    StartTime = a.StartTime,
+                    EndTime = a.EndTime,
+                    IsActive = a.IsActive
+                })
+                .ToListAsync();
+
+            return Ok(schedule);
+        }
         private Guid GetCurrentUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
