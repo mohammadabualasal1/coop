@@ -149,6 +149,29 @@ namespace coop.Controllers
             return Ok(new { profile.VerificationStatus });
         }
 
+        [HttpPost("my/go-online")]
+        public async Task<IActionResult> GoOnline()
+        {
+            var userId = GetCurrentUserId();
+
+            var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (profile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            if (profile.VerificationStatus != VerificationStatus.Approved)
+                return StatusCode(403, "يجب ان يتم توثيق حسابك قبل استقبال المهام");
+
+            if (profile.CurrentLatitude == null || profile.CurrentLongitude == null)
+                return BadRequest("يجب تحديث موقعك قبل بدء الوردية");
+
+            profile.IsAvailable = true;
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(new { profile.IsAvailable });
+        }
+
+
+
         private Guid GetCurrentUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
