@@ -282,7 +282,7 @@ namespace coop.Controllers
                 PlacedAt = order.PlacedAt
             });
         }
-        [HttpGet("{id}/pickup-code")]
+        [HttpPost("{id}/pickup-code")]
         public async Task<IActionResult> GetPickupCode(Guid id)
         {
             var userId = GetCurrentUserId();

@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace coop.Controllers
 {
@@ -266,6 +268,81 @@ namespace coop.Controllers
             task.Status = DeliveryStatus.ArrivedAtMerchant;
             task.ArrivedAtMerchantAt = now;
             task.UpdatedAt = now;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new DeliveryTaskResponseDto
+            {
+                Id = task.Id,
+                OrderId = task.OrderId,
+                Status = task.Status,
+                PickupBranchId = task.PickupBranchId,
+                CustomerAddressId = task.CustomerAddressId,
+                DeliveryFee = task.DeliveryFee,
+                DriverEarning = task.DriverEarning
+            });
+        }
+        [HttpPost("{id}/confirm-pickup")]
+        public async Task<IActionResult> ConfirmPickup(Guid id, ConfirmPickupRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
+
+            var driverProfile = await _dbcontext.DriverProfiles
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (driverProfile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            var task = await _dbcontext.DeliveryTasks
+                .FirstOrDefaultAsync(t => t.Id == id && t.DriverProfileId == driverProfile.Id);
+
+            if (task == null)
+                return NotFound("المهمة غير موجودة");
+
+            if (task.Status != DeliveryStatus.ArrivedAtMerchant)
+                return BadRequest("يجب تسجيل الوصول للفرع أولاً");
+
+            var codeHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(dto.Code)));
+
+            var token = await _dbcontext.ConfirmationTokens
+                .FirstOrDefaultAsync(t => t.DeliveryTaskId == task.Id
+                                       && t.Type == ConfirmationTokenType.MerchantPickup
+                                       && t.TokenHash == codeHash
+                                       && t.UsedAt == null
+                                       && !t.IsRevoked);
+
+            if (token == null)
+                return BadRequest("كود الاستلام غير صحيح");
+
+            if (token.ExpiresAt < now)
+                return BadRequest("انتهت صلاحية كود الاستلام، اطلب كوداً جديداً من التاجر");
+
+            token.UsedAt = now;
+            token.UsedByUserId = userId;
+
+            task.Status = DeliveryStatus.PickedUp;
+            task.PickedUpAt = now;
+            task.UpdatedAt = now;
+
+            var order = await _dbcontext.Orders.FirstOrDefaultAsync(o => o.Id == task.OrderId);
+
+            if (order != null)
+            {
+                var oldStatus = order.Status;
+                order.Status = OrderStatus.OutForDelivery;
+                order.UpdatedAt = now;
+
+                _dbcontext.OrderStatusHistories.Add(new OrderStatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order.Id,
+                    OldStatus = oldStatus,
+                    NewStatus = OrderStatus.OutForDelivery,
+                    ChangedByUserId = userId,
+                    CreatedAt = now
+                });
+            }
 
             await _dbcontext.SaveChangesAsync();
 
