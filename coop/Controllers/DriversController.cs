@@ -303,6 +303,48 @@ namespace coop.Controllers
                 IsActive = slot.IsActive
             });
         }
+        [HttpPut("my/schedule/{id}")]
+        public async Task<IActionResult> UpdateScheduleSlot(Guid id, [FromBody] UpdateAvailabilityScheduleRequest dto)
+        {
+            var userId = GetCurrentUserId();
+
+            var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (profile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            var slot = await _dbcontext.DriverAvailabilities
+                .FirstOrDefaultAsync(a => a.Id == id && a.DriverProfileId == profile.Id);
+            if (slot == null)
+                return NotFound("الوردية غير موجودة");
+
+            if (dto.StartTime >= dto.EndTime)
+                return BadRequest("وقت البداية يجب أن يكون قبل وقت النهاية");
+
+            var overlaps = await _dbcontext.DriverAvailabilities
+                .AnyAsync(a => a.DriverProfileId == profile.Id
+                            && a.Id != id
+                            && a.DayOfWeek == slot.DayOfWeek
+                            && a.StartTime < dto.EndTime
+                            && dto.StartTime < a.EndTime);
+
+            if (overlaps)
+                return Conflict("يوجد وردية متداخلة في نفس اليوم");
+
+            slot.StartTime = dto.StartTime;
+            slot.EndTime = dto.EndTime;
+            slot.IsActive = dto.IsActive;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new AvailabilityScheduleResponse
+            {
+                Id = slot.Id,
+                DayOfWeek = slot.DayOfWeek,
+                StartTime = slot.StartTime,
+                EndTime = slot.EndTime,
+                IsActive = slot.IsActive
+            });
+        }
         private Guid GetCurrentUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
