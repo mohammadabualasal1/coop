@@ -63,7 +63,27 @@ namespace coop.Controllers
 
 
 
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyDriverProfile()
+        {
+            var userId = GetCurrentUserId();
 
+            var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (profile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            return Ok(new DriverProfileResponse
+            {
+                Id = profile.Id,
+                VehicleType = profile.VehicleType,
+                VehiclePlateNumber = profile.VehiclePlateNumber,
+                MaximumCapacity = profile.MaximumCapacity,
+                VerificationStatus = profile.VerificationStatus,
+                IsAvailable = profile.IsAvailable,
+                AverageRating = profile.AverageRating,
+                CompletedDeliveries = profile.CompletedDeliveries
+            });
+        }
 
 
 
