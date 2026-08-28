@@ -395,6 +395,116 @@ namespace coop.Controllers
                 DriverEarning = task.DriverEarning
             });
         }
+        [HttpPost("{id}/complete")]
+        public async Task<IActionResult> CompleteDelivery(Guid id, ConfirmDeliveryRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
+
+            var driverProfile = await _dbcontext.DriverProfiles
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (driverProfile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            var task = await _dbcontext.DeliveryTasks
+                .FirstOrDefaultAsync(t => t.Id == id && t.DriverProfileId == driverProfile.Id);
+
+            if (task == null)
+                return NotFound("المهمة غير موجودة");
+
+            if (task.Status != DeliveryStatus.ArrivedAtCustomer)
+                return BadRequest("يجب تسجيل الوصول للزبون أولاً");
+
+            var codeHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(dto.Code)));
+
+            var token = await _dbcontext.ConfirmationTokens
+                .FirstOrDefaultAsync(t => t.DeliveryTaskId == task.Id
+                                       && t.Type == ConfirmationTokenType.CustomerDelivery
+                                       && t.TokenHash == codeHash
+                                       && t.UsedAt == null
+                                       && !t.IsRevoked);
+
+            if (token == null)
+                return BadRequest("كود التسليم غير صحيح");
+
+            if (token.ExpiresAt < now)
+                return BadRequest("انتهت صلاحية كود التسليم");
+
+            token.UsedAt = now;
+            token.UsedByUserId = userId;
+
+            task.Status = DeliveryStatus.Delivered;
+            task.DeliveredAt = now;
+            task.UpdatedAt = now;
+
+            var order = await _dbcontext.Orders.FirstOrDefaultAsync(o => o.Id == task.OrderId);
+
+            if (order != null)
+            {
+                var oldStatus = order.Status;
+                order.Status = OrderStatus.Delivered;
+                order.DeliveredAt = now;
+                order.UpdatedAt = now;
+
+                _dbcontext.OrderStatusHistories.Add(new OrderStatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order.Id,
+                    OldStatus = oldStatus,
+                    NewStatus = OrderStatus.Delivered,
+                    ChangedByUserId = userId,
+                    CreatedAt = now
+                });
+
+                // تحويل المخزون المحجوز إلى مباع
+                var reservations = await _dbcontext.StockReservations
+                    .Where(r => r.OrderId == order.Id && r.Status == StockReservationStatus.Active)
+                    .ToListAsync();
+
+                foreach (var reservation in reservations)
+                {
+                    var branchOffer = await _dbcontext.BranchOffers
+                        .FirstOrDefaultAsync(bo => bo.Id == reservation.BranchOfferId);
+
+                    if (branchOffer != null)
+                    {
+                        branchOffer.ReservedStock -= reservation.Quantity;
+                        branchOffer.SoldStock += reservation.Quantity;
+                    }
+
+                    reservation.Status = StockReservationStatus.Confirmed;
+                }
+
+                // الدفع عند الاستلام يصبح مدفوعاً
+                var payment = await _dbcontext.Payments
+                    .FirstOrDefaultAsync(p => p.OrderId == order.Id);
+
+                if (payment != null
+                    && payment.Method == PaymentMethod.CashOnDelivery
+                    && payment.Status == PaymentStatus.Pending)
+                {
+                    payment.Status = PaymentStatus.Paid;
+                    payment.PaidAt = now;
+                    payment.UpdatedAt = now;
+                }
+            }
+
+            driverProfile.CompletedDeliveries += 1;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new DeliveryTaskResponseDto
+            {
+                Id = task.Id,
+                OrderId = task.OrderId,
+                Status = task.Status,
+                PickupBranchId = task.PickupBranchId,
+                CustomerAddressId = task.CustomerAddressId,
+                DeliveryFee = task.DeliveryFee,
+                DriverEarning = task.DriverEarning
+            });
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
