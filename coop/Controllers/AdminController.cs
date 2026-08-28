@@ -169,6 +169,26 @@ namespace coop.Controllers
                 driverProfile.VerificationStatus
             });
         }
+        [HttpPost("drivers/{id}/reject")]
+        public async Task<IActionResult> RejectDriver(Guid id, RejectRequestDto dto)
+        {
+            var driverProfile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.Id == id);
+            if (driverProfile == null)
+                return NotFound("بروفايل السائق غير موجود");
+
+            driverProfile.VerificationStatus = VerificationStatus.Rejected;
+            driverProfile.RejectionReason = dto.Reason;
+            driverProfile.IsAvailable = false;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new
+            {
+                driverProfile.Id,
+                driverProfile.VerificationStatus,
+                driverProfile.RejectionReason
+            });
+        }
         private Guid GetCurrentUserId() =>
            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
