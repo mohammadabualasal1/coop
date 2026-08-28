@@ -169,7 +169,29 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             return Ok(new { profile.IsAvailable });
         }
+        [HttpPost("my/go-offline")]
+        public async Task<IActionResult> GoOffline()
+        {
+            var userId = GetCurrentUserId();
 
+            var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (profile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            var hasActiveTask = await _dbcontext.DeliveryTasks
+                .AnyAsync(t => t.DriverProfileId == profile.Id &&
+                               t.Status != DeliveryStatus.Delivered &&
+                               t.Status != DeliveryStatus.Failed &&
+                               t.Status != DeliveryStatus.Cancelled);
+
+            if (hasActiveTask)
+                return BadRequest("لا يمكن إنهاء الوردية، لديك مهمة توصيل قائمة");
+
+            profile.IsAvailable = false;
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(new { profile.IsAvailable });
+        }
 
 
         private Guid GetCurrentUserId() =>
