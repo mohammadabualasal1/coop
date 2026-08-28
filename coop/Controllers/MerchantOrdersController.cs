@@ -137,6 +137,26 @@ namespace coop.Controllers
                 CreatedAt = now
             });
 
+            var existingTask = await _dbcontext.DeliveryTasks
+                .AnyAsync(t => t.OrderId == order.Id);
+
+            if (!existingTask)
+            {
+                _dbcontext.DeliveryTasks.Add(new DeliveryTask
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order.Id,
+                    DriverProfileId = null,
+                    PickupBranchId = order.MerchantBranchId,
+                    CustomerAddressId = order.CustomerAddressId,
+                    Status = DeliveryStatus.SearchingDriver,
+                    DeliveryFee = order.DeliveryFee,
+                    DriverEarning = order.DeliveryFee,
+                    CreatedAt = now,
+                    UpdatedAt = now
+                });
+            }
+
             await _dbcontext.SaveChangesAsync();
 
             return Ok(new MerchantOrderResponse
