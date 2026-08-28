@@ -155,6 +155,37 @@ namespace coop.Controllers
                 DriverEarning = task.DriverEarning
             });
         }
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyTasks()
+        {
+            var userId = GetCurrentUserId();
+
+            var driverProfile = await _dbcontext.DriverProfiles
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (driverProfile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            var tasks = await _dbcontext.DeliveryTasks
+                .Where(t => t.DriverProfileId == driverProfile.Id)
+                .Where(t => t.Status != DeliveryStatus.Delivered
+                         && t.Status != DeliveryStatus.Failed
+                         && t.Status != DeliveryStatus.Cancelled)
+                .OrderByDescending(t => t.AssignedAt)
+                .Select(t => new DeliveryTaskResponseDto
+                {
+                    Id = t.Id,
+                    OrderId = t.OrderId,
+                    Status = t.Status,
+                    PickupBranchId = t.PickupBranchId,
+                    CustomerAddressId = t.CustomerAddressId,
+                    DeliveryFee = t.DeliveryFee,
+                    DriverEarning = t.DriverEarning
+                })
+                .ToListAsync();
+
+            return Ok(tasks);
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
