@@ -114,7 +114,29 @@ namespace coop.Controllers
                 CompletedDeliveries = profile.CompletedDeliveries
             });
         }
+        [HttpPost("my/submit-verification")]
+        public async Task<IActionResult> SubmitVerification()
+        {
+            var userId = GetCurrentUserId();
 
+            var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (profile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            if (profile.VerificationStatus != VerificationStatus.Rejected &&
+                profile.VerificationStatus != VerificationStatus.NeedsInformation)
+                return BadRequest("طلبك أصلاً قيد المراجعة أو تمت الموافقة عليه");
+
+            var hasDocuments = await _dbcontext.VerificationDocuments
+                .AnyAsync(d => d.DriverProfileId == profile.Id);
+            if (!hasDocuments)
+                return BadRequest("لازم ترفع وثيقة تحقق واحدة على الأقل");
+
+            profile.VerificationStatus = VerificationStatus.Pending;
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(new { profile.VerificationStatus });
+        }
 
         private Guid GetCurrentUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
