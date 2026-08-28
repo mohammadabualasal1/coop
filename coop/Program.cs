@@ -7,7 +7,7 @@ using Scalar.AspNetCore;
 using coop;
 using coop.Services;
 using coop.Settings;
-
+using coop.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -46,8 +46,21 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
         ClockSkew = TimeSpan.Zero
     };
-});
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
 
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                context.Token = accessToken;
+
+            return Task.CompletedTask;
+        }
+    };
+});
+builder.Services.AddSignalR();
 builder.Services.AddAuthorization();
 
 
@@ -66,5 +79,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<TrackingHub>("/hubs/tracking");
 app.MapGet("/", () => Results.Redirect("/scalar/v1"));
 app.Run();
