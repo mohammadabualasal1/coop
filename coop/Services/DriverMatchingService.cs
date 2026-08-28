@@ -114,7 +114,7 @@ namespace coop.Services
                     DeliveryTaskId = task.Id,
                     DriverProfileId = nearest.Id,
                     Status = DriverTaskOfferStatus.Pending,
-                    MatchScore = nearest.Distance,
+                    MatchScore = (decimal)nearest.Distance,
                     OfferedAt = now,
                     ExpiresAt = now.AddMinutes(OfferExpiryMinutes)
                 });
