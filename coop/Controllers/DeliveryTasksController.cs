@@ -186,6 +186,63 @@ namespace coop.Controllers
 
             return Ok(tasks);
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetTaskById(Guid id)
+        {
+            var userId = GetCurrentUserId();
+
+            var driverProfile = await _dbcontext.DriverProfiles
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (driverProfile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            var task = await _dbcontext.DeliveryTasks
+                .Where(t => t.Id == id && t.DriverProfileId == driverProfile.Id)
+                .Select(t => new DeliveryTaskDetailResponseDto
+                {
+                    Id = t.Id,
+                    OrderId = t.OrderId,
+                    OrderNumber = t.Order.OrderNumber,
+                    Status = t.Status,
+                    DeliveryFee = t.DeliveryFee,
+                    DriverEarning = t.DriverEarning,
+
+                    BranchName = t.PickupBranch.Name,
+                    BranchAddress = t.PickupBranch.Address,
+                    BranchPhone = t.PickupBranch.PhoneNumber,
+                    BranchLatitude = t.PickupBranch.Latitude,
+                    BranchLongitude = t.PickupBranch.Longitude,
+
+                    CustomerName = t.CustomerAddress.ContactName,
+                    CustomerPhone = t.CustomerAddress.ContactPhone,
+                    CustomerCity = t.CustomerAddress.City,
+                    CustomerArea = t.CustomerAddress.Area,
+                    CustomerStreet = t.CustomerAddress.Street,
+                    CustomerBuilding = t.CustomerAddress.Building,
+                    CustomerFloor = t.CustomerAddress.Floor,
+                    AdditionalDirections = t.CustomerAddress.AdditionalDirections,
+                    CustomerLatitude = t.CustomerAddress.Latitude,
+                    CustomerLongitude = t.CustomerAddress.Longitude,
+
+                    PaymentMethod = t.Order.PaymentMethod,
+                    AmountToCollect = t.Order.PaymentMethod == PaymentMethod.CashOnDelivery
+                        ? t.Order.TotalAmount
+                        : 0,
+
+                    AssignedAt = t.AssignedAt,
+                    ArrivedAtMerchantAt = t.ArrivedAtMerchantAt,
+                    PickedUpAt = t.PickedUpAt,
+                    ArrivedAtCustomerAt = t.ArrivedAtCustomerAt
+                })
+                .FirstOrDefaultAsync();
+
+            if (task == null)
+                return NotFound("المهمة غير موجودة");
+
+            return Ok(task);
+        }
+
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
