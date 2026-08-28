@@ -192,7 +192,46 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             return Ok(new { profile.IsAvailable });
         }
+        [HttpPut("my/location")]
+        public async Task<IActionResult> UpdateLocation([FromBody] UpdateLocationRequest dto)
+        {
+            var userId = GetCurrentUserId();
 
+            var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (profile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            if (dto.Latitude < -90 || dto.Latitude > 90 || dto.Longitude < -180 || dto.Longitude > 180)
+                return BadRequest("إحداثيات غير صالحة");
+
+            var now = DateTime.UtcNow;
+
+            profile.CurrentLatitude = dto.Latitude;
+            profile.CurrentLongitude = dto.Longitude;
+            profile.LastLocationAt = now;
+
+            var activeTask = await _dbcontext.DeliveryTasks
+                .FirstOrDefaultAsync(t => t.DriverProfileId == profile.Id &&
+                                          t.Status != DeliveryStatus.Delivered &&
+                                          t.Status != DeliveryStatus.Failed &&
+                                          t.Status != DeliveryStatus.Cancelled);
+
+            if (activeTask != null)
+            {
+                _dbcontext.DriverLocations.Add(new DriverLocation
+                {
+                    Id = Guid.NewGuid(),
+                    DeliveryTaskId = activeTask.Id,
+                    DriverProfileId = profile.Id,
+                    Latitude = dto.Latitude,
+                    Longitude = dto.Longitude,
+                    RecordedAt = now
+                });
+            }
+
+            await _dbcontext.SaveChangesAsync();
+            return Ok(new { profile.CurrentLatitude, profile.CurrentLongitude, profile.LastLocationAt });
+        }
 
         private Guid GetCurrentUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
