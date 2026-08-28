@@ -242,7 +242,44 @@ namespace coop.Controllers
 
             return Ok(task);
         }
+        [HttpPost("{id}/arrived-at-merchant")]
+        public async Task<IActionResult> ArrivedAtMerchant(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
 
+            var driverProfile = await _dbcontext.DriverProfiles
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (driverProfile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            var task = await _dbcontext.DeliveryTasks
+                .FirstOrDefaultAsync(t => t.Id == id && t.DriverProfileId == driverProfile.Id);
+
+            if (task == null)
+                return NotFound("المهمة غير موجودة");
+
+            if (task.Status != DeliveryStatus.Assigned && task.Status != DeliveryStatus.GoingToMerchant)
+                return BadRequest("لا يمكن تنفيذ هذا الإجراء في الحالة الحالية");
+
+            task.Status = DeliveryStatus.ArrivedAtMerchant;
+            task.ArrivedAtMerchantAt = now;
+            task.UpdatedAt = now;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new DeliveryTaskResponseDto
+            {
+                Id = task.Id,
+                OrderId = task.OrderId,
+                Status = task.Status,
+                PickupBranchId = task.PickupBranchId,
+                CustomerAddressId = task.CustomerAddressId,
+                DeliveryFee = task.DeliveryFee,
+                DriverEarning = task.DriverEarning
+            });
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
