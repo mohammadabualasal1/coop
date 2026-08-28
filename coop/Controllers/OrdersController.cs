@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-
+using coop.Hubs;
+using Microsoft.AspNetCore.SignalR;
 namespace coop.Controllers
 {
     [Route("api/[controller]")]
@@ -17,11 +18,13 @@ namespace coop.Controllers
     public class OrdersController : ControllerBase
 
     {
-        private CoopDbContext _dbcontext;
+        private readonly CoopDbContext _dbcontext;
+        private readonly IHubContext<TrackingHub> _hubContext;
 
-        public OrdersController(CoopDbContext dbcontext)
+        public OrdersController(CoopDbContext dbcontext, IHubContext<TrackingHub> hubContext)
         {
             _dbcontext = dbcontext;
+            _hubContext = hubContext;
         }
 
         [HttpPost]
@@ -255,10 +258,10 @@ namespace coop.Controllers
 
             var cancellableStatuses = new[]
             {
-        OrderStatus.PendingPayment,
-        OrderStatus.PendingMerchantConfirmation,
-        OrderStatus.Accepted
-    };
+                OrderStatus.PendingPayment,
+                OrderStatus.PendingMerchantConfirmation,
+                OrderStatus.Accepted
+            };
 
             if (!cancellableStatuses.Contains(order.Status))
                 return BadRequest("لا يمكن إلغاء الطلب في هذه المرحلة");
@@ -297,6 +300,17 @@ namespace coop.Controllers
 
                 await _dbcontext.SaveChangesAsync();
                 await transaction.CommitAsync();
+
+                await _hubContext.Clients
+                    .Group(TrackingHub.OrderGroup(order.Id))
+                    .SendAsync("order.status.changed", new
+                    {
+                        OrderId = order.Id,
+                        order.OrderNumber,
+                        OldStatus = oldStatus,
+                        NewStatus = order.Status,
+                        ChangedAt = now
+                    });
 
                 return Ok(new { order.Id, order.OrderNumber, order.Status });
             }
@@ -434,6 +448,17 @@ namespace coop.Controllers
 
                 await _dbcontext.SaveChangesAsync();
                 await transaction.CommitAsync();
+
+                await _hubContext.Clients
+                    .Group(TrackingHub.OrderGroup(order.Id))
+                    .SendAsync("order.status.changed", new
+                    {
+                        OrderId = order.Id,
+                        order.OrderNumber,
+                        OldStatus = oldStatus,
+                        NewStatus = order.Status,
+                        ChangedAt = now
+                    });
 
                 return Ok(new { order.Id, order.OrderNumber, order.Status });
             }
