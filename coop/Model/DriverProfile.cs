@@ -12,6 +12,7 @@ namespace coop.Model
         public User User { get; set; }
 
         public VerificationStatus VerificationStatus { get; set; }
+        public string? RejectionReason { get; set; }        
         public string VehicleType { get; set; }
         public string VehiclePlateNumber { get; set; }
         public int MaximumCapacity { get; set; }
