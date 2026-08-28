@@ -151,6 +151,24 @@ namespace coop.Controllers
 
             return Ok(pendingDrivers);
         }
+
+        [HttpPost("drivers/{id}/approve")]
+        public async Task<IActionResult> ApproveDriver(Guid id)
+        {
+            var driverProfile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.Id == id);
+            if (driverProfile == null)
+                return NotFound("بروفايل السائق غير موجود");
+
+            driverProfile.VerificationStatus = VerificationStatus.Approved;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new
+            {
+                driverProfile.Id,
+                driverProfile.VerificationStatus
+            });
+        }
         private Guid GetCurrentUserId() =>
            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
