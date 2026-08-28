@@ -134,6 +134,23 @@ namespace coop.Controllers
 
             return Ok(offer);
         }
+        [HttpGet("drivers/pending")]
+        public async Task<IActionResult> GetPendingDrivers()
+        {
+            var pendingDrivers = await _dbcontext.DriverProfiles
+                .Where(d => d.VerificationStatus == VerificationStatus.Pending)
+                .OrderBy(d => d.CreatedAt)
+                .Select(d => new PendingVerificationResponseDto
+                {
+                    Id = d.Id,
+                    EntityType = "Driver",
+                    EntityName = d.User.FullName,
+                    SubmittedAt = d.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(pendingDrivers);
+        }
         private Guid GetCurrentUserId() =>
            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
