@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace coop.Controllers
 {
@@ -280,7 +282,63 @@ namespace coop.Controllers
                 PlacedAt = order.PlacedAt
             });
         }
+        [HttpGet("{id}/pickup-code")]
+        public async Task<IActionResult> GetPickupCode(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
 
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
+            if (merchant == null)
+                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
+
+            var order = await _dbcontext.Orders
+                .FirstOrDefaultAsync(o => o.Id == id && o.MerchantId == merchant.Id);
+
+            if (order == null)
+                return NotFound("الطلب غير موجود");
+
+            if (order.Status != OrderStatus.ReadyForPickup && order.Status != OrderStatus.DriverAssigned)
+                return BadRequest("يجب أن يكون الطلب جاهزاً للاستلام أولاً");
+
+            var task = await _dbcontext.DeliveryTasks
+                .FirstOrDefaultAsync(t => t.OrderId == order.Id);
+
+            if (task == null)
+                return BadRequest("لا توجد مهمة توصيل لهذا الطلب");
+
+            var oldTokens = await _dbcontext.ConfirmationTokens
+                .Where(t => t.DeliveryTaskId == task.Id
+                         && t.Type == ConfirmationTokenType.MerchantPickup
+                         && t.UsedAt == null
+                         && !t.IsRevoked)
+                .ToListAsync();
+
+            foreach (var oldToken in oldTokens)
+                oldToken.IsRevoked = true;
+
+            var code = RandomNumberGenerator.GetInt32(0, 1000000).ToString("D6");
+            var expiresAt = now.AddMinutes(30);
+
+            _dbcontext.ConfirmationTokens.Add(new ConfirmationToken
+            {
+                Id = Guid.NewGuid(),
+                DeliveryTaskId = task.Id,
+                Type = ConfirmationTokenType.MerchantPickup,
+                TokenHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(code))),
+                ExpiresAt = expiresAt,
+                IsRevoked = false,
+                CreatedAt = now
+            });
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new PickupCodeResponse
+            {
+                Code = code,
+                ExpiresAt = expiresAt
+            });
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
