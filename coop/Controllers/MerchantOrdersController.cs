@@ -1,9 +1,11 @@
 ﻿using coop.Dtos.MerchantOrdersController;
 using coop.Dtos.MerchantOrdersDtos;
 using coop.Enums;
+using coop.Hubs;
 using coop.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -17,11 +19,14 @@ namespace coop.Controllers
     public class MerchantOrdersController : ControllerBase
     {
         private readonly CoopDbContext _dbcontext;
+        private readonly IHubContext<TrackingHub> _hubContext;
 
-        public MerchantOrdersController(CoopDbContext dbcontext)
+        public MerchantOrdersController(CoopDbContext dbcontext, IHubContext<TrackingHub> hubContext)
         {
             _dbcontext = dbcontext;
+            _hubContext = hubContext;
         }
+
 
         [HttpGet]
         public async Task<IActionResult> GetMyOrders([FromQuery] OrderStatus? status)
@@ -159,6 +164,17 @@ namespace coop.Controllers
 
             await _dbcontext.SaveChangesAsync();
 
+            await _hubContext.Clients
+                .Group(TrackingHub.OrderGroup(order.Id))
+                .SendAsync("order.status.changed", new
+                {
+                    OrderId = order.Id,
+                    order.OrderNumber,
+                    OldStatus = oldStatus,
+                    NewStatus = order.Status,
+                    ChangedAt = now
+                });
+
             return Ok(new MerchantOrderResponse
             {
                 Id = order.Id,
@@ -238,6 +254,17 @@ namespace coop.Controllers
 
             await _dbcontext.SaveChangesAsync();
 
+            await _hubContext.Clients
+                .Group(TrackingHub.OrderGroup(order.Id))
+                .SendAsync("order.status.changed", new
+                {
+                    OrderId = order.Id,
+                    order.OrderNumber,
+                    OldStatus = oldStatus,
+                    NewStatus = order.Status,
+                    ChangedAt = now
+                });
+
             return Ok(new MerchantOrderResponse
             {
                 Id = order.Id,
@@ -286,26 +313,18 @@ namespace coop.Controllers
                 CreatedAt = now
             });
 
-            // إنشاء مهمة التوصيل ليلتقطها DriverMatchingService
-            var taskExists = await _dbcontext.DeliveryTasks.AnyAsync(t => t.OrderId == order.Id);
-            if (!taskExists)
-            {
-                _dbcontext.DeliveryTasks.Add(new DeliveryTask
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = order.Id,
-                    DriverProfileId = null,
-                    PickupBranchId = order.MerchantBranchId,
-                    CustomerAddressId = order.CustomerAddressId,
-                    Status = DeliveryStatus.SearchingDriver,
-                    DeliveryFee = order.DeliveryFee,
-                    DriverEarning = order.DeliveryFee,
-                    CreatedAt = now,
-                    UpdatedAt = now
-                });
-            }
-
             await _dbcontext.SaveChangesAsync();
+
+            await _hubContext.Clients
+                .Group(TrackingHub.OrderGroup(order.Id))
+                .SendAsync("order.status.changed", new
+                {
+                    OrderId = order.Id,
+                    order.OrderNumber,
+                    OldStatus = oldStatus,
+                    NewStatus = order.Status,
+                    ChangedAt = now
+                });
 
             return Ok(new MerchantOrderResponse
             {
