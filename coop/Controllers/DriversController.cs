@@ -345,6 +345,24 @@ namespace coop.Controllers
                 IsActive = slot.IsActive
             });
         }
+        [HttpDelete("my/schedule/{id}")]
+        public async Task<IActionResult> DeleteScheduleSlot(Guid id)
+        {
+            var userId = GetCurrentUserId();
+
+            var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (profile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            var slot = await _dbcontext.DriverAvailabilities
+                .FirstOrDefaultAsync(a => a.Id == id && a.DriverProfileId == profile.Id);
+            if (slot == null)
+                return NotFound("الوردية غير موجودة");
+
+            _dbcontext.DriverAvailabilities.Remove(slot);
+            await _dbcontext.SaveChangesAsync();
+            return NoContent();
+        }
         private Guid GetCurrentUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
