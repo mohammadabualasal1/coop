@@ -257,6 +257,52 @@ namespace coop.Controllers
 
             return Ok(schedule);
         }
+        [HttpPost("my/schedule")]
+        public async Task<IActionResult> AddScheduleSlot([FromBody] CreateAvailabilityScheduleRequest dto)
+        {
+            var userId = GetCurrentUserId();
+
+            var profile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (profile == null)
+                return NotFound("لا يوجد بروفايل سائق مرتبط بحسابك");
+
+            if (dto.DayOfWeek < 0 || dto.DayOfWeek > 6)
+                return BadRequest("يوم الأسبوع يجب أن يكون بين 0 و 6");
+
+            if (dto.StartTime >= dto.EndTime)
+                return BadRequest("وقت البداية يجب أن يكون قبل وقت النهاية");
+
+            var overlaps = await _dbcontext.DriverAvailabilities
+                .AnyAsync(a => a.DriverProfileId == profile.Id
+                            && a.DayOfWeek == dto.DayOfWeek
+                            && a.StartTime < dto.EndTime
+                            && dto.StartTime < a.EndTime);
+
+            if (overlaps)
+                return Conflict("يوجد وردية متداخلة في نفس اليوم");
+
+            var slot = new DriverAvailability
+            {
+                Id = Guid.NewGuid(),
+                DriverProfileId = profile.Id,
+                DayOfWeek = dto.DayOfWeek,
+                StartTime = dto.StartTime,
+                EndTime = dto.EndTime,
+                IsActive = true
+            };
+
+            _dbcontext.DriverAvailabilities.Add(slot);
+            await _dbcontext.SaveChangesAsync();
+
+            return StatusCode(201, new AvailabilityScheduleResponse
+            {
+                Id = slot.Id,
+                DayOfWeek = slot.DayOfWeek,
+                StartTime = slot.StartTime,
+                EndTime = slot.EndTime,
+                IsActive = slot.IsActive
+            });
+        }
         private Guid GetCurrentUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
