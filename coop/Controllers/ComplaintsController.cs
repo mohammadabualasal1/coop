@@ -151,7 +151,36 @@ namespace coop.Controllers
 
             return Ok(complaints);
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetComplaintById(Guid id)
+        {
+            var userId = GetCurrentUserId();
 
+            var complaint = await _dbcontext.Complaints
+                .Where(c => c.Id == id && c.CreatedByUserId == userId)
+                .Select(c => new ComplaintResponse
+                {
+                    Id = c.Id,
+                    OrderNumber = c.Order != null ? c.Order.OrderNumber : null,
+                    TargetName = c.Merchant != null ? c.Merchant.Name
+                               : c.DriverProfile != null ? c.DriverProfile.User.FullName
+                               : c.Offer != null ? c.Offer.Title
+                               : null,
+                    Category = c.Category,
+                    Description = c.Description,
+                    EvidenceUrl = c.EvidenceUrl,
+                    Status = c.Status,
+                    AdminResponse = c.AdminResponse,
+                    CreatedAt = c.CreatedAt,
+                    ResolvedAt = c.ResolvedAt
+                })
+                .FirstOrDefaultAsync();
+
+            if (complaint == null)
+                return NotFound("الشكوى غير موجودة");
+
+            return Ok(complaint);
+        }
 
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
