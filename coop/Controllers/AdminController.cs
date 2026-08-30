@@ -221,7 +221,47 @@ namespace coop.Controllers
 
             return Ok(complaints);
         }
+        [HttpPut("complaints/{id}/resolve")]
+        public async Task<IActionResult> ResolveComplaint(Guid id, ResolveComplaintRequestDto dto)
+        {
+            var adminId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
 
+            if (string.IsNullOrWhiteSpace(dto.AdminResponse))
+                return BadRequest("رد الأدمن مطلوب");
+
+            var complaint = await _dbcontext.Complaints.FirstOrDefaultAsync(c => c.Id == id);
+            if (complaint == null)
+                return NotFound("الشكوى غير موجودة");
+
+            if (complaint.Status == ComplaintStatus.Resolved || complaint.Status == ComplaintStatus.Rejected)
+                return BadRequest("تمت معالجة هذه الشكوى مسبقاً");
+
+            complaint.Status = ComplaintStatus.Resolved;
+            complaint.AdminResponse = dto.AdminResponse.Trim();
+            complaint.ResolvedByUserId = adminId;
+            complaint.ResolvedAt = now;
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new AdminComplaintResponseDto
+            {
+                Id = complaint.Id,
+                CreatedByName = await _dbcontext.Users
+                    .Where(u => u.Id == complaint.CreatedByUserId)
+                    .Select(u => u.FullName)
+                    .FirstAsync(),
+                OrderNumber = null,
+                TargetName = null,
+                Category = complaint.Category,
+                Description = complaint.Description,
+                EvidenceUrl = complaint.EvidenceUrl,
+                Status = complaint.Status,
+                AdminResponse = complaint.AdminResponse,
+                CreatedAt = complaint.CreatedAt,
+                ResolvedAt = complaint.ResolvedAt
+            });
+        }
 
         private Guid GetCurrentUserId() =>
            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
