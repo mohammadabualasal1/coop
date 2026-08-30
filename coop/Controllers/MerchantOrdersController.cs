@@ -3,14 +3,15 @@ using coop.Dtos.MerchantOrdersDtos;
 using coop.Enums;
 using coop.Hubs;
 using coop.Model;
+using coop.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text;
 namespace coop.Controllers
 {
@@ -21,13 +22,17 @@ namespace coop.Controllers
     {
         private readonly CoopDbContext _dbcontext;
         private readonly IHubContext<TrackingHub> _hubContext;
+        private readonly INotificationService _notificationService;
 
-        public MerchantOrdersController(CoopDbContext dbcontext, IHubContext<TrackingHub> hubContext)
+        public MerchantOrdersController(
+            CoopDbContext dbcontext,
+            IHubContext<TrackingHub> hubContext,
+            INotificationService notificationService)
         {
             _dbcontext = dbcontext;
             _hubContext = hubContext;
+            _notificationService = notificationService;
         }
-
 
         [HttpGet]
         public async Task<IActionResult> GetMyOrders([FromQuery] OrderStatus? status)
@@ -107,7 +112,6 @@ namespace coop.Controllers
 
             return Ok(order);
         }
-
         [HttpPost("{id}/accept")]
         public async Task<IActionResult> AcceptOrder(Guid id)
         {
@@ -176,6 +180,14 @@ namespace coop.Controllers
                     ChangedAt = now
                 });
 
+            await _notificationService.NotifyAsync(
+                order.CustomerUserId,
+                "تم قبول طلبك",
+                $"التاجر قبل طلبك رقم {order.OrderNumber} وبدأ التجهيز",
+                "OrderAccepted",
+                "Order",
+                order.Id);
+
             return Ok(new MerchantOrderResponse
             {
                 Id = order.Id,
@@ -189,7 +201,6 @@ namespace coop.Controllers
                 PlacedAt = order.PlacedAt
             });
         }
-
         [HttpPost("{id}/reject")]
         public async Task<IActionResult> RejectOrder(Guid id, RejectOrderRequestDto dto)
         {
@@ -265,6 +276,14 @@ namespace coop.Controllers
                     NewStatus = order.Status,
                     ChangedAt = now
                 });
+
+            await _notificationService.NotifyAsync(
+                order.CustomerUserId,
+                "تم رفض طلبك",
+                $"عذراً، تم رفض طلبك رقم {order.OrderNumber}. السبب: {dto.Reason}",
+                "OrderRejected",
+                "Order",
+                order.Id);
 
             return Ok(new MerchantOrderResponse
             {
@@ -357,6 +376,14 @@ namespace coop.Controllers
                     NewStatus = order.Status,
                     ChangedAt = now
                 });
+
+            await _notificationService.NotifyAsync(
+                order.CustomerUserId,
+                "طلبك جاهز",
+                $"طلبك رقم {order.OrderNumber} جاهز وبانتظار السائق",
+                "OrderReady",
+                "Order",
+                order.Id);
 
             return Ok(new
             {
