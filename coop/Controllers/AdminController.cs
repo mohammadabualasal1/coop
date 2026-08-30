@@ -1,5 +1,6 @@
 ﻿using coop.Dtos.AdminController;
 using coop.Enums;
+using coop.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,18 +13,18 @@ namespace coop.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {
-        private CoopDbContext _dbcontext;
+        private readonly CoopDbContext _dbcontext;
+        private readonly INotificationService _notificationService;
 
-        public AdminController(CoopDbContext dbcontext)
+        public AdminController(CoopDbContext dbcontext, INotificationService notificationService)
         {
             _dbcontext = dbcontext;
+            _notificationService = notificationService;
         }
 
         [HttpGet("verifications")]
         public async Task<IActionResult> GetPendingVerifications()
         {
-            var userId = GetCurrentUserId();
-
             var pendingMerchants = await _dbcontext.Merchants
                 .Where(m => m.VerificationStatus == VerificationStatus.Pending)
                 .OrderBy(m => m.CreatedAt)
@@ -38,6 +39,7 @@ namespace coop.Controllers
 
             return Ok(pendingMerchants);
         }
+
         [HttpPost("merchants/{id}/approve")]
         public async Task<IActionResult> ApproveMerchant(Guid id)
         {
@@ -45,26 +47,35 @@ namespace coop.Controllers
 
             var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.Id == id);
             if (merchant == null)
-            {
                 return NotFound("التاجر غير موجود");
-            }
+
+            if (merchant.VerificationStatus == VerificationStatus.Approved)
+                return BadRequest("التاجر موثّق بالفعل");
+
             merchant.VerificationStatus = VerificationStatus.Approved;
             merchant.VerifiedAt = DateTime.UtcNow;
             merchant.VerifiedByUserId = adminId;
             merchant.RejectionReason = null;
 
             await _dbcontext.SaveChangesAsync();
-            return Ok(merchant);
 
+            await _notificationService.NotifyAsync(
+                merchant.OwnerUserId,
+                "تمت الموافقة على متجرك",
+                $"تم توثيق متجر {merchant.Name}، تقدر تضيف فروعك وعروضك الآن",
+                "MerchantApproved",
+                "Merchant",
+                merchant.Id);
+
+            return Ok(merchant);
         }
+
         [HttpPost("merchants/{id}/reject")]
         public async Task<IActionResult> RejectMerchant(Guid id, RejectRequestDto dto)
         {
             var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.Id == id);
             if (merchant == null)
-            {
                 return NotFound("التاجر غير موجود");
-            }
 
             merchant.VerificationStatus = VerificationStatus.Rejected;
             merchant.RejectionReason = dto.Reason;
@@ -72,8 +83,18 @@ namespace coop.Controllers
             merchant.VerifiedByUserId = null;
 
             await _dbcontext.SaveChangesAsync();
+
+            await _notificationService.NotifyAsync(
+                merchant.OwnerUserId,
+                "تم رفض طلب التوثيق",
+                $"تم رفض توثيق متجر {merchant.Name}. السبب: {dto.Reason}",
+                "MerchantRejected",
+                "Merchant",
+                merchant.Id);
+
             return Ok(merchant);
         }
+
         [HttpGet("offers/pending")]
         public async Task<IActionResult> GetPendingOffers()
         {
@@ -92,6 +113,7 @@ namespace coop.Controllers
 
             return Ok(offers);
         }
+
         [HttpPost("offers/{id}/approve")]
         public async Task<IActionResult> ApproveOffer(Guid id)
         {
@@ -100,6 +122,9 @@ namespace coop.Controllers
             var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id);
             if (offer == null)
                 return NotFound("العرض غير موجود");
+
+            if (offer.Status != OfferStatus.PendingApproval)
+                return BadRequest("العرض ليس قيد المراجعة");
 
             var now = DateTime.UtcNow;
 
@@ -113,6 +138,19 @@ namespace coop.Controllers
             offer.UpdatedAt = now;
 
             await _dbcontext.SaveChangesAsync();
+
+            var merchantOwnerUserId = await _dbcontext.Merchants
+                .Where(m => m.Id == offer.MerchantId)
+                .Select(m => m.OwnerUserId)
+                .FirstAsync();
+
+            await _notificationService.NotifyAsync(
+                merchantOwnerUserId,
+                "تمت الموافقة على عرضك",
+                $"تمت الموافقة على العرض \"{offer.Title}\"",
+                "OfferApproved",
+                "Offer",
+                offer.Id);
 
             return Ok(offer);
         }
@@ -132,8 +170,22 @@ namespace coop.Controllers
 
             await _dbcontext.SaveChangesAsync();
 
+            var merchantOwnerUserId = await _dbcontext.Merchants
+                .Where(m => m.Id == offer.MerchantId)
+                .Select(m => m.OwnerUserId)
+                .FirstAsync();
+
+            await _notificationService.NotifyAsync(
+                merchantOwnerUserId,
+                "تم رفض عرضك",
+                $"تم رفض العرض \"{offer.Title}\". السبب: {dto.Reason}",
+                "OfferRejected",
+                "Offer",
+                offer.Id);
+
             return Ok(offer);
         }
+
         [HttpGet("drivers/pending")]
         public async Task<IActionResult> GetPendingDrivers()
         {
@@ -159,9 +211,21 @@ namespace coop.Controllers
             if (driverProfile == null)
                 return NotFound("بروفايل السائق غير موجود");
 
+            if (driverProfile.VerificationStatus == VerificationStatus.Approved)
+                return BadRequest("السائق موثّق بالفعل");
+
             driverProfile.VerificationStatus = VerificationStatus.Approved;
+            driverProfile.RejectionReason = null;
 
             await _dbcontext.SaveChangesAsync();
+
+            await _notificationService.NotifyAsync(
+                driverProfile.UserId,
+                "تمت الموافقة على حسابك",
+                "تم توثيق حسابك كسائق، تقدر تبدأ استقبال مهام التوصيل",
+                "DriverApproved",
+                "DriverProfile",
+                driverProfile.Id);
 
             return Ok(new
             {
@@ -169,6 +233,7 @@ namespace coop.Controllers
                 driverProfile.VerificationStatus
             });
         }
+
         [HttpPost("drivers/{id}/reject")]
         public async Task<IActionResult> RejectDriver(Guid id, RejectRequestDto dto)
         {
@@ -182,6 +247,14 @@ namespace coop.Controllers
 
             await _dbcontext.SaveChangesAsync();
 
+            await _notificationService.NotifyAsync(
+                driverProfile.UserId,
+                "تم رفض طلب التوثيق",
+                $"تم رفض توثيق حسابك كسائق. السبب: {dto.Reason}",
+                "DriverRejected",
+                "DriverProfile",
+                driverProfile.Id);
+
             return Ok(new
             {
                 driverProfile.Id,
@@ -189,7 +262,38 @@ namespace coop.Controllers
                 driverProfile.RejectionReason
             });
         }
+        [HttpGet("complaints")]
+        public async Task<IActionResult> GetAllComplaints([FromQuery] ComplaintStatus? status)
+        {
+            var query = _dbcontext.Complaints.AsQueryable();
+
+            if (status != null)
+                query = query.Where(c => c.Status == status);
+
+            var complaints = await query
+                .OrderByDescending(c => c.CreatedAt)
+                .Select(c => new
+                {
+                    c.Id,
+                    CreatedByName = c.CreatedByUser.FullName,
+                    OrderNumber = c.Order != null ? c.Order.OrderNumber : null,
+                    TargetName = c.Merchant != null ? c.Merchant.Name
+                               : c.DriverProfile != null ? c.DriverProfile.User.FullName
+                               : c.Offer != null ? c.Offer.Title
+                               : null,
+                    c.Category,
+                    c.Description,
+                    c.EvidenceUrl,
+                    c.Status,
+                    c.AdminResponse,
+                    c.CreatedAt,
+                    c.ResolvedAt
+                })
+                .ToListAsync();
+
+            return Ok(complaints);
+        }
         private Guid GetCurrentUserId() =>
-           Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
 }
