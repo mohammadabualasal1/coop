@@ -10,7 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-
+using System.Security.Cryptography;
+using System.Text;
 namespace coop.Controllers
 {
     [Route("api/merchant-orders")]
@@ -313,6 +314,37 @@ namespace coop.Controllers
                 CreatedAt = now
             });
 
+            // إنشاء كود استلام للسائق
+            var task = await _dbcontext.DeliveryTasks.FirstOrDefaultAsync(t => t.OrderId == order.Id);
+
+            string? pickupCode = null;
+
+            if (task != null)
+            {
+                var oldTokens = await _dbcontext.ConfirmationTokens
+                    .Where(t => t.DeliveryTaskId == task.Id
+                             && t.Type == ConfirmationTokenType.MerchantPickup
+                             && t.UsedAt == null
+                             && !t.IsRevoked)
+                    .ToListAsync();
+
+                foreach (var old in oldTokens)
+                    old.IsRevoked = true;
+
+                pickupCode = GenerateNumericCode();
+
+                _dbcontext.ConfirmationTokens.Add(new ConfirmationToken
+                {
+                    Id = Guid.NewGuid(),
+                    DeliveryTaskId = task.Id,
+                    Type = ConfirmationTokenType.MerchantPickup,
+                    TokenHash = HashCode(pickupCode),
+                    ExpiresAt = now.AddHours(6),
+                    IsRevoked = false,
+                    CreatedAt = now
+                });
+            }
+
             await _dbcontext.SaveChangesAsync();
 
             await _hubContext.Clients
@@ -326,17 +358,21 @@ namespace coop.Controllers
                     ChangedAt = now
                 });
 
-            return Ok(new MerchantOrderResponse
+            return Ok(new
             {
-                Id = order.Id,
-                OrderNumber = order.OrderNumber,
-                CustomerName = await _dbcontext.Users
-                    .Where(u => u.Id == order.CustomerUserId)
-                    .Select(u => u.FullName)
-                    .FirstAsync(),
-                Status = order.Status,
-                TotalAmount = order.TotalAmount,
-                PlacedAt = order.PlacedAt
+                Order = new MerchantOrderResponse
+                {
+                    Id = order.Id,
+                    OrderNumber = order.OrderNumber,
+                    CustomerName = await _dbcontext.Users
+                        .Where(u => u.Id == order.CustomerUserId)
+                        .Select(u => u.FullName)
+                        .FirstAsync(),
+                    Status = order.Status,
+                    TotalAmount = order.TotalAmount,
+                    PlacedAt = order.PlacedAt
+                },
+                PickupCode = pickupCode
             });
         }
         [HttpPost("{id}/pickup-code")]
@@ -395,6 +431,17 @@ namespace coop.Controllers
                 Code = code,
                 ExpiresAt = expiresAt
             });
+        }
+        private static string GenerateNumericCode()
+        {
+            var value = RandomNumberGenerator.GetInt32(0, 1000000);
+            return value.ToString("D6");
+        }
+
+        private static string HashCode(string code)
+        {
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(code));
+            return Convert.ToBase64String(bytes);
         }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

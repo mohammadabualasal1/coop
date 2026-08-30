@@ -8,10 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Security.Claims;
-
+using System.Security.Cryptography;
+using System.Text;
 namespace coop.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/merchants")]
     [ApiController]
     [Authorize(Roles = "Merchant")]
     public class MerchantsController : ControllerBase

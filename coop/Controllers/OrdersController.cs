@@ -503,6 +503,54 @@ namespace coop.Controllers
                 throw;
             }
         }
+        [HttpPost("{id}/delivery-code")]
+        public async Task<IActionResult> GenerateDeliveryCode(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
+
+            var order = await _dbcontext.Orders
+                .FirstOrDefaultAsync(o => o.Id == id && o.CustomerUserId == userId);
+            if (order == null)
+                return NotFound("الطلب غير موجود");
+
+            var task = await _dbcontext.DeliveryTasks.FirstOrDefaultAsync(t => t.OrderId == order.Id);
+            if (task == null)
+                return BadRequest("لا توجد مهمة توصيل لهذا الطلب");
+
+            if (task.Status != DeliveryStatus.PickedUp
+                && task.Status != DeliveryStatus.GoingToCustomer
+                && task.Status != DeliveryStatus.ArrivedAtCustomer)
+                return BadRequest("الطلب لم يخرج للتوصيل بعد");
+
+            var oldTokens = await _dbcontext.ConfirmationTokens
+                .Where(t => t.DeliveryTaskId == task.Id
+                         && t.Type == ConfirmationTokenType.CustomerDelivery
+                         && t.UsedAt == null
+                         && !t.IsRevoked)
+                .ToListAsync();
+
+            foreach (var oldToken in oldTokens)
+                oldToken.IsRevoked = true;
+
+            var code = RandomNumberGenerator.GetInt32(0, 1000000).ToString("D6");
+            var expiresAt = now.AddMinutes(30);
+
+            _dbcontext.ConfirmationTokens.Add(new ConfirmationToken
+            {
+                Id = Guid.NewGuid(),
+                DeliveryTaskId = task.Id,
+                Type = ConfirmationTokenType.CustomerDelivery,
+                TokenHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(code))),
+                ExpiresAt = expiresAt,
+                IsRevoked = false,
+                CreatedAt = now
+            });
+
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok(new { Code = code, ExpiresAt = expiresAt });
+        }
         private Guid GetCurrentUserId() =>
          Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
