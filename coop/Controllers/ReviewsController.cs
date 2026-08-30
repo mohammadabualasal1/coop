@@ -249,7 +249,67 @@ namespace coop.Controllers
                 CreatedAt = review.CreatedAt
             });
         }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteReview(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
 
+            var review = await _dbcontext.Reviews
+                .FirstOrDefaultAsync(r => r.Id == id && r.CustomerUserId == userId);
+
+            if (review == null)
+                return NotFound("التقييم غير موجود");
+
+            if (review.CreatedAt.AddHours(24) < now)
+                return BadRequest("لا يمكن حذف التقييم بعد مرور 24 ساعة");
+
+            var merchantId = review.MerchantId;
+            var driverProfileId = review.DriverProfileId;
+
+            _dbcontext.Reviews.Remove(review);
+            await _dbcontext.SaveChangesAsync();
+
+            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.Id == merchantId);
+
+            if (merchant != null)
+            {
+                var hasMerchantRatings = await _dbcontext.Reviews
+                    .AnyAsync(r => r.MerchantId == merchantId && r.Status == ReviewStatus.Visible);
+
+                merchant.AverageRating = hasMerchantRatings
+                    ? await _dbcontext.Reviews
+                        .Where(r => r.MerchantId == merchantId && r.Status == ReviewStatus.Visible)
+                        .AverageAsync(r => (decimal)r.MerchantRating)
+                    : null;
+            }
+
+            if (driverProfileId != null)
+            {
+                var driverProfile = await _dbcontext.DriverProfiles
+                    .FirstOrDefaultAsync(d => d.Id == driverProfileId);
+
+                if (driverProfile != null)
+                {
+                    var hasDriverRatings = await _dbcontext.Reviews
+                        .AnyAsync(r => r.DriverProfileId == driverProfileId
+                                    && r.DriverRating != null
+                                    && r.Status == ReviewStatus.Visible);
+
+                    driverProfile.AverageRating = hasDriverRatings
+                        ? await _dbcontext.Reviews
+                            .Where(r => r.DriverProfileId == driverProfileId
+                                     && r.DriverRating != null
+                                     && r.Status == ReviewStatus.Visible)
+                            .AverageAsync(r => (decimal)r.DriverRating!.Value)
+                        : null;
+                }
+            }
+
+            await _dbcontext.SaveChangesAsync();
+
+            return NoContent();
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
