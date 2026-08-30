@@ -265,6 +265,92 @@ namespace coop.Controllers
                 driverProfile.RejectionReason
             });
         }
+        [HttpGet("complaints")]
+        public async Task<IActionResult> GetAllComplaints([FromQuery] ComplaintStatus? status)
+        {
+            var query = _dbcontext.Complaints.AsQueryable();
+
+            if (status != null)
+                query = query.Where(c => c.Status == status);
+
+            var complaints = await query
+                .OrderByDescending(c => c.CreatedAt)
+                .Select(c => new
+                {
+                    c.Id,
+                    CreatedByName = c.CreatedByUser.FullName,
+                    OrderNumber = c.Order != null ? c.Order.OrderNumber : null,
+                    TargetName = c.Merchant != null ? c.Merchant.Name
+                               : c.DriverProfile != null ? c.DriverProfile.User.FullName
+                               : c.Offer != null ? c.Offer.Title
+                               : null,
+                    c.Category,
+                    c.Description,
+                    c.EvidenceUrl,
+                    c.Status,
+                    c.AdminResponse,
+                    c.CreatedAt,
+                    c.ResolvedAt
+                })
+                .ToListAsync();
+
+            return Ok(complaints);
+        }
+        [HttpPut("complaints/{id}/resolve")]
+        public async Task<IActionResult> ResolveComplaint(Guid id, ResolveComplaintRequestDto dto)
+        {
+            var adminId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
+
+            if (string.IsNullOrWhiteSpace(dto.AdminResponse))
+                return BadRequest("الرد على الشكوى مطلوب");
+
+            if (dto.Status != ComplaintStatus.Resolved
+                && dto.Status != ComplaintStatus.Rejected
+                && dto.Status != ComplaintStatus.UnderReview)
+                return BadRequest("حالة غير صالحة");
+
+            var complaint = await _dbcontext.Complaints.FirstOrDefaultAsync(c => c.Id == id);
+            if (complaint == null)
+                return NotFound("الشكوى غير موجودة");
+
+            if (complaint.Status == ComplaintStatus.Resolved || complaint.Status == ComplaintStatus.Rejected)
+                return BadRequest("الشكوى مغلقة بالفعل");
+
+            complaint.Status = dto.Status;
+            complaint.AdminResponse = dto.AdminResponse.Trim();
+
+            if (dto.Status == ComplaintStatus.Resolved || dto.Status == ComplaintStatus.Rejected)
+            {
+                complaint.ResolvedByUserId = adminId;
+                complaint.ResolvedAt = now;
+            }
+
+            await _dbcontext.SaveChangesAsync();
+
+            var title = dto.Status switch
+            {
+                ComplaintStatus.Resolved => "تم حل شكواك",
+                ComplaintStatus.Rejected => "تم إغلاق شكواك",
+                _ => "شكواك قيد المراجعة"
+            };
+
+            await _notificationService.NotifyAsync(
+                complaint.CreatedByUserId,
+                title,
+                dto.AdminResponse,
+                "ComplaintUpdated",
+                "Complaint",
+                complaint.Id);
+
+            return Ok(new
+            {
+                complaint.Id,
+                complaint.Status,
+                complaint.AdminResponse,
+                complaint.ResolvedAt
+            });
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
