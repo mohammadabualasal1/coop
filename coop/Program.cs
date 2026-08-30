@@ -25,7 +25,7 @@ builder.Services.AddHostedService<OfferStatusService>();
 // ---- JWT ----
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddScoped<IJwtService, JwtService>();
-
+builder.Services.AddScoped<INotificationService, NotificationService>();
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
     ?? throw new InvalidOperationException("JwtSettings section is missing in configuration.");
 
