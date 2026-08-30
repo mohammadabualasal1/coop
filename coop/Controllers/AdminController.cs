@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-
+using coop.Services;
 namespace coop.Controllers
 {
     [ApiController]
@@ -14,12 +14,15 @@ namespace coop.Controllers
     public class AdminController : ControllerBase
     {
         private readonly CoopDbContext _dbcontext;
+        private readonly IAuditService _auditService;
         private readonly INotificationService _notificationService;
 
-        public AdminController(CoopDbContext dbcontext, INotificationService notificationService)
+        public AdminController(CoopDbContext dbcontext, IAuditService auditService,INotificationService notificationService)
         {
             _dbcontext = dbcontext;
+            _auditService = auditService;
             _notificationService = notificationService;
+
         }
 
         [HttpGet("verifications")]
