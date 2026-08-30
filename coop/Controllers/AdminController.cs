@@ -189,6 +189,40 @@ namespace coop.Controllers
                 driverProfile.RejectionReason
             });
         }
+        [HttpGet("complaints")]
+        public async Task<IActionResult> GetAllComplaints([FromQuery] ComplaintStatus? status)
+        {
+            var query = _dbcontext.Complaints.AsQueryable();
+
+            if (status != null)
+                query = query.Where(c => c.Status == status);
+
+            var complaints = await query
+                .OrderBy(c => c.Status)
+                .ThenBy(c => c.CreatedAt)
+                .Select(c => new AdminComplaintResponseDto
+                {
+                    Id = c.Id,
+                    CreatedByName = c.CreatedByUser.FullName,
+                    OrderNumber = c.Order != null ? c.Order.OrderNumber : null,
+                    TargetName = c.Merchant != null ? c.Merchant.Name
+                               : c.DriverProfile != null ? c.DriverProfile.User.FullName
+                               : c.Offer != null ? c.Offer.Title
+                               : null,
+                    Category = c.Category,
+                    Description = c.Description,
+                    EvidenceUrl = c.EvidenceUrl,
+                    Status = c.Status,
+                    AdminResponse = c.AdminResponse,
+                    CreatedAt = c.CreatedAt,
+                    ResolvedAt = c.ResolvedAt
+                })
+                .ToListAsync();
+
+            return Ok(complaints);
+        }
+
+
         private Guid GetCurrentUserId() =>
            Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
