@@ -262,6 +262,37 @@ namespace coop.Controllers
                 driverProfile.RejectionReason
             });
         }
+        [HttpGet("complaints")]
+        public async Task<IActionResult> GetAllComplaints([FromQuery] ComplaintStatus? status)
+        {
+            var query = _dbcontext.Complaints.AsQueryable();
+
+            if (status != null)
+                query = query.Where(c => c.Status == status);
+
+            var complaints = await query
+                .OrderByDescending(c => c.CreatedAt)
+                .Select(c => new
+                {
+                    c.Id,
+                    CreatedByName = c.CreatedByUser.FullName,
+                    OrderNumber = c.Order != null ? c.Order.OrderNumber : null,
+                    TargetName = c.Merchant != null ? c.Merchant.Name
+                               : c.DriverProfile != null ? c.DriverProfile.User.FullName
+                               : c.Offer != null ? c.Offer.Title
+                               : null,
+                    c.Category,
+                    c.Description,
+                    c.EvidenceUrl,
+                    c.Status,
+                    c.AdminResponse,
+                    c.CreatedAt,
+                    c.ResolvedAt
+                })
+                .ToListAsync();
+
+            return Ok(complaints);
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
