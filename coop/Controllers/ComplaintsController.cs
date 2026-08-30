@@ -36,35 +36,53 @@ namespace coop.Controllers
                 && dto.DriverProfileId == null && dto.OfferId == null)
                 return BadRequest("يجب تحديد الطلب أو التاجر أو السائق أو العرض المشتكى عليه");
 
+            string? orderNumber = null;
+            string? targetName = null;
+
             if (dto.OrderId != null)
             {
-                var isRelatedToOrder = await _dbcontext.Orders
-                    .AnyAsync(o => o.Id == dto.OrderId
-                                && (o.CustomerUserId == userId
-                                 || o.Merchant.OwnerUserId == userId));
+                var order = await _dbcontext.Orders
+                    .Where(o => o.Id == dto.OrderId
+                             && (o.CustomerUserId == userId || o.Merchant.OwnerUserId == userId))
+                    .Select(o => new { o.OrderNumber })
+                    .FirstOrDefaultAsync();
 
-                if (!isRelatedToOrder)
+                if (order == null)
                     return BadRequest("الطلب غير موجود أو لا علاقة لك به");
+
+                orderNumber = order.OrderNumber;
             }
 
             if (dto.MerchantId != null)
             {
-                var merchantExists = await _dbcontext.Merchants.AnyAsync(m => m.Id == dto.MerchantId);
-                if (!merchantExists)
+                targetName = await _dbcontext.Merchants
+                    .Where(m => m.Id == dto.MerchantId)
+                    .Select(m => m.Name)
+                    .FirstOrDefaultAsync();
+
+                if (targetName == null)
                     return BadRequest("التاجر غير موجود");
             }
 
             if (dto.DriverProfileId != null)
             {
-                var driverExists = await _dbcontext.DriverProfiles.AnyAsync(d => d.Id == dto.DriverProfileId);
-                if (!driverExists)
+                targetName = await _dbcontext.DriverProfiles
+                    .Where(d => d.Id == dto.DriverProfileId)
+                    .Select(d => d.User.FullName)
+                    .FirstOrDefaultAsync();
+
+                if (targetName == null)
                     return BadRequest("السائق غير موجود");
             }
 
             if (dto.OfferId != null)
             {
-                var offerExists = await _dbcontext.Offers.AnyAsync(o => o.Id == dto.OfferId);
-                if (!offerExists)
+                targetName = await _dbcontext.Offers
+                    .Where(o => o.Id == dto.OfferId)
+                    .Select(o => o.Title)
+                    .FirstOrDefaultAsync();
+
+                if (targetName == null)
                     return BadRequest("العرض غير موجود");
             }
 
@@ -89,6 +107,8 @@ namespace coop.Controllers
             return StatusCode(201, new ComplaintResponse
             {
                 Id = complaint.Id,
+                OrderNumber = orderNumber,
+                TargetName = targetName,
                 Category = complaint.Category,
                 Description = complaint.Description,
                 EvidenceUrl = complaint.EvidenceUrl,
@@ -98,6 +118,40 @@ namespace coop.Controllers
                 ResolvedAt = complaint.ResolvedAt
             });
         }
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyComplaints([FromQuery] ComplaintStatus? status)
+        {
+            var userId = GetCurrentUserId();
+
+            var query = _dbcontext.Complaints
+                .Where(c => c.CreatedByUserId == userId);
+
+            if (status != null)
+                query = query.Where(c => c.Status == status);
+
+            var complaints = await query
+                .OrderByDescending(c => c.CreatedAt)
+                .Select(c => new ComplaintResponse
+                {
+                    Id = c.Id,
+                    OrderNumber = c.Order != null ? c.Order.OrderNumber : null,
+                    TargetName = c.Merchant != null ? c.Merchant.Name
+                               : c.DriverProfile != null ? c.DriverProfile.User.FullName
+                               : c.Offer != null ? c.Offer.Title
+                               : null,
+                    Category = c.Category,
+                    Description = c.Description,
+                    EvidenceUrl = c.EvidenceUrl,
+                    Status = c.Status,
+                    AdminResponse = c.AdminResponse,
+                    CreatedAt = c.CreatedAt,
+                    ResolvedAt = c.ResolvedAt
+                })
+                .ToListAsync();
+
+            return Ok(complaints);
+        }
+
 
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
