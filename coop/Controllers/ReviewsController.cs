@@ -149,7 +149,29 @@ namespace coop.Controllers
 
             return Ok(reviews);
         }
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyReviews()
+        {
+            var userId = GetCurrentUserId();
 
+            var reviews = await _dbcontext.Reviews
+                .Where(r => r.CustomerUserId == userId)
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => new ReviewResponse
+                {
+                    Id = r.Id,
+                    OrderId = r.OrderId,
+                    CustomerName = r.CustomerUser.FullName,
+                    MerchantRating = r.MerchantRating,
+                    DriverRating = r.DriverRating,
+                    Comment = r.Comment,
+                    Status = r.Status,
+                    CreatedAt = r.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(reviews);
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
