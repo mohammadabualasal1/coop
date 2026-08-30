@@ -97,6 +97,58 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             return NoContent();
         }
+        [HttpPost("device-tokens")]
+        public async Task<IActionResult> RegisterDeviceToken([FromBody] RegisterDeviceTokenRequestDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var now = DateTime.UtcNow;
+
+            if (string.IsNullOrWhiteSpace(dto.Token))
+                return BadRequest("التوكن مطلوب");
+
+            var existing = await _dbcontext.DeviceTokens
+                .FirstOrDefaultAsync(t => t.Token == dto.Token);
+
+            if (existing != null)
+            {
+             
+                existing.UserId = userId;
+                existing.Platform = dto.Platform;
+                existing.IsActive = true;
+                existing.LastUsedAt = now;
+            }
+            else
+            {
+                _dbcontext.DeviceTokens.Add(new DeviceToken
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    Token = dto.Token,
+                    Platform = dto.Platform,
+                    IsActive = true,
+                    CreatedAt = now,
+                    LastUsedAt = now
+                });
+            }
+
+            await _dbcontext.SaveChangesAsync();
+            return NoContent();
+        }
+        [HttpDelete("device-tokens/{token}")]
+        public async Task<IActionResult> UnregisterDeviceToken(string token)
+        {
+            var userId = GetCurrentUserId();
+
+            var deviceToken = await _dbcontext.DeviceTokens
+                .FirstOrDefaultAsync(t => t.Token == token && t.UserId == userId);
+
+            if (deviceToken == null)
+                return NotFound("التوكن غير موجود");
+
+            deviceToken.IsActive = false;
+            await _dbcontext.SaveChangesAsync();
+            return NoContent();
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
