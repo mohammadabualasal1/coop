@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using coop.Enums;
-
+using NetTopologySuite.Geometries;
 namespace coop.Model
 {
     public class DriverProfile
@@ -19,6 +19,7 @@ namespace coop.Model
         public bool IsAvailable { get; set; }
         public double? CurrentLatitude { get; set; }
         public double? CurrentLongitude { get; set; }
+        public Point? CurrentLocation { get; set; }
         public DateTime? LastLocationAt { get; set; }
         public decimal? AverageRating { get; set; }
         public int CompletedDeliveries { get; set; }

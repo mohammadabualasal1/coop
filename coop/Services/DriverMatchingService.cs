@@ -10,6 +10,7 @@ namespace coop.Services
         private readonly ILogger<DriverMatchingService> _logger;
 
         private const int OfferExpiryMinutes = 2;
+        private const double SearchRadiusMeters = 15000;
 
         public DriverMatchingService(IServiceProvider serviceProvider, ILogger<DriverMatchingService> logger)
         {
@@ -55,13 +56,13 @@ namespace coop.Services
             // 2) المهام التي تبحث عن سائق ولا يوجد لها عرض معلّق
             var tasks = await dbcontext.DeliveryTasks
                 .Where(t => t.Status == DeliveryStatus.SearchingDriver && t.DriverProfileId == null)
+                .Where(t => t.PickupBranch.Location != null)
                 .Where(t => !dbcontext.DriverTaskOffers
                     .Any(o => o.DeliveryTaskId == t.Id && o.Status == DriverTaskOfferStatus.Pending))
                 .Select(t => new
                 {
                     t.Id,
-                    BranchLatitude = t.PickupBranch.Latitude,
-                    BranchLongitude = t.PickupBranch.Longitude
+                    BranchLocation = t.PickupBranch.Location!
                 })
                 .ToListAsync(stoppingToken);
 
@@ -72,11 +73,12 @@ namespace coop.Services
 
             foreach (var task in tasks)
             {
-                // 3) السائقون المرشحون
-                var candidates = await dbcontext.DriverProfiles
+                // 3) أقرب سائق مؤهل — الاستعلام كله داخل قاعدة البيانات
+                var nearest = await dbcontext.DriverProfiles
                     .Where(d => d.VerificationStatus == VerificationStatus.Approved)
                     .Where(d => d.IsAvailable)
-                    .Where(d => d.CurrentLatitude != null && d.CurrentLongitude != null)
+                    .Where(d => d.CurrentLocation != null)
+                    .Where(d => d.CurrentLocation!.IsWithinDistance(task.BranchLocation, SearchRadiusMeters))
                     .Where(d => !dbcontext.DeliveryTasks
                         .Any(t => t.DriverProfileId == d.Id
                                && t.Status != DeliveryStatus.Delivered
@@ -87,34 +89,22 @@ namespace coop.Services
                     .Select(d => new
                     {
                         d.Id,
-                        Latitude = d.CurrentLatitude!.Value,
-                        Longitude = d.CurrentLongitude!.Value
+                        DistanceMeters = d.CurrentLocation!.Distance(task.BranchLocation)
                     })
-                    .ToListAsync(stoppingToken);
+                    .OrderBy(d => d.DistanceMeters)
+                    .FirstOrDefaultAsync(stoppingToken);
 
-                if (candidates.Count == 0)
+                if (nearest == null)
                     continue;
 
-                // 4) أقرب سائق للفرع
-                var nearest = candidates
-                    .Select(c => new
-                    {
-                        c.Id,
-                        Distance = CalculateDistanceKm(
-                            task.BranchLatitude, task.BranchLongitude,
-                            c.Latitude, c.Longitude)
-                    })
-                    .OrderBy(c => c.Distance)
-                    .First();
-
-                // 5) إنشاء عرض محدود بوقت
+                // 4) إنشاء عرض محدود بوقت
                 dbcontext.DriverTaskOffers.Add(new DriverTaskOffer
                 {
                     Id = Guid.NewGuid(),
                     DeliveryTaskId = task.Id,
                     DriverProfileId = nearest.Id,
                     Status = DriverTaskOfferStatus.Pending,
-                    MatchScore = (decimal)nearest.Distance,
+                    MatchScore = (decimal)(nearest.DistanceMeters / 1000),
                     OfferedAt = now,
                     ExpiresAt = now.AddMinutes(OfferExpiryMinutes)
                 });
@@ -128,21 +118,6 @@ namespace coop.Services
                 _logger.LogInformation("تم إرسال {Count} عرض توصيل للسائقين", createdCount);
             }
         }
-
-        private static double CalculateDistanceKm(double lat1, double lng1, double lat2, double lng2)
-        {
-            const double earthRadiusKm = 6371;
-
-            var dLat = (lat2 - lat1) * Math.PI / 180;
-            var dLng = (lng2 - lng1) * Math.PI / 180;
-
-            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
-                  + Math.Cos(lat1 * Math.PI / 180) * Math.Cos(lat2 * Math.PI / 180)
-                  * Math.Sin(dLng / 2) * Math.Sin(dLng / 2);
-
-            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-
-            return earthRadiusKm * c;
-        }
+       
     }
 }

@@ -15,8 +15,9 @@ builder.Services.AddControllers();
 
 // Database (single registration)
 builder.Services.AddDbContext<CoopDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("CoopDbContext")));
-builder.Services.AddHostedService<StockReservationCleanupService>();
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("CoopDbContext"),
+        o => o.UseNetTopologySuite())); builder.Services.AddHostedService<StockReservationCleanupService>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddHostedService<OfferStatusService>();

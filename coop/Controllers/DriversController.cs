@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using coop.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using NetTopologySuite.Geometries;
 namespace coop.Controllers
 {
     [Route("api/[controller]")]
@@ -212,6 +213,7 @@ namespace coop.Controllers
 
             profile.CurrentLatitude = dto.Latitude;
             profile.CurrentLongitude = dto.Longitude;
+            profile.CurrentLocation = new Point(dto.Longitude, dto.Latitude) { SRID = 4326 };
             profile.LastLocationAt = now;
 
             var activeTask = await _dbcontext.DeliveryTasks

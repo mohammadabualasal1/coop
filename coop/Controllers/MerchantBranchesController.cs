@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using NetTopologySuite.Geometries;
 
 namespace coop.Controllers
 {
@@ -44,6 +45,7 @@ namespace coop.Controllers
                 Area = dto.Area,
                 Latitude = dto.Latitude,
                 Longitude = dto.Longitude,
+                Location = new Point(dto.Longitude, dto.Latitude) { SRID = 4326 },
                 PhoneNumber = dto.PhoneNumber,
                 OpeningTime = dto.OpeningTime,
                 ClosingTime = dto.ClosingTime,
@@ -103,6 +105,7 @@ namespace coop.Controllers
             branch.Area = dto.Area;
             branch.Latitude = dto.Latitude;
             branch.Longitude = dto.Longitude;
+            branch.Location = new Point(dto.Longitude, dto.Latitude) { SRID = 4326 };
             branch.PhoneNumber = dto.PhoneNumber;
             branch.OpeningTime = dto.OpeningTime;
             branch.ClosingTime = dto.ClosingTime;

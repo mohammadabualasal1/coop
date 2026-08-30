@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using coop.Model;
+using NetTopologySuite.Geometries;
 namespace coop.Controllers
 {
     [ApiController]
@@ -76,6 +77,7 @@ namespace coop.Controllers
                 AdditionalDirections = dto.AdditionalDirections,
                 Latitude = dto.Latitude,
                 Longitude = dto.Longitude,
+                Location = new Point(dto.Longitude, dto.Latitude) { SRID = 4326 },
                 IsDefault = isFirstAddress,
                 CreatedAt = DateTime.UtcNow
             };
@@ -158,7 +160,7 @@ namespace coop.Controllers
             address.AdditionalDirections = dto.AdditionalDirections;
             address.Latitude = dto.Latitude;
             address.Longitude = dto.Longitude;
-
+            address.Location = new Point(dto.Longitude, dto.Latitude) { SRID = 4326 };
             await _dbcontext.SaveChangesAsync();
 
             return Ok(new AddressResponseDto

@@ -2,7 +2,7 @@
 using coop.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using NetTopologySuite.Geometries;
 namespace coop.Controllers
 {
     [ApiController]
@@ -112,79 +112,63 @@ namespace coop.Controllers
             var pageSize = request.PageSize < 1 || request.PageSize > 100 ? 20 : request.PageSize;
             var radiusKm = request.RadiusKm <= 0 || request.RadiusKm > 100 ? 10 : request.RadiusKm;
 
-            var latDelta = radiusKm / 111.0;
-            var lngDelta = radiusKm / (111.0 * Math.Cos(request.Latitude * Math.PI / 180));
+            var origin = new Point(request.Longitude, request.Latitude) { SRID = 4326 };
+            var radiusMeters = radiusKm * 1000;
 
-            var minLat = request.Latitude - latDelta;
-            var maxLat = request.Latitude + latDelta;
-            var minLng = request.Longitude - lngDelta;
-            var maxLng = request.Longitude + lngDelta;
-
-            var candidates = await _dbcontext.BranchOffers
+            var nearest = await _dbcontext.BranchOffers
                 .Where(bo => bo.IsAvailable
                           && bo.TotalStock - bo.ReservedStock - bo.SoldStock > 0
                           && bo.Offer.Status == OfferStatus.Active
                           && bo.Offer.StartAt <= now
                           && bo.Offer.EndAt >= now
                           && bo.MerchantBranch.IsActive
-                          && bo.MerchantBranch.Latitude >= minLat
-                          && bo.MerchantBranch.Latitude <= maxLat
-                          && bo.MerchantBranch.Longitude >= minLng
-                          && bo.MerchantBranch.Longitude <= maxLng)
-                .Select(bo => new
+                          && bo.MerchantBranch.Location != null
+                          && bo.MerchantBranch.Location.IsWithinDistance(origin, radiusMeters))
+                .GroupBy(bo => bo.OfferId)
+                .Select(g => new
                 {
-                    BranchLatitude = bo.MerchantBranch.Latitude,
-                    BranchLongitude = bo.MerchantBranch.Longitude,
-                    Offer = new OfferSummaryResponse
-                    {
-                        Id = bo.Offer.Id,
-                        Title = bo.Offer.Title,
-                        MerchantId = bo.Offer.MerchantId,
-                        MerchantName = bo.Offer.Merchant.Name,
-                        MainImageUrl = bo.Offer.Product.MainImageUrl,
-                        OriginalPrice = bo.Offer.OriginalPrice,
-                        DiscountedPrice = bo.Offer.DiscountedPrice,
-                        DiscountPercentage = bo.Offer.DiscountPercentage,
-                        EndAt = bo.Offer.EndAt,
-                        DistanceKm = null
-                    }
+                    OfferId = g.Key,
+                    DistanceMeters = g.Min(x => x.MerchantBranch.Location!.Distance(origin))
+                })
+                .OrderBy(x => x.DistanceMeters)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            if (nearest.Count == 0)
+                return Ok(new List<OfferSummaryResponse>());
+
+            var offerIds = nearest.Select(n => n.OfferId).ToList();
+
+            var offers = await _dbcontext.Offers
+                .Where(o => offerIds.Contains(o.Id))
+                .Select(o => new OfferSummaryResponse
+                {
+                    Id = o.Id,
+                    Title = o.Title,
+                    MerchantId = o.MerchantId,
+                    MerchantName = o.Merchant.Name,
+                    MainImageUrl = o.Product.MainImageUrl,
+                    OriginalPrice = o.OriginalPrice,
+                    DiscountedPrice = o.DiscountedPrice,
+                    DiscountPercentage = o.DiscountPercentage,
+                    EndAt = o.EndAt,
+                    DistanceKm = null
                 })
                 .ToListAsync();
 
-            var offers = candidates
-                .Select(c =>
+            var result = nearest
+                .Select(n =>
                 {
-                    c.Offer.DistanceKm = CalculateDistanceKm(
-                        request.Latitude, request.Longitude,
-                        c.BranchLatitude, c.BranchLongitude);
-                    return c.Offer;
+                    var offer = offers.First(o => o.Id == n.OfferId);
+                    offer.DistanceKm = n.DistanceMeters / 1000;
+                    return offer;
                 })
-                .Where(o => o.DistanceKm <= radiusKm)
-                .GroupBy(o => o.Id)
-                .Select(g => g.OrderBy(o => o.DistanceKm).First())
-                .OrderBy(o => o.DistanceKm)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
                 .ToList();
 
-            return Ok(offers);
+            return Ok(result);
         }
-
-        private static double CalculateDistanceKm(double lat1, double lng1, double lat2, double lng2)
-        {
-            const double earthRadiusKm = 6371;
-
-            var dLat = (lat2 - lat1) * Math.PI / 180;
-            var dLng = (lng2 - lng1) * Math.PI / 180;
-
-            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
-                  + Math.Cos(lat1 * Math.PI / 180) * Math.Cos(lat2 * Math.PI / 180)
-                  * Math.Sin(dLng / 2) * Math.Sin(dLng / 2);
-
-            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-
-            return earthRadiusKm * c;
-        }
+       
         [HttpGet("offers/ending-soon")]
         public async Task<IActionResult> GetEndingSoonOffers([FromQuery] int hoursWindow = 48, [FromQuery] int limit = 20)
         {

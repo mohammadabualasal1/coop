@@ -44,5 +44,22 @@ namespace coop
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<VerificationCode> VerificationCodes { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<MerchantBranch>()
+                .Property(b => b.Location)
+                .HasColumnType("geography (point)");
+
+            modelBuilder.Entity<CustomerAddress>()
+                .Property(a => a.Location)
+                .HasColumnType("geography (point)");
+
+            modelBuilder.Entity<DriverProfile>()
+                .Property(d => d.CurrentLocation)
+                .HasColumnType("geography (point)");
+        }
     }
 }

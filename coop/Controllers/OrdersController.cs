@@ -20,6 +20,8 @@ namespace coop.Controllers
     {
         private readonly CoopDbContext _dbcontext;
         private readonly IHubContext<TrackingHub> _hubContext;
+        private const double FreeRadiusKm = 3;
+        private const decimal PerKmFee = 0.25m;
 
         public OrdersController(CoopDbContext dbcontext, IHubContext<TrackingHub> hubContext)
         {
@@ -54,7 +56,17 @@ namespace coop.Controllers
 
             if (cartItems.Count == 0)
                 return BadRequest("السلة فارغة");
-
+            var deliveryFee = branch.BaseDeliveryFee;
+            if (branch.Location != null && address.Location != null)
+            {
+                var distanceMeters = await _dbcontext.MerchantBranches
+                    .Where(b => b.Id == branch.Id)
+                    .Select(b => b.Location!.Distance(address.Location))
+                    .FirstAsync();
+                var distanceKm = distanceMeters / 1000;
+                if (distanceKm > FreeRadiusKm)
+                    deliveryFee += (decimal)Math.Ceiling(distanceKm - FreeRadiusKm) * PerKmFee;
+            }
             using var transaction = await _dbcontext.Database.BeginTransactionAsync();
 
             try
@@ -71,7 +83,7 @@ namespace coop.Controllers
                         ? OrderStatus.PendingPayment
                         : OrderStatus.PendingMerchantConfirmation,
                     PaymentMethod = dto.PaymentMethod,
-                    DeliveryFee = branch.BaseDeliveryFee,
+                    DeliveryFee = deliveryFee,
                     CustomerNotes = dto.CustomerNotes,
                     PlacedAt = now,
                     CreatedAt = now,

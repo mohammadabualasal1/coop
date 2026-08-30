@@ -13,7 +13,8 @@ namespace coop.Controllers
     public class CheckoutController : ControllerBase
     {
         private CoopDbContext _dbcontext;
-
+        private const double FreeRadiusKm = 3;
+        private const decimal PerKmFee = 0.25m;
         public CheckoutController(CoopDbContext dbcontext)
         {
             _dbcontext = dbcontext;
@@ -74,8 +75,23 @@ namespace coop.Controllers
             if (itemsTotal < branch.MinimumOrderAmount)
                 return BadRequest($"الحد الأدنى للطلب من هذا الفرع هو {branch.MinimumOrderAmount}");
 
+            var address = await _dbcontext.CustomerAddresses
+                .FirstOrDefaultAsync(a => a.Id == dto.CustomerAddressId);
+
             var deliveryFee = branch.BaseDeliveryFee;
 
+            if (branch.Location != null && address?.Location != null)
+            {
+                var distanceMeters = await _dbcontext.MerchantBranches
+                    .Where(b => b.Id == branch.Id)
+                    .Select(b => b.Location!.Distance(address.Location))
+                    .FirstAsync();
+
+                var distanceKm = distanceMeters / 1000;
+
+                if (distanceKm > FreeRadiusKm)
+                    deliveryFee += (decimal)Math.Ceiling(distanceKm - FreeRadiusKm) * PerKmFee;
+            }
             return Ok(new CheckoutSummaryResponseDto
             {
                 Subtotal = subtotal,
