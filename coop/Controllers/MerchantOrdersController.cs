@@ -3,14 +3,16 @@ using coop.Dtos.MerchantOrdersDtos;
 using coop.Enums;
 using coop.Hubs;
 using coop.Model;
+using coop.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
-
+using System.Text;
 namespace coop.Controllers
 {
     [Route("api/merchant-orders")]
@@ -20,13 +22,17 @@ namespace coop.Controllers
     {
         private readonly CoopDbContext _dbcontext;
         private readonly IHubContext<TrackingHub> _hubContext;
+        private readonly INotificationService _notificationService;
 
-        public MerchantOrdersController(CoopDbContext dbcontext, IHubContext<TrackingHub> hubContext)
+        public MerchantOrdersController(
+            CoopDbContext dbcontext,
+            IHubContext<TrackingHub> hubContext,
+            INotificationService notificationService)
         {
             _dbcontext = dbcontext;
             _hubContext = hubContext;
+            _notificationService = notificationService;
         }
-
 
         [HttpGet]
         public async Task<IActionResult> GetMyOrders([FromQuery] OrderStatus? status)
@@ -106,7 +112,6 @@ namespace coop.Controllers
 
             return Ok(order);
         }
-
         [HttpPost("{id}/accept")]
         public async Task<IActionResult> AcceptOrder(Guid id)
         {
@@ -175,6 +180,14 @@ namespace coop.Controllers
                     ChangedAt = now
                 });
 
+            await _notificationService.NotifyAsync(
+                order.CustomerUserId,
+                "تم قبول طلبك",
+                $"التاجر قبل طلبك رقم {order.OrderNumber} وبدأ التجهيز",
+                "OrderAccepted",
+                "Order",
+                order.Id);
+
             return Ok(new MerchantOrderResponse
             {
                 Id = order.Id,
@@ -188,7 +201,6 @@ namespace coop.Controllers
                 PlacedAt = order.PlacedAt
             });
         }
-
         [HttpPost("{id}/reject")]
         public async Task<IActionResult> RejectOrder(Guid id, RejectOrderRequestDto dto)
         {
@@ -265,6 +277,14 @@ namespace coop.Controllers
                     ChangedAt = now
                 });
 
+            await _notificationService.NotifyAsync(
+                order.CustomerUserId,
+                "تم رفض طلبك",
+                $"عذراً، تم رفض طلبك رقم {order.OrderNumber}. السبب: {dto.Reason}",
+                "OrderRejected",
+                "Order",
+                order.Id);
+
             return Ok(new MerchantOrderResponse
             {
                 Id = order.Id,
@@ -313,6 +333,37 @@ namespace coop.Controllers
                 CreatedAt = now
             });
 
+            // إنشاء كود استلام للسائق
+            var task = await _dbcontext.DeliveryTasks.FirstOrDefaultAsync(t => t.OrderId == order.Id);
+
+            string? pickupCode = null;
+
+            if (task != null)
+            {
+                var oldTokens = await _dbcontext.ConfirmationTokens
+                    .Where(t => t.DeliveryTaskId == task.Id
+                             && t.Type == ConfirmationTokenType.MerchantPickup
+                             && t.UsedAt == null
+                             && !t.IsRevoked)
+                    .ToListAsync();
+
+                foreach (var old in oldTokens)
+                    old.IsRevoked = true;
+
+                pickupCode = GenerateNumericCode();
+
+                _dbcontext.ConfirmationTokens.Add(new ConfirmationToken
+                {
+                    Id = Guid.NewGuid(),
+                    DeliveryTaskId = task.Id,
+                    Type = ConfirmationTokenType.MerchantPickup,
+                    TokenHash = HashCode(pickupCode),
+                    ExpiresAt = now.AddHours(6),
+                    IsRevoked = false,
+                    CreatedAt = now
+                });
+            }
+
             await _dbcontext.SaveChangesAsync();
 
             await _hubContext.Clients
@@ -326,17 +377,29 @@ namespace coop.Controllers
                     ChangedAt = now
                 });
 
-            return Ok(new MerchantOrderResponse
+            await _notificationService.NotifyAsync(
+                order.CustomerUserId,
+                "طلبك جاهز",
+                $"طلبك رقم {order.OrderNumber} جاهز وبانتظار السائق",
+                "OrderReady",
+                "Order",
+                order.Id);
+
+            return Ok(new
             {
-                Id = order.Id,
-                OrderNumber = order.OrderNumber,
-                CustomerName = await _dbcontext.Users
-                    .Where(u => u.Id == order.CustomerUserId)
-                    .Select(u => u.FullName)
-                    .FirstAsync(),
-                Status = order.Status,
-                TotalAmount = order.TotalAmount,
-                PlacedAt = order.PlacedAt
+                Order = new MerchantOrderResponse
+                {
+                    Id = order.Id,
+                    OrderNumber = order.OrderNumber,
+                    CustomerName = await _dbcontext.Users
+                        .Where(u => u.Id == order.CustomerUserId)
+                        .Select(u => u.FullName)
+                        .FirstAsync(),
+                    Status = order.Status,
+                    TotalAmount = order.TotalAmount,
+                    PlacedAt = order.PlacedAt
+                },
+                PickupCode = pickupCode
             });
         }
         [HttpPost("{id}/pickup-code")]
@@ -395,6 +458,17 @@ namespace coop.Controllers
                 Code = code,
                 ExpiresAt = expiresAt
             });
+        }
+        private static string GenerateNumericCode()
+        {
+            var value = RandomNumberGenerator.GetInt32(0, 1000000);
+            return value.ToString("D6");
+        }
+
+        private static string HashCode(string code)
+        {
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(code));
+            return Convert.ToBase64String(bytes);
         }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

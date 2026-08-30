@@ -4,6 +4,7 @@ using coop.Dtos.DriverTaskOffersDtos;
 using coop.Enums;
 using coop.Hubs;
 using coop.Model;
+using coop.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -21,11 +22,16 @@ namespace coop.Controllers
     {
         private readonly CoopDbContext _dbcontext;
         private readonly IHubContext<TrackingHub> _hubContext;
+        private readonly INotificationService _notificationService;
 
-        public DeliveryTasksController(CoopDbContext dbcontext, IHubContext<TrackingHub> hubContext)
+        public DeliveryTasksController(
+            CoopDbContext dbcontext,
+            IHubContext<TrackingHub> hubContext,
+            INotificationService notificationService)
         {
             _dbcontext = dbcontext;
             _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
         [HttpGet("offers")]
@@ -178,6 +184,27 @@ namespace coop.Controllers
                         NewStatus = order.Status,
                         ChangedAt = now
                     });
+
+                await _notificationService.NotifyAsync(
+                    order.CustomerUserId,
+                    "تم تعيين سائق",
+                    $"السائق {driverUser.FullName} في طريقه لاستلام طلبك رقم {order.OrderNumber}",
+                    "DriverAssigned",
+                    "Order",
+                    order.Id);
+
+                var merchantOwnerUserId = await _dbcontext.Merchants
+                    .Where(m => m.Id == order.MerchantId)
+                    .Select(m => m.OwnerUserId)
+                    .FirstAsync();
+
+                await _notificationService.NotifyAsync(
+                    merchantOwnerUserId,
+                    "تم تعيين سائق",
+                    $"السائق {driverUser.FullName} في طريقه لاستلام الطلب رقم {order.OrderNumber}",
+                    "DriverAssigned",
+                    "Order",
+                    order.Id);
             }
 
             return Ok(new DeliveryTaskResponseDto
@@ -344,6 +371,19 @@ namespace coop.Controllers
                     ChangedAt = now
                 });
 
+            var merchantOwnerUserId = await _dbcontext.Orders
+                .Where(o => o.Id == task.OrderId)
+                .Select(o => o.Merchant.OwnerUserId)
+                .FirstAsync();
+
+            await _notificationService.NotifyAsync(
+                merchantOwnerUserId,
+                "السائق وصل",
+                "السائق وصل للفرع لاستلام الطلب",
+                "DriverArrived",
+                "Order",
+                task.OrderId);
+
             return Ok(new DeliveryTaskResponseDto
             {
                 Id = task.Id,
@@ -457,7 +497,6 @@ namespace coop.Controllers
                 DriverEarning = task.DriverEarning
             });
         }
-
         [HttpPost("{id}/arrived-at-customer")]
         public async Task<IActionResult> ArrivedAtCustomer(Guid id)
         {
@@ -494,6 +533,19 @@ namespace coop.Controllers
                     NewStatus = task.Status,
                     ChangedAt = now
                 });
+
+            var customerUserId = await _dbcontext.Orders
+                .Where(o => o.Id == task.OrderId)
+                .Select(o => o.CustomerUserId)
+                .FirstAsync();
+
+            await _notificationService.NotifyAsync(
+                customerUserId,
+                "السائق وصل",
+                "السائق وصل إلى عنوانك، جهّز كود الاستلام",
+                "DriverArrivedAtCustomer",
+                "Order",
+                task.OrderId);
 
             return Ok(new DeliveryTaskResponseDto
             {
@@ -626,6 +678,27 @@ namespace coop.Controllers
                             NewStatus = order.Status,
                             ChangedAt = now
                         });
+
+                    await _notificationService.NotifyAsync(
+                        order.CustomerUserId,
+                        "تم تسليم طلبك",
+                        $"تم تسليم طلبك رقم {order.OrderNumber} بنجاح",
+                        "OrderDelivered",
+                        "Order",
+                        order.Id);
+
+                    var merchantOwnerUserId = await _dbcontext.Merchants
+                        .Where(m => m.Id == order.MerchantId)
+                        .Select(m => m.OwnerUserId)
+                        .FirstAsync();
+
+                    await _notificationService.NotifyAsync(
+                        merchantOwnerUserId,
+                        "تم تسليم الطلب",
+                        $"تم تسليم الطلب رقم {order.OrderNumber} للزبون",
+                        "OrderDelivered",
+                        "Order",
+                        order.Id);
                 }
 
                 return Ok(new DeliveryTaskResponseDto
@@ -735,6 +808,27 @@ namespace coop.Controllers
                             NewStatus = order.Status,
                             ChangedAt = now
                         });
+
+                    await _notificationService.NotifyAsync(
+                        order.CustomerUserId,
+                        "فشل التسليم",
+                        $"تعذّر تسليم طلبك رقم {order.OrderNumber}. السبب: {dto.Reason}",
+                        "DeliveryFailed",
+                        "Order",
+                        order.Id);
+
+                    var merchantOwnerUserId = await _dbcontext.Merchants
+                        .Where(m => m.Id == order.MerchantId)
+                        .Select(m => m.OwnerUserId)
+                        .FirstAsync();
+
+                    await _notificationService.NotifyAsync(
+                        merchantOwnerUserId,
+                        "فشل التسليم",
+                        $"تعذّر تسليم الطلب رقم {order.OrderNumber}. السبب: {dto.Reason}",
+                        "DeliveryFailed",
+                        "Order",
+                        order.Id);
                 }
 
                 return Ok(new DeliveryTaskResponseDto

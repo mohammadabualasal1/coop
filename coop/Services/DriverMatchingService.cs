@@ -39,6 +39,7 @@ namespace coop.Services
         {
             using var scope = _serviceProvider.CreateScope();
             var dbcontext = scope.ServiceProvider.GetRequiredService<CoopDbContext>();
+            var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
             var now = DateTime.UtcNow;
 
@@ -70,6 +71,7 @@ namespace coop.Services
                 return;
 
             var createdCount = 0;
+            var pendingNotifications = new List<(Guid DriverUserId, Guid TaskId)>();
 
             foreach (var task in tasks)
             {
@@ -89,6 +91,7 @@ namespace coop.Services
                     .Select(d => new
                     {
                         d.Id,
+                        d.UserId,
                         DistanceMeters = d.CurrentLocation!.Distance(task.BranchLocation)
                     })
                     .OrderBy(d => d.DistanceMeters)
@@ -109,6 +112,7 @@ namespace coop.Services
                     ExpiresAt = now.AddMinutes(OfferExpiryMinutes)
                 });
 
+                pendingNotifications.Add((nearest.UserId, task.Id));
                 createdCount++;
             }
 
@@ -116,8 +120,18 @@ namespace coop.Services
             {
                 await dbcontext.SaveChangesAsync(stoppingToken);
                 _logger.LogInformation("تم إرسال {Count} عرض توصيل للسائقين", createdCount);
+
+                foreach (var (driverUserId, taskId) in pendingNotifications)
+                {
+                    await notificationService.NotifyAsync(
+                        driverUserId,
+                        "عرض توصيل جديد",
+                        $"وصلك عرض مهمة توصيل جديد، عندك {OfferExpiryMinutes} دقيقة للرد",
+                        "DeliveryTaskOffered",
+                        "DeliveryTask",
+                        taskId);
+                }
             }
         }
-       
     }
 }

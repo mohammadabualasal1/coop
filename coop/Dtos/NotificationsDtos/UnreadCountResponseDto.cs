@@ -1,4 +1,4 @@
-﻿namespace coop.Dtos.NotificationsController
+﻿namespace coop.Dtos.NotificationsDtos
 {
     public class UnreadCountResponse
     {
