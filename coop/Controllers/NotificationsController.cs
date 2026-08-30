@@ -62,6 +62,26 @@ namespace coop.Controllers
 
             return Ok(new UnreadCountResponse { Count = count });
         }
+        [HttpPut("{id}/read")]
+        public async Task<IActionResult> MarkAsRead(Guid id)
+        {
+            var userId = GetCurrentUserId();
+
+            var notification = await _dbcontext.Notifications
+                .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
+
+            if (notification == null)
+                return NotFound("الإشعار غير موجود");
+
+            if (!notification.IsRead)
+            {
+                notification.IsRead = true;
+                notification.ReadAt = DateTime.UtcNow;
+                await _dbcontext.SaveChangesAsync();
+            }
+
+            return NoContent();
+        }
 
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
