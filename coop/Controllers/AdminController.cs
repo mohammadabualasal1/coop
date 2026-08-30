@@ -61,7 +61,8 @@ namespace coop.Controllers
             merchant.RejectionReason = null;
 
             await _dbcontext.SaveChangesAsync();
-
+            await _auditService.LogAsync(adminId, "ApproveMerchant", "Merchant", merchant.Id,
+                    $"تمت الموافقة على التاجر: {merchant.Name}");
             await _notificationService.NotifyAsync(
                 merchant.OwnerUserId,
                 "تمت الموافقة على متجرك",
@@ -76,6 +77,7 @@ namespace coop.Controllers
         [HttpPost("merchants/{id}/reject")]
         public async Task<IActionResult> RejectMerchant(Guid id, RejectRequestDto dto)
         {
+            var adminId = GetCurrentUserId();
             var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.Id == id);
             if (merchant == null)
                 return NotFound("التاجر غير موجود");
@@ -86,7 +88,8 @@ namespace coop.Controllers
             merchant.VerifiedByUserId = null;
 
             await _dbcontext.SaveChangesAsync();
-
+            await _auditService.LogAsync(adminId, "RejectMerchant", "Merchant", merchant.Id,
+                    $"تم رفض التاجر: {merchant.Name} — السبب: {dto.Reason}");
             await _notificationService.NotifyAsync(
                 merchant.OwnerUserId,
                 "تم رفض طلب التوثيق",
@@ -141,7 +144,8 @@ namespace coop.Controllers
             offer.UpdatedAt = now;
 
             await _dbcontext.SaveChangesAsync();
-
+            await _auditService.LogAsync(adminId, "ApproveOffer", "Offer", offer.Id,
+                $"تمت الموافقة على العرض: {offer.Title} — الحالة: {offer.Status}");
             var merchantOwnerUserId = await _dbcontext.Merchants
                 .Where(m => m.Id == offer.MerchantId)
                 .Select(m => m.OwnerUserId)
@@ -161,6 +165,7 @@ namespace coop.Controllers
         [HttpPost("offers/{id}/reject")]
         public async Task<IActionResult> RejectOffer(Guid id, RejectRequestDto dto)
         {
+            var adminId = GetCurrentUserId();
             var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == id);
             if (offer == null)
                 return NotFound("العرض غير موجود");
@@ -172,7 +177,8 @@ namespace coop.Controllers
             offer.UpdatedAt = DateTime.UtcNow;
 
             await _dbcontext.SaveChangesAsync();
-
+            await _auditService.LogAsync(adminId, "RejectOffer", "Offer", offer.Id,
+                $"تم رفض العرض: {offer.Title} — السبب: {dto.Reason}");
             var merchantOwnerUserId = await _dbcontext.Merchants
                 .Where(m => m.Id == offer.MerchantId)
                 .Select(m => m.OwnerUserId)
@@ -210,6 +216,7 @@ namespace coop.Controllers
         [HttpPost("drivers/{id}/approve")]
         public async Task<IActionResult> ApproveDriver(Guid id)
         {
+            var adminId = GetCurrentUserId();
             var driverProfile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.Id == id);
             if (driverProfile == null)
                 return NotFound("بروفايل السائق غير موجود");
@@ -221,7 +228,8 @@ namespace coop.Controllers
             driverProfile.RejectionReason = null;
 
             await _dbcontext.SaveChangesAsync();
-
+            await _auditService.LogAsync(adminId, "ApproveDriver", "DriverProfile", driverProfile.Id,
+                    "تمت الموافقة على السائق");
             await _notificationService.NotifyAsync(
                 driverProfile.UserId,
                 "تمت الموافقة على حسابك",
@@ -240,6 +248,7 @@ namespace coop.Controllers
         [HttpPost("drivers/{id}/reject")]
         public async Task<IActionResult> RejectDriver(Guid id, RejectRequestDto dto)
         {
+            var adminId = GetCurrentUserId();
             var driverProfile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.Id == id);
             if (driverProfile == null)
                 return NotFound("بروفايل السائق غير موجود");
@@ -249,7 +258,8 @@ namespace coop.Controllers
             driverProfile.IsAvailable = false;
 
             await _dbcontext.SaveChangesAsync();
-
+            await _auditService.LogAsync(adminId, "RejectDriver", "DriverProfile", driverProfile.Id,
+                    $"تم رفض السائق — السبب: {dto.Reason}");
             await _notificationService.NotifyAsync(
                 driverProfile.UserId,
                 "تم رفض طلب التوثيق",
@@ -327,7 +337,8 @@ namespace coop.Controllers
             }
 
             await _dbcontext.SaveChangesAsync();
-
+            await _auditService.LogAsync(adminId, "ResolveComplaint", "Complaint", complaint.Id,
+                $"تم حل الشكوى — الرد: {dto.AdminResponse}");
             var title = dto.Status switch
             {
                 ComplaintStatus.Resolved => "تم حل شكواك",
