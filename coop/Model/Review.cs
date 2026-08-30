@@ -8,9 +8,11 @@ namespace coop.Model
         public Guid Id { get; set; }
 
         [ForeignKey("OrderId")]
+        public Guid OrderId { get; set; }
         public Order Order { get; set; }
 
         [ForeignKey("CustomerUserId")]
+        public Guid CustomerUserId { get; set; }
         public User CustomerUser { get; set; }
 
         [ForeignKey("MerchantId")]
