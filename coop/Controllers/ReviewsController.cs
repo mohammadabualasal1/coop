@@ -95,17 +95,59 @@ namespace coop.Controllers
 
             await _dbcontext.SaveChangesAsync();
 
+            var customerName = await _dbcontext.Users
+                .Where(u => u.Id == userId)
+                .Select(u => u.FullName)
+                .FirstAsync();
+
             return StatusCode(201, new ReviewResponse
             {
                 Id = review.Id,
                 OrderId = review.OrderId,
-                CustomerUserId = review.CustomerUserId,
+                CustomerName = customerName,
                 MerchantRating = review.MerchantRating,
                 DriverRating = review.DriverRating,
                 Comment = review.Comment,
                 Status = review.Status,
                 CreatedAt = review.CreatedAt
             });
+        }
+
+        [AllowAnonymous]
+        [HttpGet("merchant/{id}")]
+        public async Task<IActionResult> GetMerchantReviews(Guid id, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            if (pageNumber < 1)
+                pageNumber = 1;
+
+            if (pageSize < 1 || pageSize > 100)
+                pageSize = 20;
+
+            var merchantExists = await _dbcontext.Merchants
+                .AnyAsync(m => m.Id == id && m.IsActive && m.VerificationStatus == VerificationStatus.Approved);
+
+            if (!merchantExists)
+                return NotFound("التاجر غير موجود أو غير متاح");
+
+            var reviews = await _dbcontext.Reviews
+                .Where(r => r.MerchantId == id && r.Status == ReviewStatus.Visible)
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(r => new ReviewResponse
+                {
+                    Id = r.Id,
+                    OrderId = r.OrderId,
+                    CustomerName = r.CustomerUser.FullName,
+                    MerchantRating = r.MerchantRating,
+                    DriverRating = r.DriverRating,
+                    Comment = r.Comment,
+                    Status = r.Status,
+                    CreatedAt = r.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(reviews);
         }
 
         private Guid GetCurrentUserId() =>
