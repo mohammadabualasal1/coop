@@ -82,7 +82,21 @@ namespace coop.Controllers
 
             return NoContent();
         }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteNotification(Guid id)
+        {
+            var userId = GetCurrentUserId();
 
+            var notification = await _dbcontext.Notifications
+                .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
+
+            if (notification == null)
+                return NotFound("الإشعار غير موجود");
+
+            _dbcontext.Notifications.Remove(notification);
+            await _dbcontext.SaveChangesAsync();
+            return NoContent();
+        }
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
