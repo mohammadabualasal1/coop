@@ -52,7 +52,16 @@ namespace coop.Controllers
 
             return Ok(notifications);
         }
+        [HttpGet("unread-count")]
+        public async Task<IActionResult> GetUnreadCount()
+        {
+            var userId = GetCurrentUserId();
 
+            var count = await _dbcontext.Notifications
+                .CountAsync(n => n.UserId == userId && !n.IsRead);
+
+            return Ok(new UnreadCountResponse { Count = count });
+        }
 
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
