@@ -1,0 +1,64 @@
+/* You can add global styles to this file, and also import other style files */
+
+:root {
+  /* Heritage Modern color tokens */
+  --coop-primary: #8b1e3f;
+  --coop-primary-dark: #5c1028;
+  --coop-accent: #ffb38a;
+  --coop-bg: #fff9f5;
+  --coop-surface: #ffffff;
+  --coop-text: #202124;
+  --coop-text-muted: #6b6b6b;
+  --coop-border: #e8ddd6;
+  --coop-success: #1e7a46;
+  --coop-warning: #b7791f;
+  --coop-danger: #b3261e;
+
+  /* Spacing scale */
+  --coop-space-xs: 4px;
+  --coop-space-sm: 8px;
+  --coop-space-md: 16px;
+  --coop-space-lg: 24px;
+  --coop-space-xl: 32px;
+  --coop-space-2xl: 48px;
+
+  /* Radius scale */
+  --coop-radius-sm: 4px;
+  --coop-radius-md: 8px;
+  --coop-radius-lg: 16px;
+  --coop-radius-full: 999px;
+
+  /* Shadow scale */
+  --coop-shadow-sm: 0 1px 2px rgba(32, 33, 36, 0.06);
+  --coop-shadow-md: 0 2px 8px rgba(32, 33, 36, 0.1);
+  --coop-shadow-lg: 0 8px 24px rgba(32, 33, 36, 0.14);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family:
+    'Montserrat',
+    'Segoe UI',
+    Tahoma,
+    Arial,
+    sans-serif;
+  background: var(--coop-bg);
+  color: var(--coop-text);
+}
+
+ul,
+ol {
+  list-style: none;
+}
