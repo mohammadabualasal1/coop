@@ -1,129 +1,91 @@
 <div class="page">
-  <div class="card">
-    <p class="wordmark">COOP</p>
-    <p class="heading">إنشاء حساب</p>
-    <p class="subtitle">تسوّق أفضل العروض في الأردن</p>
+  <div class="wrapper">
+    <coop-card>
+      <p class="wordmark">COOP</p>
+      <p class="heading">إنشاء حساب</p>
+      <p class="subtitle">تسوّق أفضل العروض في الأردن</p>
 
-    @if (errorMessage(); as message) {
-      <div class="alert" role="alert">{{ message }}</div>
-    }
+      @if (errorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+      }
 
-    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-      <div class="field">
-        <label for="fullName">الاسم الكامل</label>
-        <input id="fullName" type="text" formControlName="fullName" autocomplete="name" />
-        @if (form.controls.fullName.invalid && form.controls.fullName.touched) {
-          <p class="field-error">
-            @if (form.controls.fullName.hasError('required')) {
-              الاسم مطلوب
-            } @else if (form.controls.fullName.hasError('minlength')) {
-              الاسم قصير جداً
-            }
-          </p>
-        }
-      </div>
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <coop-field
+          label="الاسم الكامل"
+          [error]="fullNameErrorMessage()"
+          [touched]="form.controls.fullName.touched"
+        >
+          <input id="fullName" type="text" formControlName="fullName" autocomplete="name" />
+        </coop-field>
 
-      <div class="field">
-        <label for="email">البريد الإلكتروني</label>
-        <input id="email" type="email" formControlName="email" autocomplete="email" />
-        @if (form.controls.email.invalid && form.controls.email.touched) {
-          <p class="field-error">
-            @if (form.controls.email.hasError('required')) {
-              البريد الإلكتروني مطلوب
-            } @else if (form.controls.email.hasError('email')) {
-              صيغة البريد الإلكتروني غير صحيحة
-            }
-          </p>
-        }
-      </div>
+        <coop-field
+          label="البريد الإلكتروني"
+          [error]="emailErrorMessage()"
+          [touched]="form.controls.email.touched"
+        >
+          <input id="email" type="email" formControlName="email" autocomplete="email" />
+        </coop-field>
 
-      <div class="field">
-        <label for="phoneNumber">رقم الهاتف</label>
-        <input
-          id="phoneNumber"
-          type="tel"
-          formControlName="phoneNumber"
-          autocomplete="tel"
-        />
-        @if (form.controls.phoneNumber.invalid && form.controls.phoneNumber.touched) {
-          <p class="field-error">
-            @if (form.controls.phoneNumber.hasError('required')) {
-              رقم الهاتف مطلوب
-            } @else if (form.controls.phoneNumber.hasError('pattern')) {
-              رقم الهاتف يجب أن يبدأ بـ 077 أو 078 أو 079 ويتكون من 10 أرقام
-            }
-          </p>
-        }
-      </div>
+        <coop-field
+          label="رقم الهاتف"
+          [error]="phoneNumberErrorMessage()"
+          [touched]="form.controls.phoneNumber.touched"
+        >
+          <input id="phoneNumber" type="tel" formControlName="phoneNumber" autocomplete="tel" />
+        </coop-field>
 
-      <div class="field">
-        <label for="password">كلمة المرور</label>
-        <div class="input-with-toggle">
-          <input
-            id="password"
-            [type]="showPassword() ? 'text' : 'password'"
-            formControlName="password"
-            autocomplete="new-password"
-          />
-          <button
-            type="button"
-            class="toggle-button"
-            (click)="togglePasswordVisibility()"
-          >
-            {{ showPassword() ? 'إخفاء' : 'إظهار' }}
-          </button>
-        </div>
-        @if (form.controls.password.invalid && form.controls.password.touched) {
-          <p class="field-error">
-            @if (form.controls.password.hasError('required')) {
-              كلمة المرور مطلوبة
-            } @else if (form.controls.password.hasError('minlength')) {
-              كلمة المرور يجب أن تكون 6 أحرف على الأقل
-            }
-          </p>
-        }
-      </div>
+        <coop-field
+          label="كلمة المرور"
+          [error]="passwordErrorMessage()"
+          [touched]="form.controls.password.touched"
+        >
+          <div class="input-with-toggle">
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="new-password"
+            />
+            <button type="button" class="toggle-button" (click)="togglePasswordVisibility()">
+              {{ showPassword() ? 'إخفاء' : 'إظهار' }}
+            </button>
+          </div>
+        </coop-field>
 
-      <div class="field">
-        <label for="confirmPassword">تأكيد كلمة المرور</label>
-        <div class="input-with-toggle">
-          <input
-            id="confirmPassword"
-            [type]="showConfirmPassword() ? 'text' : 'password'"
-            formControlName="confirmPassword"
-            autocomplete="new-password"
-          />
-          <button
-            type="button"
-            class="toggle-button"
-            (click)="toggleConfirmPasswordVisibility()"
-          >
-            {{ showConfirmPassword() ? 'إخفاء' : 'إظهار' }}
-          </button>
-        </div>
-        @if (form.controls.confirmPassword.invalid && form.controls.confirmPassword.touched) {
-          <p class="field-error">
-            @if (form.controls.confirmPassword.hasError('required')) {
-              تأكيد كلمة المرور مطلوب
-            } @else if (form.controls.confirmPassword.hasError('mismatch')) {
-              كلمتا المرور غير متطابقتين
-            }
-          </p>
-        }
-      </div>
+        <coop-field
+          label="تأكيد كلمة المرور"
+          [error]="confirmPasswordErrorMessage()"
+          [touched]="form.controls.confirmPassword.touched"
+        >
+          <div class="input-with-toggle">
+            <input
+              id="confirmPassword"
+              [type]="showConfirmPassword() ? 'text' : 'password'"
+              formControlName="confirmPassword"
+              autocomplete="new-password"
+            />
+            <button
+              type="button"
+              class="toggle-button"
+              (click)="toggleConfirmPasswordVisibility()"
+            >
+              {{ showConfirmPassword() ? 'إخفاء' : 'إظهار' }}
+            </button>
+          </div>
+        </coop-field>
 
-      <button type="submit" class="submit-button" [disabled]="submitting()">
-        @if (submitting()) {
-          <span class="spinner" aria-hidden="true"></span>
-          <span>جارٍ إنشاء الحساب...</span>
-        } @else {
-          <span>إنشاء الحساب</span>
-        }
-      </button>
+        <coop-button type="submit" [loading]="submitting()" [disabled]="submitting()">
+          @if (submitting()) {
+            جارٍ إنشاء الحساب...
+          } @else {
+            إنشاء الحساب
+          }
+        </coop-button>
 
-      <p class="switch-link">
-        لديك حساب بالفعل؟ <a routerLink="/login">تسجيل الدخول</a>
-      </p>
-    </form>
+        <p class="switch-link">
+          لديك حساب بالفعل؟ <a routerLink="/login">تسجيل الدخول</a>
+        </p>
+      </form>
+    </coop-card>
   </div>
 </div>

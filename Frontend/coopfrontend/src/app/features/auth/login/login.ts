@@ -6,6 +6,12 @@ import { UserRole } from '../../../core/enums';
 import { AuthService } from '../../../core/services/auth.service';
 import { TokenStorageService } from '../../../core/services/token-storage.service';
 import { extractErrorMessage } from '../../../core/utils/http-error';
+import {
+  UiAlertComponent,
+  UiButtonComponent,
+  UiCardComponent,
+  UiFieldComponent
+} from '../../../shared/components';
 
 const DRIVER_ONLY_MESSAGE = 'حساب السائق يعمل من تطبيق الجوال فقط.';
 
@@ -17,7 +23,14 @@ const ROLE_HOME_URL: Partial<Record<UserRole, string>> = {
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    UiCardComponent,
+    UiFieldComponent,
+    UiButtonComponent,
+    UiAlertComponent
+  ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -36,6 +49,42 @@ export class LoginComponent {
 
   readonly submitting = signal(false);
   readonly errorMessage = signal<string | null>(null);
+
+  emailErrorMessage(): string | null {
+    const control = this.form.controls.email;
+
+    if (!control.invalid) {
+      return null;
+    }
+
+    if (control.hasError('required')) {
+      return 'يرجى إدخال البريد الإلكتروني.';
+    }
+
+    if (control.hasError('email')) {
+      return 'يرجى إدخال بريد إلكتروني صحيح.';
+    }
+
+    return null;
+  }
+
+  passwordErrorMessage(): string | null {
+    const control = this.form.controls.password;
+
+    if (!control.invalid) {
+      return null;
+    }
+
+    if (control.hasError('required')) {
+      return 'يرجى إدخال كلمة المرور.';
+    }
+
+    if (control.hasError('minlength')) {
+      return 'كلمة المرور يجب أن تتكون من 6 أحرف على الأقل.';
+    }
+
+    return null;
+  }
 
   submit(): void {
     if (this.submitting()) {
