@@ -73,6 +73,7 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             await _auditService.LogAsync(adminId, "ApproveOffer", "Offer", offer.Id,
                 $"تمت الموافقة على العرض: {offer.Title} — الحالة: {offer.Status}");
+
             var merchantOwnerUserId = await _dbcontext.Merchants
                 .Where(m => m.Id == offer.MerchantId)
                 .Select(m => m.OwnerUserId)
@@ -290,7 +291,13 @@ namespace coop.Controllers
 
             await _auditService.LogAsync(adminId, "CreateMerchant", "Merchant", merchant.Id,
                 $"أنشأ الأدمن حساب تاجر جديد: {merchant.Name} — {user.Email}");
-
+            await _notificationService.NotifyAsync(
+    user.Id,
+    "تم إنشاء حسابك",
+    $"تم إنشاء حساب متجر {merchant.Name} على COOP. يرجى تغيير كلمة المرور من إعدادات الحساب.",
+    "AccountCreated",
+    "Merchant",
+    merchant.Id);
             var response = new CreateMerchantByAdminResponseDto
             {
                 MerchantId = merchant.Id,
@@ -440,6 +447,112 @@ namespace coop.Controllers
 
             return NoContent();
         }
+        [HttpPost("users/driver")]
+        public async Task<IActionResult> CreateDriverUser([FromBody] CreateDriverByAdminRequestDto dto)
+        {
+            var adminId = GetCurrentUserId();
+
+            if (string.IsNullOrWhiteSpace(dto.FullName) || string.IsNullOrWhiteSpace(dto.Email)
+                || string.IsNullOrWhiteSpace(dto.PhoneNumber) || string.IsNullOrWhiteSpace(dto.Password)
+                || string.IsNullOrWhiteSpace(dto.VehicleType) || string.IsNullOrWhiteSpace(dto.VehiclePlateNumber))
+            {
+                return BadRequest("جميع الحقول المطلوبة يجب تعبئتها");
+            }
+
+            if (dto.Password.Length < 6)
+            {
+                return BadRequest("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+            }
+
+            if (dto.MaximumCapacity < 1)
+            {
+                return BadRequest("السعة القصوى يجب أن تكون 1 أو أكثر");
+            }
+
+            var email = dto.Email.Trim().ToLower();
+            var phoneNumber = dto.PhoneNumber.Trim();
+
+            var emailExists = await _dbcontext.Users.AnyAsync(u => u.Email == email);
+            if (emailExists)
+            {
+                return Conflict("البريد الإلكتروني مستخدم مسبقاً");
+            }
+
+            var phoneExists = await _dbcontext.Users.AnyAsync(u => u.PhoneNumber == phoneNumber);
+            if (phoneExists)
+            {
+                return Conflict("رقم الهاتف مستخدم مسبقاً");
+            }
+
+            var now = DateTime.UtcNow;
+
+            using var transaction = await _dbcontext.Database.BeginTransactionAsync();
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                FullName = dto.FullName.Trim(),
+                Email = email,
+                PhoneNumber = phoneNumber,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Role = UserRole.Driver,
+                Status = UserStatus.Active,
+                ProfileImageUrl = null,
+                LastLoginAt = null,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            _dbcontext.Users.Add(user);
+
+            var driverProfile = new DriverProfile
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                VehicleType = dto.VehicleType.Trim(),
+                VehiclePlateNumber = dto.VehiclePlateNumber.Trim(),
+                MaximumCapacity = dto.MaximumCapacity,
+                VerificationStatus = VerificationStatus.Approved,
+                RejectionReason = null,
+                IsAvailable = false,
+                CompletedDeliveries = 0,
+                CreatedAt = now
+            };
+
+            _dbcontext.DriverProfiles.Add(driverProfile);
+
+            await _dbcontext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            await _auditService.LogAsync(adminId, "CreateDriver", "DriverProfile", driverProfile.Id,
+                $"أنشأ الأدمن حساب سائق جديد: {user.FullName} — {user.Email}");
+
+            await _notificationService.NotifyAsync(
+                user.Id,
+                "تم إنشاء حسابك",
+                "تم إنشاء حسابك كسائق على COOP. يرجى تغيير كلمة المرور من إعدادات الحساب.",
+                "AccountCreated",
+                "DriverProfile",
+                driverProfile.Id);
+
+            var response = new CreateDriverByAdminResponseDto
+            {
+                DriverProfileId = driverProfile.Id,
+                UserId = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                VehicleType = driverProfile.VehicleType,
+                VehiclePlateNumber = driverProfile.VehiclePlateNumber,
+                MaximumCapacity = driverProfile.MaximumCapacity,
+                VerificationStatus = driverProfile.VerificationStatus,
+                CreatedAt = driverProfile.CreatedAt
+            };
+
+            return StatusCode(201, response);
+        }
+
+
 
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

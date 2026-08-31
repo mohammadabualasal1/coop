@@ -23,35 +23,7 @@ namespace coop.Controllers
         {
             _dbcontext = dbcontext;
         }
-        [HttpPost("AddMerchant")]
-        public async Task<IActionResult> AddMerchant([FromBody] CreateMerchantRequestDto dto)
-        {
-            var userId = GetCurrentUserId();
-            var existingMerchant = await _dbcontext.Merchants.AnyAsync(m => m.OwnerUserId == userId);
-            if (existingMerchant)
-            {
-                return BadRequest("لديك بروفايل تاجر بالفعل");
-            }
-            var newMerchant = new Merchant
-            {
-                Id = Guid.NewGuid(),
-                Name = dto.Name,
-                Description = dto.Description,
-                OwnerUserId = userId,
-                CreatedAt = DateTime.UtcNow,
-                ContactEmail = dto.ContactEmail,
-                ContactPhone = dto.ContactPhone,
-                CoverImageUrl = dto.CoverImageUrl,
-                LogoUrl = dto.LogoUrl,
-                VerificationStatus = VerificationStatus.Pending,
-                IsActive = true,
-                RegistrationNumber = dto.RegistrationNumber,
-
-            };
-            _dbcontext.Merchants.Add(newMerchant);
-            await _dbcontext.SaveChangesAsync();
-            return Ok(newMerchant);
-        }
+      
         [HttpGet("my")]
         public async Task<IActionResult> GetMyMerchant()
         {
