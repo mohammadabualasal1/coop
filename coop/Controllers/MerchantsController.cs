@@ -23,35 +23,7 @@ namespace coop.Controllers
         {
             _dbcontext = dbcontext;
         }
-        [HttpPost("AddMerchant")]
-        public async Task<IActionResult> AddMerchant([FromBody] CreateMerchantRequestDto dto)
-        {
-            var userId = GetCurrentUserId();
-            var existingMerchant = await _dbcontext.Merchants.AnyAsync(m => m.OwnerUserId == userId);
-            if (existingMerchant)
-            {
-                return BadRequest("لديك بروفايل تاجر بالفعل");
-            }
-            var newMerchant = new Merchant
-            {
-                Id = Guid.NewGuid(),
-                Name = dto.Name,
-                Description = dto.Description,
-                OwnerUserId = userId,
-                CreatedAt = DateTime.UtcNow,
-                ContactEmail = dto.ContactEmail,
-                ContactPhone = dto.ContactPhone,
-                CoverImageUrl = dto.CoverImageUrl,
-                LogoUrl = dto.LogoUrl,
-                VerificationStatus = VerificationStatus.Pending,
-                IsActive = true,
-                RegistrationNumber = dto.RegistrationNumber,
-
-            };
-            _dbcontext.Merchants.Add(newMerchant);
-            await _dbcontext.SaveChangesAsync();
-            return Ok(newMerchant);
-        }
+      
         [HttpGet("my")]
         public async Task<IActionResult> GetMyMerchant()
         {
@@ -81,26 +53,7 @@ namespace coop.Controllers
 
         }
 
-        [HttpPost("my/submit-verification")]
-        public async Task<IActionResult> SubmitVerification()
-        {
-            var userId = GetCurrentUserId();
-            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.OwnerUserId == userId);
-            if (merchant == null)
-                return NotFound("لا يوجد بروفايل تاجر مرتبط بحسابك");
-
-            if (merchant.VerificationStatus != VerificationStatus.Rejected &&
-                merchant.VerificationStatus != VerificationStatus.NeedsInformation)
-                return BadRequest("طلبك أصلاً قيد المراجعة أو تمت الموافقة عليه");
-
-            var hasDocuments = await _dbcontext.VerificationDocuments.AnyAsync(d => d.MerchantId == merchant.Id);
-            if (!hasDocuments)
-                return BadRequest("لازم ترفع وثيقة تحقق واحدة على الأقل");
-            merchant.VerificationStatus = VerificationStatus.Pending;
-            merchant.RejectionReason = null;
-            await _dbcontext.SaveChangesAsync();
-            return Ok(merchant);
-        }
+       
 
         [HttpGet("my/verification-status")]
         public async Task<IActionResult> GetVerificationStatus()

@@ -1,0 +1,60 @@
+<div class="page">
+  <div class="card">
+    <p class="wordmark">COOP</p>
+    <p class="subtitle">لوحة تحكم التجار والمشرفين</p>
+
+    @if (errorMessage(); as message) {
+      <div class="alert" role="alert">{{ message }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label for="email">البريد الإلكتروني</label>
+        <input id="email" type="email" formControlName="email" autocomplete="email" />
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+          <p class="field-error">
+            @if (form.controls.email.hasError('required')) {
+              يرجى إدخال البريد الإلكتروني.
+            } @else if (form.controls.email.hasError('email')) {
+              يرجى إدخال بريد إلكتروني صحيح.
+            }
+          </p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="password">كلمة المرور</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+        />
+        @if (form.controls.password.invalid && form.controls.password.touched) {
+          <p class="field-error">
+            @if (form.controls.password.hasError('required')) {
+              يرجى إدخال كلمة المرور.
+            } @else if (form.controls.password.hasError('minlength')) {
+              كلمة المرور يجب أن تتكون من 6 أحرف على الأقل.
+            }
+          </p>
+        }
+      </div>
+
+      <button type="button" class="link-button">نسيت كلمة المرور؟</button>
+
+      <button type="submit" class="submit-button" [disabled]="submitting()">
+        @if (submitting()) {
+          <span class="spinner" aria-hidden="true"></span>
+          <span>جارٍ تسجيل الدخول...</span>
+        } @else {
+          <span>تسجيل الدخول</span>
+        }
+      </button>
+
+      <p class="switch-link">
+        ليس لديك حساب؟ <a routerLink="/register">إنشاء حساب</a>
+      </p>
+    </form>
+  </div>
+</div>

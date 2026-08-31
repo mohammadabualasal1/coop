@@ -65,7 +65,16 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddSignalR();
 builder.Services.AddAuthorization();
 
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AngularDev", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -76,7 +85,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("AngularDev");
 app.UseAuthentication();
 app.UseAuthorization();
 

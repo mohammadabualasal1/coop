@@ -26,8 +26,10 @@ namespace coop.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponseDto>> Register(RegisterRequestDto dto)
         {
-            //if (dto.Role == UserRole.Admin)
-            //    return BadRequest("لا يمكن إنشاء حساب أدمن عن طريق التسجيل العام.");
+            if (dto.Role != UserRole.Customer)
+            {
+                return BadRequest("التسجيل العام متاح للزبائن فقط");
+            }
 
             var normalizedEmail = dto.Email.Trim().ToLower();
 

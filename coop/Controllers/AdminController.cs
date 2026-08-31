@@ -1,11 +1,12 @@
 ﻿using coop.Dtos.AdminController;
 using coop.Enums;
+using coop.Model;
+using coop.Services;
 using coop.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using coop.Services;
 namespace coop.Controllers
 {
     [ApiController]
@@ -25,81 +26,7 @@ namespace coop.Controllers
 
         }
 
-        [HttpGet("verifications")]
-        public async Task<IActionResult> GetPendingVerifications()
-        {
-            var pendingMerchants = await _dbcontext.Merchants
-                .Where(m => m.VerificationStatus == VerificationStatus.Pending)
-                .OrderBy(m => m.CreatedAt)
-                .Select(m => new PendingVerificationResponseDto
-                {
-                    Id = m.Id,
-                    EntityType = "Merchant",
-                    EntityName = m.Name,
-                    SubmittedAt = m.CreatedAt
-                })
-                .ToListAsync();
-
-            return Ok(pendingMerchants);
-        }
-
-        [HttpPost("merchants/{id}/approve")]
-        public async Task<IActionResult> ApproveMerchant(Guid id)
-        {
-            var adminId = GetCurrentUserId();
-
-            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.Id == id);
-            if (merchant == null)
-                return NotFound("التاجر غير موجود");
-
-            if (merchant.VerificationStatus == VerificationStatus.Approved)
-                return BadRequest("التاجر موثّق بالفعل");
-
-            merchant.VerificationStatus = VerificationStatus.Approved;
-            merchant.VerifiedAt = DateTime.UtcNow;
-            merchant.VerifiedByUserId = adminId;
-            merchant.RejectionReason = null;
-
-            await _dbcontext.SaveChangesAsync();
-            await _auditService.LogAsync(adminId, "ApproveMerchant", "Merchant", merchant.Id,
-                    $"تمت الموافقة على التاجر: {merchant.Name}");
-            await _notificationService.NotifyAsync(
-                merchant.OwnerUserId,
-                "تمت الموافقة على متجرك",
-                $"تم توثيق متجر {merchant.Name}، تقدر تضيف فروعك وعروضك الآن",
-                "MerchantApproved",
-                "Merchant",
-                merchant.Id);
-
-            return Ok(merchant);
-        }
-
-        [HttpPost("merchants/{id}/reject")]
-        public async Task<IActionResult> RejectMerchant(Guid id, RejectRequestDto dto)
-        {
-            var adminId = GetCurrentUserId();
-            var merchant = await _dbcontext.Merchants.FirstOrDefaultAsync(m => m.Id == id);
-            if (merchant == null)
-                return NotFound("التاجر غير موجود");
-
-            merchant.VerificationStatus = VerificationStatus.Rejected;
-            merchant.RejectionReason = dto.Reason;
-            merchant.VerifiedAt = null;
-            merchant.VerifiedByUserId = null;
-
-            await _dbcontext.SaveChangesAsync();
-            await _auditService.LogAsync(adminId, "RejectMerchant", "Merchant", merchant.Id,
-                    $"تم رفض التاجر: {merchant.Name} — السبب: {dto.Reason}");
-            await _notificationService.NotifyAsync(
-                merchant.OwnerUserId,
-                "تم رفض طلب التوثيق",
-                $"تم رفض توثيق متجر {merchant.Name}. السبب: {dto.Reason}",
-                "MerchantRejected",
-                "Merchant",
-                merchant.Id);
-
-            return Ok(merchant);
-        }
+      
 
         [HttpGet("offers/pending")]
         public async Task<IActionResult> GetPendingOffers()
@@ -146,6 +73,7 @@ namespace coop.Controllers
             await _dbcontext.SaveChangesAsync();
             await _auditService.LogAsync(adminId, "ApproveOffer", "Offer", offer.Id,
                 $"تمت الموافقة على العرض: {offer.Title} — الحالة: {offer.Status}");
+
             var merchantOwnerUserId = await _dbcontext.Merchants
                 .Where(m => m.Id == offer.MerchantId)
                 .Select(m => m.OwnerUserId)
@@ -195,86 +123,6 @@ namespace coop.Controllers
             return Ok(offer);
         }
 
-        [HttpGet("drivers/pending")]
-        public async Task<IActionResult> GetPendingDrivers()
-        {
-            var pendingDrivers = await _dbcontext.DriverProfiles
-                .Where(d => d.VerificationStatus == VerificationStatus.Pending)
-                .OrderBy(d => d.CreatedAt)
-                .Select(d => new PendingVerificationResponseDto
-                {
-                    Id = d.Id,
-                    EntityType = "Driver",
-                    EntityName = d.User.FullName,
-                    SubmittedAt = d.CreatedAt
-                })
-                .ToListAsync();
-
-            return Ok(pendingDrivers);
-        }
-
-        [HttpPost("drivers/{id}/approve")]
-        public async Task<IActionResult> ApproveDriver(Guid id)
-        {
-            var adminId = GetCurrentUserId();
-            var driverProfile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.Id == id);
-            if (driverProfile == null)
-                return NotFound("بروفايل السائق غير موجود");
-
-            if (driverProfile.VerificationStatus == VerificationStatus.Approved)
-                return BadRequest("السائق موثّق بالفعل");
-
-            driverProfile.VerificationStatus = VerificationStatus.Approved;
-            driverProfile.RejectionReason = null;
-
-            await _dbcontext.SaveChangesAsync();
-            await _auditService.LogAsync(adminId, "ApproveDriver", "DriverProfile", driverProfile.Id,
-                    "تمت الموافقة على السائق");
-            await _notificationService.NotifyAsync(
-                driverProfile.UserId,
-                "تمت الموافقة على حسابك",
-                "تم توثيق حسابك كسائق، تقدر تبدأ استقبال مهام التوصيل",
-                "DriverApproved",
-                "DriverProfile",
-                driverProfile.Id);
-
-            return Ok(new
-            {
-                driverProfile.Id,
-                driverProfile.VerificationStatus
-            });
-        }
-
-        [HttpPost("drivers/{id}/reject")]
-        public async Task<IActionResult> RejectDriver(Guid id, RejectRequestDto dto)
-        {
-            var adminId = GetCurrentUserId();
-            var driverProfile = await _dbcontext.DriverProfiles.FirstOrDefaultAsync(d => d.Id == id);
-            if (driverProfile == null)
-                return NotFound("بروفايل السائق غير موجود");
-
-            driverProfile.VerificationStatus = VerificationStatus.Rejected;
-            driverProfile.RejectionReason = dto.Reason;
-            driverProfile.IsAvailable = false;
-
-            await _dbcontext.SaveChangesAsync();
-            await _auditService.LogAsync(adminId, "RejectDriver", "DriverProfile", driverProfile.Id,
-                    $"تم رفض السائق — السبب: {dto.Reason}");
-            await _notificationService.NotifyAsync(
-                driverProfile.UserId,
-                "تم رفض طلب التوثيق",
-                $"تم رفض توثيق حسابك كسائق. السبب: {dto.Reason}",
-                "DriverRejected",
-                "DriverProfile",
-                driverProfile.Id);
-
-            return Ok(new
-            {
-                driverProfile.Id,
-                driverProfile.VerificationStatus,
-                driverProfile.RejectionReason
-            });
-        }
         [HttpGet("complaints")]
         public async Task<IActionResult> GetAllComplaints([FromQuery] ComplaintStatus? status)
         {
@@ -362,6 +210,350 @@ namespace coop.Controllers
                 complaint.ResolvedAt
             });
         }
+        [HttpPost("users/merchant")]
+        public async Task<IActionResult> CreateMerchantUser([FromBody] CreateMerchantByAdminRequestDto dto)
+        {
+            var adminId = GetCurrentUserId();
+
+            if (string.IsNullOrWhiteSpace(dto.FullName) || string.IsNullOrWhiteSpace(dto.Email)
+                || string.IsNullOrWhiteSpace(dto.PhoneNumber) || string.IsNullOrWhiteSpace(dto.Password)
+                || string.IsNullOrWhiteSpace(dto.MerchantName) || string.IsNullOrWhiteSpace(dto.ContactEmail)
+                || string.IsNullOrWhiteSpace(dto.ContactPhone))
+            {
+                return BadRequest("جميع الحقول المطلوبة يجب تعبئتها");
+            }
+
+            if (dto.Password.Length < 6)
+            {
+                return BadRequest("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+            }
+
+            var email = dto.Email.Trim().ToLower();
+            var phoneNumber = dto.PhoneNumber.Trim();
+
+            var emailExists = await _dbcontext.Users.AnyAsync(u => u.Email == email);
+            if (emailExists)
+            {
+                return Conflict("البريد الإلكتروني مستخدم مسبقاً");
+            }
+
+            var phoneExists = await _dbcontext.Users.AnyAsync(u => u.PhoneNumber == phoneNumber);
+            if (phoneExists)
+            {
+                return Conflict("رقم الهاتف مستخدم مسبقاً");
+            }
+
+            var now = DateTime.UtcNow;
+
+            using var transaction = await _dbcontext.Database.BeginTransactionAsync();
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                FullName = dto.FullName.Trim(),
+                Email = email,
+                PhoneNumber = phoneNumber,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Role = UserRole.Merchant,
+                Status = UserStatus.Active,
+                ProfileImageUrl = null,
+                LastLoginAt = null,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            _dbcontext.Users.Add(user);
+
+            var merchant = new Merchant
+            {
+                Id = Guid.NewGuid(),
+                OwnerUserId = user.Id,
+                Name = dto.MerchantName.Trim(),
+                Description = dto.Description,
+                RegistrationNumber = dto.RegistrationNumber,
+                ContactEmail = dto.ContactEmail.Trim().ToLower(),
+                ContactPhone = dto.ContactPhone.Trim(),
+                LogoUrl = dto.LogoUrl,
+                CoverImageUrl = dto.CoverImageUrl,
+                VerificationStatus = VerificationStatus.Approved,
+                RejectionReason = null,
+                IsActive = true,
+                AverageRating = null,
+                CreatedAt = now,
+                VerifiedAt = now,
+                VerifiedByUserId = adminId
+            };
+
+            _dbcontext.Merchants.Add(merchant);
+
+            await _dbcontext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            await _auditService.LogAsync(adminId, "CreateMerchant", "Merchant", merchant.Id,
+                $"أنشأ الأدمن حساب تاجر جديد: {merchant.Name} — {user.Email}");
+            await _notificationService.NotifyAsync(
+    user.Id,
+    "تم إنشاء حسابك",
+    $"تم إنشاء حساب متجر {merchant.Name} على COOP. يرجى تغيير كلمة المرور من إعدادات الحساب.",
+    "AccountCreated",
+    "Merchant",
+    merchant.Id);
+            var response = new CreateMerchantByAdminResponseDto
+            {
+                MerchantId = merchant.Id,
+                OwnerUserId = user.Id,
+                MerchantName = merchant.Name,
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                VerificationStatus = merchant.VerificationStatus,
+                CreatedAt = merchant.CreatedAt
+            };
+
+            return StatusCode(201, response);
+        }
+
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers([FromQuery] UserRole? role, [FromQuery] UserStatus? status,
+    [FromQuery] string? search, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            if (pageNumber < 1)
+            {
+                pageNumber = 1;
+            }
+
+            if (pageSize < 1 || pageSize > 100)
+            {
+                pageSize = 20;
+            }
+
+            var query = _dbcontext.Users.AsQueryable();
+
+            if (role.HasValue)
+            {
+                query = query.Where(u => u.Role == role.Value);
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(u => u.Status == status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToLower();
+                query = query.Where(u => u.FullName.ToLower().Contains(term)
+                                      || u.Email.Contains(term)
+                                      || u.PhoneNumber.Contains(term));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var users = await query
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(u => new AdminUserResponseDto
+                {
+                    Id = u.Id,
+                    FullName = u.FullName,
+                    Email = u.Email,
+                    PhoneNumber = u.PhoneNumber,
+                    Role = u.Role,
+                    Status = u.Status,
+                    CreatedAt = u.CreatedAt,
+                    LastLoginAt = u.LastLoginAt
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                items = users,
+                totalCount,
+                pageNumber,
+                pageSize
+            });
+        }
+        [HttpPut("users/{id}/suspend")]
+        public async Task<IActionResult> SuspendUser(Guid id, [FromBody] SuspendUserRequestDto dto)
+        {
+            var adminId = GetCurrentUserId();
+
+            if (string.IsNullOrWhiteSpace(dto.Reason))
+            {
+                return BadRequest("سبب التعليق مطلوب");
+            }
+
+            if (id == adminId)
+            {
+                return BadRequest("لا يمكنك تعليق حسابك الخاص");
+            }
+
+            var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound("المستخدم غير موجود");
+            }
+
+            if (user.Role == UserRole.Admin)
+            {
+                return BadRequest("لا يمكن تعليق حساب مشرف");
+            }
+
+            if (user.Status == UserStatus.Suspended)
+            {
+                return BadRequest("الحساب معلّق مسبقاً");
+            }
+
+            user.Status = UserStatus.Suspended;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+
+            await _auditService.LogAsync(adminId, "SuspendUser", "User", user.Id,
+                $"تم تعليق حساب: {user.Email} — السبب: {dto.Reason}");
+
+            return NoContent();
+        }
+
+        [HttpPut("users/{id}/activate")]
+        public async Task<IActionResult> ActivateUser(Guid id)
+        {
+            var adminId = GetCurrentUserId();
+
+            var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound("المستخدم غير موجود");
+            }
+
+            if (user.Status == UserStatus.Active)
+            {
+                return BadRequest("الحساب مفعّل مسبقاً");
+            }
+
+            if (user.Status == UserStatus.Deleted)
+            {
+                return BadRequest("لا يمكن إعادة تفعيل حساب محذوف");
+            }
+
+            user.Status = UserStatus.Active;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+
+            await _auditService.LogAsync(adminId, "ActivateUser", "User", user.Id,
+                $"تمت إعادة تفعيل حساب: {user.Email}");
+
+            return NoContent();
+        }
+        [HttpPost("users/driver")]
+        public async Task<IActionResult> CreateDriverUser([FromBody] CreateDriverByAdminRequestDto dto)
+        {
+            var adminId = GetCurrentUserId();
+
+            if (string.IsNullOrWhiteSpace(dto.FullName) || string.IsNullOrWhiteSpace(dto.Email)
+                || string.IsNullOrWhiteSpace(dto.PhoneNumber) || string.IsNullOrWhiteSpace(dto.Password)
+                || string.IsNullOrWhiteSpace(dto.VehicleType) || string.IsNullOrWhiteSpace(dto.VehiclePlateNumber))
+            {
+                return BadRequest("جميع الحقول المطلوبة يجب تعبئتها");
+            }
+
+            if (dto.Password.Length < 6)
+            {
+                return BadRequest("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+            }
+
+            if (dto.MaximumCapacity < 1)
+            {
+                return BadRequest("السعة القصوى يجب أن تكون 1 أو أكثر");
+            }
+
+            var email = dto.Email.Trim().ToLower();
+            var phoneNumber = dto.PhoneNumber.Trim();
+
+            var emailExists = await _dbcontext.Users.AnyAsync(u => u.Email == email);
+            if (emailExists)
+            {
+                return Conflict("البريد الإلكتروني مستخدم مسبقاً");
+            }
+
+            var phoneExists = await _dbcontext.Users.AnyAsync(u => u.PhoneNumber == phoneNumber);
+            if (phoneExists)
+            {
+                return Conflict("رقم الهاتف مستخدم مسبقاً");
+            }
+
+            var now = DateTime.UtcNow;
+
+            using var transaction = await _dbcontext.Database.BeginTransactionAsync();
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                FullName = dto.FullName.Trim(),
+                Email = email,
+                PhoneNumber = phoneNumber,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Role = UserRole.Driver,
+                Status = UserStatus.Active,
+                ProfileImageUrl = null,
+                LastLoginAt = null,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            _dbcontext.Users.Add(user);
+
+            var driverProfile = new DriverProfile
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                VehicleType = dto.VehicleType.Trim(),
+                VehiclePlateNumber = dto.VehiclePlateNumber.Trim(),
+                MaximumCapacity = dto.MaximumCapacity,
+                VerificationStatus = VerificationStatus.Approved,
+                RejectionReason = null,
+                IsAvailable = false,
+                CompletedDeliveries = 0,
+                CreatedAt = now
+            };
+
+            _dbcontext.DriverProfiles.Add(driverProfile);
+
+            await _dbcontext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            await _auditService.LogAsync(adminId, "CreateDriver", "DriverProfile", driverProfile.Id,
+                $"أنشأ الأدمن حساب سائق جديد: {user.FullName} — {user.Email}");
+
+            await _notificationService.NotifyAsync(
+                user.Id,
+                "تم إنشاء حسابك",
+                "تم إنشاء حسابك كسائق على COOP. يرجى تغيير كلمة المرور من إعدادات الحساب.",
+                "AccountCreated",
+                "DriverProfile",
+                driverProfile.Id);
+
+            var response = new CreateDriverByAdminResponseDto
+            {
+                DriverProfileId = driverProfile.Id,
+                UserId = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                VehicleType = driverProfile.VehicleType,
+                VehiclePlateNumber = driverProfile.VehiclePlateNumber,
+                MaximumCapacity = driverProfile.MaximumCapacity,
+                VerificationStatus = driverProfile.VerificationStatus,
+                CreatedAt = driverProfile.CreatedAt
+            };
+
+            return StatusCode(201, response);
+        }
+
+
+
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
