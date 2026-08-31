@@ -1,11 +1,12 @@
 ﻿using coop.Dtos.AdminController;
 using coop.Enums;
+using coop.Model;
+using coop.Services;
 using coop.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using coop.Services;
 namespace coop.Controllers
 {
     [ApiController]
@@ -362,6 +363,238 @@ namespace coop.Controllers
                 complaint.ResolvedAt
             });
         }
+        [HttpPost("users/merchant")]
+        public async Task<IActionResult> CreateMerchantUser([FromBody] CreateMerchantByAdminRequestDto dto)
+        {
+            var adminId = GetCurrentUserId();
+
+            if (string.IsNullOrWhiteSpace(dto.FullName) || string.IsNullOrWhiteSpace(dto.Email)
+                || string.IsNullOrWhiteSpace(dto.PhoneNumber) || string.IsNullOrWhiteSpace(dto.Password)
+                || string.IsNullOrWhiteSpace(dto.MerchantName) || string.IsNullOrWhiteSpace(dto.ContactEmail)
+                || string.IsNullOrWhiteSpace(dto.ContactPhone))
+            {
+                return BadRequest("جميع الحقول المطلوبة يجب تعبئتها");
+            }
+
+            if (dto.Password.Length < 6)
+            {
+                return BadRequest("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+            }
+
+            var email = dto.Email.Trim().ToLower();
+            var phoneNumber = dto.PhoneNumber.Trim();
+
+            var emailExists = await _dbcontext.Users.AnyAsync(u => u.Email == email);
+            if (emailExists)
+            {
+                return Conflict("البريد الإلكتروني مستخدم مسبقاً");
+            }
+
+            var phoneExists = await _dbcontext.Users.AnyAsync(u => u.PhoneNumber == phoneNumber);
+            if (phoneExists)
+            {
+                return Conflict("رقم الهاتف مستخدم مسبقاً");
+            }
+
+            var now = DateTime.UtcNow;
+
+            using var transaction = await _dbcontext.Database.BeginTransactionAsync();
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                FullName = dto.FullName.Trim(),
+                Email = email,
+                PhoneNumber = phoneNumber,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Role = UserRole.Merchant,
+                Status = UserStatus.Active,
+                ProfileImageUrl = null,
+                LastLoginAt = null,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            _dbcontext.Users.Add(user);
+
+            var merchant = new Merchant
+            {
+                Id = Guid.NewGuid(),
+                OwnerUserId = user.Id,
+                Name = dto.MerchantName.Trim(),
+                Description = dto.Description,
+                RegistrationNumber = dto.RegistrationNumber,
+                ContactEmail = dto.ContactEmail.Trim().ToLower(),
+                ContactPhone = dto.ContactPhone.Trim(),
+                LogoUrl = dto.LogoUrl,
+                CoverImageUrl = dto.CoverImageUrl,
+                VerificationStatus = VerificationStatus.Approved,
+                RejectionReason = null,
+                IsActive = true,
+                AverageRating = null,
+                CreatedAt = now,
+                VerifiedAt = now,
+                VerifiedByUserId = adminId
+            };
+
+            _dbcontext.Merchants.Add(merchant);
+
+            await _dbcontext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            await _auditService.LogAsync(adminId, "CreateMerchant", "Merchant", merchant.Id,
+                $"أنشأ الأدمن حساب تاجر جديد: {merchant.Name} — {user.Email}");
+
+            var response = new CreateMerchantByAdminResponseDto
+            {
+                MerchantId = merchant.Id,
+                OwnerUserId = user.Id,
+                MerchantName = merchant.Name,
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                VerificationStatus = merchant.VerificationStatus,
+                CreatedAt = merchant.CreatedAt
+            };
+
+            return StatusCode(201, response);
+        }
+
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers([FromQuery] UserRole? role, [FromQuery] UserStatus? status,
+    [FromQuery] string? search, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            if (pageNumber < 1)
+            {
+                pageNumber = 1;
+            }
+
+            if (pageSize < 1 || pageSize > 100)
+            {
+                pageSize = 20;
+            }
+
+            var query = _dbcontext.Users.AsQueryable();
+
+            if (role.HasValue)
+            {
+                query = query.Where(u => u.Role == role.Value);
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(u => u.Status == status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToLower();
+                query = query.Where(u => u.FullName.ToLower().Contains(term)
+                                      || u.Email.Contains(term)
+                                      || u.PhoneNumber.Contains(term));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var users = await query
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(u => new AdminUserResponseDto
+                {
+                    Id = u.Id,
+                    FullName = u.FullName,
+                    Email = u.Email,
+                    PhoneNumber = u.PhoneNumber,
+                    Role = u.Role,
+                    Status = u.Status,
+                    CreatedAt = u.CreatedAt,
+                    LastLoginAt = u.LastLoginAt
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                items = users,
+                totalCount,
+                pageNumber,
+                pageSize
+            });
+        }
+        [HttpPut("users/{id}/suspend")]
+        public async Task<IActionResult> SuspendUser(Guid id, [FromBody] SuspendUserRequestDto dto)
+        {
+            var adminId = GetCurrentUserId();
+
+            if (string.IsNullOrWhiteSpace(dto.Reason))
+            {
+                return BadRequest("سبب التعليق مطلوب");
+            }
+
+            if (id == adminId)
+            {
+                return BadRequest("لا يمكنك تعليق حسابك الخاص");
+            }
+
+            var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound("المستخدم غير موجود");
+            }
+
+            if (user.Role == UserRole.Admin)
+            {
+                return BadRequest("لا يمكن تعليق حساب مشرف");
+            }
+
+            if (user.Status == UserStatus.Suspended)
+            {
+                return BadRequest("الحساب معلّق مسبقاً");
+            }
+
+            user.Status = UserStatus.Suspended;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+
+            await _auditService.LogAsync(adminId, "SuspendUser", "User", user.Id,
+                $"تم تعليق حساب: {user.Email} — السبب: {dto.Reason}");
+
+            return NoContent();
+        }
+
+        [HttpPut("users/{id}/activate")]
+        public async Task<IActionResult> ActivateUser(Guid id)
+        {
+            var adminId = GetCurrentUserId();
+
+            var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound("المستخدم غير موجود");
+            }
+
+            if (user.Status == UserStatus.Active)
+            {
+                return BadRequest("الحساب مفعّل مسبقاً");
+            }
+
+            if (user.Status == UserStatus.Deleted)
+            {
+                return BadRequest("لا يمكن إعادة تفعيل حساب محذوف");
+            }
+
+            user.Status = UserStatus.Active;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+
+            await _auditService.LogAsync(adminId, "ActivateUser", "User", user.Id,
+                $"تمت إعادة تفعيل حساب: {user.Email}");
+
+            return NoContent();
+        }
+
         private Guid GetCurrentUserId() =>
             Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
