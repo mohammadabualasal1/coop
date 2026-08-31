@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using coop.Enums;
+﻿using coop.Enums;
 using NetTopologySuite.Geometries;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 namespace coop.Model
 {
     public class CustomerAddress
@@ -22,6 +23,7 @@ namespace coop.Model
         public string? AdditionalDirections { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
+        [JsonIgnore]
         public Point? Location { get; set; }
         public bool IsDefault { get; set; }
         public DateTime CreatedAt { get; set; }

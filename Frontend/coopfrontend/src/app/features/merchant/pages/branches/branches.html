@@ -1,0 +1,232 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="page-title">الفروع</h2>
+        <coop-button (click)="openCreateModal()">إضافة فرع</coop-button>
+      </div>
+
+      @if (actionErrorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+      }
+
+      @if (branches().length === 0) {
+        <coop-empty-state title="لا توجد فروع" message="أضف فرعك الأول لتبدأ باستقبال الطلبات">
+          <button
+            coopEmptyStateAction
+            type="button"
+            class="empty-action"
+            (click)="openCreateModal()"
+          >
+            إضافة فرع
+          </button>
+        </coop-empty-state>
+      } @else {
+        <div class="branches-grid">
+          @for (branch of branches(); track branch.id) {
+            <coop-card>
+              <div class="branch-header">
+                <h3 class="branch-name">{{ branch.name }}</h3>
+                @if (branch.isMainBranch) {
+                  <coop-badge tone="info">الفرع الرئيسي</coop-badge>
+                }
+              </div>
+
+              <p class="branch-detail">{{ addressLine(branch) }}</p>
+              <p class="branch-detail">{{ branch.phoneNumber }}</p>
+              <p class="branch-detail">{{ formattedHours(branch) }}</p>
+              <p class="branch-detail">نطاق التوصيل: {{ branch.deliveryRadiusKm }} كم</p>
+              <p class="branch-detail">الحد الأدنى للطلب: {{ branch.minimumOrderAmount | jod }}</p>
+              <p class="branch-detail">رسوم التوصيل: {{ branch.baseDeliveryFee | jod }}</p>
+
+              <div class="branch-actions">
+                <coop-button variant="secondary" size="sm" (click)="openEditModal(branch)">
+                  تعديل
+                </coop-button>
+                @if (!branch.isMainBranch) {
+                  <coop-button
+                    variant="secondary"
+                    size="sm"
+                    [loading]="settingMainId() === branch.id"
+                    [disabled]="settingMainId() === branch.id"
+                    (click)="setMain(branch)"
+                  >
+                    تعيين كرئيسي
+                  </coop-button>
+                  <coop-button
+                    variant="danger"
+                    size="sm"
+                    (click)="openDeactivateConfirm(branch)"
+                  >
+                    إلغاء تفعيل
+                  </coop-button>
+                }
+              </div>
+            </coop-card>
+          }
+        </div>
+      }
+    </div>
+  }
+}
+
+<coop-modal [title]="modalTitle()" [open]="formModalOpen()" size="lg" (closed)="closeFormModal()">
+  @if (formErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submitForm()" novalidate class="branch-form">
+    <coop-field
+      label="اسم الفرع"
+      [error]="nameErrorMessage()"
+      [touched]="form.controls.name.touched"
+    >
+      <input formControlName="name" type="text" />
+    </coop-field>
+
+    <coop-field
+      label="رقم الهاتف"
+      [error]="phoneNumberErrorMessage()"
+      [touched]="form.controls.phoneNumber.touched"
+    >
+      <input formControlName="phoneNumber" type="tel" />
+    </coop-field>
+
+    <coop-field
+      label="المدينة"
+      [error]="cityErrorMessage()"
+      [touched]="form.controls.city.touched"
+    >
+      <input formControlName="city" type="text" />
+    </coop-field>
+
+    <coop-field
+      label="المنطقة"
+      [error]="areaErrorMessage()"
+      [touched]="form.controls.area.touched"
+    >
+      <input formControlName="area" type="text" />
+    </coop-field>
+
+    <div class="span-2">
+      <coop-field
+        label="العنوان"
+        [error]="addressErrorMessage()"
+        [touched]="form.controls.address.touched"
+      >
+        <input formControlName="address" type="text" />
+      </coop-field>
+    </div>
+
+    <coop-field
+      label="خط العرض"
+      [error]="latitudeErrorMessage()"
+      [touched]="form.controls.latitude.touched"
+    >
+      <input formControlName="latitude" type="number" step="any" />
+    </coop-field>
+
+    <coop-field
+      label="خط الطول"
+      [error]="longitudeErrorMessage()"
+      [touched]="form.controls.longitude.touched"
+    >
+      <input formControlName="longitude" type="number" step="any" />
+    </coop-field>
+
+    <p class="coordinates-note span-2">يمكنك أخذ الإحداثيات من خرائط جوجل</p>
+
+    <coop-field
+      label="وقت الفتح"
+      [error]="openingTimeErrorMessage()"
+      [touched]="form.controls.openingTime.touched"
+    >
+      <input formControlName="openingTime" type="time" />
+    </coop-field>
+
+    <coop-field
+      label="وقت الإغلاق"
+      [error]="closingTimeErrorMessage()"
+      [touched]="form.controls.closingTime.touched"
+    >
+      <input formControlName="closingTime" type="time" />
+    </coop-field>
+
+    <coop-field
+      label="نطاق التوصيل (كم)"
+      [error]="deliveryRadiusKmErrorMessage()"
+      [touched]="form.controls.deliveryRadiusKm.touched"
+    >
+      <input formControlName="deliveryRadiusKm" type="number" step="0.1" />
+    </coop-field>
+
+    <coop-field
+      label="الحد الأدنى للطلب"
+      [error]="minimumOrderAmountErrorMessage()"
+      [touched]="form.controls.minimumOrderAmount.touched"
+    >
+      <input formControlName="minimumOrderAmount" type="number" step="0.01" />
+    </coop-field>
+
+    <coop-field
+      label="رسوم التوصيل الأساسية"
+      [error]="baseDeliveryFeeErrorMessage()"
+      [touched]="form.controls.baseDeliveryFee.touched"
+    >
+      <input formControlName="baseDeliveryFee" type="number" step="0.01" />
+    </coop-field>
+  </form>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" (click)="closeFormModal()">إلغاء</coop-button>
+    <coop-button size="sm" [loading]="formSaving()" [disabled]="formSaving()" (click)="submitForm()">
+      حفظ
+    </coop-button>
+  </div>
+</coop-modal>
+
+<coop-modal
+  title="تأكيد إلغاء التفعيل"
+  [open]="confirmDeactivateOpen()"
+  size="sm"
+  (closed)="closeDeactivateConfirm()"
+>
+  @if (deactivateErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <p>
+    هل أنت متأكد من إلغاء تفعيل فرع
+    @if (branchToDeactivate(); as b) {
+      «{{ b.name }}»؟
+    }
+  </p>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" (click)="closeDeactivateConfirm()">تراجع</coop-button>
+    <coop-button
+      variant="danger"
+      size="sm"
+      [loading]="deactivateSaving()"
+      [disabled]="deactivateSaving()"
+      (click)="confirmDeactivate()"
+    >
+      إلغاء التفعيل
+    </coop-button>
+  </div>
+</coop-modal>
