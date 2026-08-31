@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>COOP - حسابي</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-low": "#f4f3f7",
+                      "on-secondary-container": "#794222",
+                      "on-primary": "#ffffff",
+                      "outline-variant": "#ddbfc3",
+                      "on-primary-container": "#ff9db0",
+                      "surface-container-highest": "#e3e2e6",
+                      "surface-container": "#efedf1",
+                      "on-error": "#ffffff",
+                      "inverse-surface": "#2f3033",
+                      "outline": "#897174",
+                      "on-primary-fixed-variant": "#871b3c",
+                      "surface-container-high": "#e9e7eb",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#ffb2bf",
+                      "tertiary-container": "#802c42",
+                      "on-surface-variant": "#564145",
+                      "on-primary-fixed": "#3f0015",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#6c0029",
+                      "secondary-container": "#feb289",
+                      "surface-dim": "#dbd9dd",
+                      "tertiary-fixed": "#ffd9de",
+                      "tertiary": "#62152c",
+                      "error-container": "#ffdad6",
+                      "surface": "#faf9fd",
+                      "surface-variant": "#e3e2e6",
+                      "on-tertiary": "#ffffff",
+                      "secondary": "#89502e",
+                      "on-surface": "#1a1b1e",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#1a1b1e",
+                      "surface-tint": "#a73453",
+                      "primary-container": "#8b1e3f",
+                      "surface-bright": "#faf9fd",
+                      "on-tertiary-fixed-variant": "#7c293f",
+                      "primary-fixed": "#ffd9de",
+                      "background": "#faf9fd",
+                      "tertiary-fixed-dim": "#ffb1c0",
+                      "on-tertiary-container": "#ff9db1",
+                      "primary-fixed-dim": "#ffb2bf",
+                      "secondary-fixed": "#ffdbca",
+                      "on-tertiary-fixed": "#3f0016",
+                      "on-secondary-fixed-variant": "#6d3919",
+                      "on-secondary-fixed": "#331200",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#f1f0f4",
+                      "secondary-fixed-dim": "#ffb68f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "container-max": "1280px",
+                      "gutter": "24px",
+                      "stack-lg": "32px",
+                      "stack-md": "16px",
+                      "margin-desktop": "40px",
+                      "stack-sm": "8px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "Montserrat"
+                      ],
+                      "button": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Montserrat"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "display-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "button": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: #FFF9F5;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface bg-[#FFF9F5] pb-24">
+<!-- TopAppBar -->
+<header class="bg-surface shadow-sm font-headline-md text-headline-md-mobile md:text-headline-md flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full dir-rtl sticky top-0 z-50">
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<div class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary italic font-black">
+            COOP
+        </div>
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mt-stack-lg">
+<!-- Profile Header -->
+<section class="bg-surface rounded-xl shadow-[0px_4px_20px_rgba(139,30,63,0.04)] p-stack-md flex flex-col items-center justify-center mb-stack-lg">
+<div class="relative w-24 h-24 mb-stack-sm">
+<img class="w-full h-full object-cover rounded-full border-2 border-outline-variant" data-alt="A professional, warm portrait photo of a middle-eastern man in his 30s. He is smiling slightly, facing the camera. The background is a soft, light beige wall. High quality lighting, soft shadows, reflecting a premium and approachable brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDS6Whi-6JhR3rt5Wuq9VER_ja--RRJUH45WxkpJmrKA1oX54biUKHr_uEBiDnpjGGU-tUFhphWjwPeDpbprJPdwttxmb-EUAdCl4mScXa2odY9SR983baSFM9YkMyNk80lsnoaUXPfRLlzC87cj-uY4ALt0xN3kOEnor34agqyK-RYaZh4LXbl8WM5rTHDkQN-HQvVVaxfrHSk3y5R5DmZuT79BBYUlDH-LrwtcVsNfgb3CcrzLjodRQ"/>
+<button class="absolute bottom-0 left-0 bg-primary text-on-primary rounded-full p-1 shadow-md hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="edit">edit</span>
+</button>
+</div>
+<h1 class="font-headline-sm text-headline-sm text-on-surface mb-unit">أحمد محمد</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-unit dir-ltr">+966 50 123 4567</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ahmad.m@example.com</p>
+</section>
+<!-- Menu Options Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+<!-- Account Settings Group -->
+<div class="bg-surface rounded-xl shadow-[0px_4px_20px_rgba(139,30,63,0.04)] p-stack-md flex flex-col gap-unit">
+<h2 class="font-label-caps text-label-caps text-outline mb-stack-sm">إعدادات الحساب</h2>
+<a class="flex items-center justify-between p-stack-sm hover:bg-surface-container-lowest transition-colors rounded-lg group" href="#">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-primary group-hover:text-primary-container transition-colors" data-icon="person">person</span>
+<span class="font-body-md text-body-md text-on-surface">تعديل المعلومات</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant rtl:rotate-180" data-icon="chevron_right">chevron_right</span>
+</a>
+<div class="h-px w-full bg-surface-container-high"></div>
+<a class="flex items-center justify-between p-stack-sm hover:bg-surface-container-lowest transition-colors rounded-lg group" href="#">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-primary group-hover:text-primary-container transition-colors" data-icon="location_on">location_on</span>
+<span class="font-body-md text-body-md text-on-surface">العناوين المحفوظة</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant rtl:rotate-180" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+<!-- Orders & Favorites Group -->
+<div class="bg-surface rounded-xl shadow-[0px_4px_20px_rgba(139,30,63,0.04)] p-stack-md flex flex-col gap-unit">
+<h2 class="font-label-caps text-label-caps text-outline mb-stack-sm">نشاطي</h2>
+<a class="flex items-center justify-between p-stack-sm hover:bg-surface-container-lowest transition-colors rounded-lg group" href="#">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-primary group-hover:text-primary-container transition-colors" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-body-md text-body-md text-on-surface">طلباتي</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant rtl:rotate-180" data-icon="chevron_right">chevron_right</span>
+</a>
+<div class="h-px w-full bg-surface-container-high"></div>
+<a class="flex items-center justify-between p-stack-sm hover:bg-surface-container-lowest transition-colors rounded-lg group" href="#">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-primary group-hover:text-primary-container transition-colors" data-icon="favorite">favorite</span>
+<span class="font-body-md text-body-md text-on-surface">المفضلة</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant rtl:rotate-180" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+<!-- Preferences Group -->
+<div class="bg-surface rounded-xl shadow-[0px_4px_20px_rgba(139,30,63,0.04)] p-stack-md flex flex-col gap-unit">
+<h2 class="font-label-caps text-label-caps text-outline mb-stack-sm">التفضيلات</h2>
+<a class="flex items-center justify-between p-stack-sm hover:bg-surface-container-lowest transition-colors rounded-lg group" href="#">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-primary group-hover:text-primary-container transition-colors" data-icon="notifications">notifications</span>
+<span class="font-body-md text-body-md text-on-surface">تنبيهات</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant rtl:rotate-180" data-icon="chevron_right">chevron_right</span>
+</a>
+<div class="h-px w-full bg-surface-container-high"></div>
+<a class="flex items-center justify-between p-stack-sm hover:bg-surface-container-lowest transition-colors rounded-lg group" href="#">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-primary group-hover:text-primary-container transition-colors" data-icon="language">language</span>
+<span class="font-body-md text-body-md text-on-surface">اللغة</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-body-sm text-body-sm text-outline-variant">العربية</span>
+<span class="material-symbols-outlined text-outline-variant rtl:rotate-180" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+</div>
+<!-- Support & Legal Group -->
+<div class="bg-surface rounded-xl shadow-[0px_4px_20px_rgba(139,30,63,0.04)] p-stack-md flex flex-col gap-unit">
+<h2 class="font-label-caps text-label-caps text-outline mb-stack-sm">أخرى</h2>
+<a class="flex items-center justify-between p-stack-sm hover:bg-surface-container-lowest transition-colors rounded-lg group" href="#">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-primary group-hover:text-primary-container transition-colors" data-icon="help">help</span>
+<span class="font-body-md text-body-md text-on-surface">الدعم</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant rtl:rotate-180" data-icon="chevron_right">chevron_right</span>
+</a>
+<div class="h-px w-full bg-surface-container-high"></div>
+<a class="flex items-center justify-between p-stack-sm hover:bg-surface-container-lowest transition-colors rounded-lg group" href="#">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-primary group-hover:text-primary-container transition-colors" data-icon="description">description</span>
+<span class="font-body-md text-body-md text-on-surface">الشروط</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant rtl:rotate-180" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</section>
+<!-- Logout Button -->
+<div class="mt-stack-lg mb-stack-lg flex justify-center">
+<button class="font-button text-button text-primary border border-primary px-8 py-3 rounded-xl hover:bg-surface-container-low transition-colors w-full md:w-auto">
+                تسجيل الخروج
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center py-stack-sm bg-surface shadow-[0px_-4px_20px_rgba(139,30,63,0.04)] dir-rtl z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-90 duration-200 p-2 rounded-xl group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary-container transition-colors" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps mt-1">الرئيسية</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-90 duration-200 p-2 rounded-xl group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary-container transition-colors" data-icon="category">category</span>
+<span class="font-label-caps text-label-caps mt-1">التصنيفات</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-90 duration-200 p-2 rounded-xl group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary-container transition-colors" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-label-caps text-label-caps mt-1">الطلبات</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-90 duration-200 p-2 rounded-xl group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary-container transition-colors" data-icon="favorite">favorite</span>
+<span class="font-label-caps text-label-caps mt-1">المفضلة</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-primary-container/10 rounded-xl px-2 py-1 transition-all active:scale-90 duration-200 group" href="#">
+<span class="material-symbols-outlined" data-icon="person" data-weight="fill" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-caps text-label-caps mt-1">حسابي</span>
+</a>
+</nav>
+</body></html>

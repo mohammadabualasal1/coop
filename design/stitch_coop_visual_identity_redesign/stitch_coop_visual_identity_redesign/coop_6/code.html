@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>COOP - تفاصيل المنتج</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#871b3c",
+                        "on-secondary-fixed": "#331200",
+                        "on-tertiary-container": "#ff9db1",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#ff9db0",
+                        "inverse-surface": "#2f3033",
+                        "primary": "#6c0029",
+                        "on-secondary-fixed-variant": "#6d3919",
+                        "tertiary-fixed-dim": "#ffb1c0",
+                        "on-primary-fixed": "#3f0015",
+                        "secondary-fixed": "#ffdbca",
+                        "secondary": "#89502e",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#ffb68f",
+                        "surface-tint": "#a73453",
+                        "inverse-primary": "#ffb2bf",
+                        "surface-dim": "#dbd9dd",
+                        "surface-container-high": "#e9e7eb",
+                        "outline": "#897174",
+                        "tertiary-container": "#802c42",
+                        "on-background": "#1a1b1e",
+                        "surface-container": "#efedf1",
+                        "tertiary": "#62152c",
+                        "on-error": "#ffffff",
+                        "background": "#faf9fd",
+                        "primary-container": "#8b1e3f",
+                        "on-surface": "#1a1b1e",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#ffd9de",
+                        "surface-bright": "#faf9fd",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#7c293f",
+                        "inverse-on-surface": "#f1f0f4",
+                        "outline-variant": "#ddbfc3",
+                        "primary-fixed-dim": "#ffb2bf",
+                        "on-surface-variant": "#564145",
+                        "tertiary-fixed": "#ffd9de",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e3e2e6",
+                        "on-tertiary-fixed": "#3f0016",
+                        "surface": "#faf9fd",
+                        "surface-container-low": "#f4f3f7",
+                        "on-secondary-container": "#794222",
+                        "surface-variant": "#e3e2e6",
+                        "secondary-container": "#feb289"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "stack-sm": "8px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "40px",
+                        "stack-md": "16px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Montserrat"],
+                        "body-sm": ["Inter"],
+                        "display-lg-mobile": ["Montserrat"],
+                        "button": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "headline-sm": ["Montserrat"],
+                        "display-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "button": ["16px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #FFF9F5; } /* Base Level 0 */
+        .card-shadow { box-shadow: 0px 4px 20px rgba(139, 30, 63, 0.04); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-[#FFF9F5] text-on-background min-h-screen font-body-md pb-24 md:pb-0">
+<!-- Top Navigation (Hidden Nav Shell - Transactional/Deep Link intent, keeping a custom back button top bar) -->
+<header class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md flex items-center justify-between px-margin-mobile h-16 max-w-container-max mx-auto border-b border-surface-dim/50">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-lowest text-primary shadow-sm hover:bg-surface-container-highest transition-colors active:scale-95">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<span class="font-headline-md text-headline-md text-primary font-bold">COOP</span>
+<div class="w-10 h-10"></div> <!-- Placeholder for balance -->
+</header>
+<main class="pt-16 max-w-container-max mx-auto md:grid md:grid-cols-2 md:gap-gutter md:px-margin-desktop md:py-stack-lg">
+<!-- Product Image Section -->
+<section class="w-full relative bg-surface-container-lowest md:rounded-xl md:card-shadow overflow-hidden">
+<div class="aspect-[4/3] md:aspect-square relative group">
+<img class="w-full h-full object-cover" data-alt="High-end studio photography of sleek, modern wireless over-ear headphones. The headphones are a matte warm off-white color with subtle metallic burgundy accents. They are resting on a minimalist pristine white platform against a soft, very light warm-gray background. Professional lighting creates soft, ambient shadows, highlighting the tactile premium materials and curved design. The aesthetic is clean, sophisticated, and minimalist." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDfEf7AudJEYIma6qGPEAlM8aXRgXdaIBaHfndPJuSafFAd5GAh3_sZYX91sKwxyrBsU8vJoFLEpYLZEdcNYF0qSqF1Rq4s3gmyyWofHPxHpDCpPoV2VzCega2Q6LNOrT6UyxtShb90zfPzWi8raL-T8-XJkJJ_DrjWkvjFfJ66038wXvhqOFPdHZK1cssviRZEuF63JId6j8CnsWjpE0J1HkeGYqDn72q10gYa58RzTTdXT_PtmGMTA"/>
+<!-- Floating Badges -->
+<div class="absolute top-4 right-4 flex flex-col gap-2">
+<span class="bg-[#FFB38A] text-[#331200] font-label-caps text-label-caps px-3 py-1 rounded-full uppercase">خصم ٣٠٪</span>
+<span class="bg-surface-container-lowest/90 backdrop-blur border border-[#E9E2DD] text-on-surface-variant font-label-caps text-label-caps px-3 py-1 rounded-full uppercase">توصيل مجاني</span>
+</div>
+</div>
+<!-- Thumbnail Strip (Desktop mainly) -->
+<div class="hidden md:flex gap-4 p-4 overflow-x-auto">
+<button class="w-20 h-20 rounded-lg border-2 border-primary overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Close up detail shot of the ear cup of premium matte white wireless headphones, showing the soft memory foam padding and a subtle burgundy accent ring. Soft studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyyf9IdGbpcdeOKS5yyzt2GbROPcTGwT6YjhOj9BOYTKLs1maRQR-Yp_Dn-WyxJ0IQpKsEEw2Fv_D_TzFJ4O2R8Apd7-_105UGmfPlUcaSbv06fMic9aDX5jeY7W2xBxnzkqXhXpZFZ7JXiGsRbJDiEiYobjsQH8PqPpLII-DOy8GbpV7B6cBY8z_vrrMThR0YDSt_3P6BeKC7srR9j2yU1NWawIDN6dXZaY6Y4ctBHovyWD6TiWWOUA"/>
+</button>
+<button class="w-20 h-20 rounded-lg border border-[#E9E2DD] overflow-hidden shrink-0 hover:border-primary/50 transition-colors">
+<img class="w-full h-full object-cover" data-alt="Side profile shot of premium matte white wireless headphones folded compactly, demonstrating portability. Placed on a clean white surface with a warm off-white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgfwAZgdK-1jgPE1avll7Kl6BhhoZdoCXLiiMm6Y4BHcPuJyAV5I9unmg6BhDCVkOHslHuzjtIF_x1Zp9L6YbnjZukVHJTdkF9QBP7xEmor7gPKw0KkZul2yvUH84i7vLmsKo9DIV4EBxhzuVBuUg354uKmBSw4m4tTgRKaikHhiHHhwIg4dS3H04WDB4rwj6yGZRrR0whv4oB3bygVrX0kGmohxn33JyMk-FP_3edBYm5x_tVh9Ejog"/>
+</button>
+<button class="w-20 h-20 rounded-lg border border-[#E9E2DD] overflow-hidden shrink-0 hover:border-primary/50 transition-colors">
+<img class="w-full h-full object-cover" data-alt="Top down shot of the headband of premium matte white wireless headphones, highlighting the premium stitching and subtle COOP branding. Clean minimalist lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAe-1zaqo_qjO7v8teoU5YYFblA5DTurchdOWQTtlFZ1lljNHWKtOCpnTALmnDZH4rqUP1eg3IKFHdZB4VFKu7lNhrtAw3aY8JtoFhNwp19Tg_AwwuGKIFjftjT0kTfqNIaxp-Ylqpcl8YIqvkY9GX4lKO-QrgGaVxm0cDQPkxm9NP-y12iZ93rU0aLKxHhPiFpulSb7j1GSqFP8G7vivCW6g5HB0Js845gQNQfj3VAHe6z_bRdJdkXqA"/>
+</button>
+</div>
+</section>
+<!-- Product Details Section -->
+<section class="px-margin-mobile py-stack-md md:px-0 md:py-0 flex flex-col gap-stack-lg">
+<div class="flex flex-col gap-stack-sm">
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface">سماعات أورا برو لاسلكية مع إلغاء الضوضاء</h1>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<div class="flex text-[#FFB38A]">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined">star_half</span>
+</div>
+<span class="font-body-sm text-body-sm">(١٢٨ تقييم)</span>
+</div>
+<div class="flex items-end gap-3 mt-2">
+<span class="font-headline-md text-headline-md text-primary">١٣٩.٠٠ د.أ</span>
+<span class="font-body-md text-body-md text-on-surface-variant line-through mb-0.5">١٩٩.٠٠ د.أ</span>
+</div>
+</div>
+<!-- Description -->
+<p class="font-body-md text-body-md text-on-surface-variant">
+                جرب جودة صوت الاستوديو مع أورا برو. تتميز بتقنية إلغاء الضوضاء النشط المتقدمة وعمر بطارية يصل إلى ٤٠ ساعة، وقد تم تصميم هذه السماعات لعشاق الصوت الحديثين الذين يبحثون عن الأناقة الجمالية والأداء الصوتي الذي لا مثيل له.
+            </p>
+<!-- Color Selection -->
+<div class="flex flex-col gap-3">
+<h3 class="font-label-caps text-label-caps text-on-surface uppercase">اللون: أبيض ناصع</h3>
+<div class="flex gap-4">
+<button aria-label="Select Pristine White" class="w-10 h-10 rounded-full bg-[#FFFFFF] border-2 border-primary shadow-sm ring-2 ring-primary/20"></button>
+<button aria-label="Select Charcoal Black" class="w-10 h-10 rounded-full bg-[#2F3033] border border-[#E9E2DD] shadow-sm hover:scale-110 transition-transform"></button>
+<button aria-label="Select Warm Peach" class="w-10 h-10 rounded-full bg-[#FFB38A] border border-[#E9E2DD] shadow-sm hover:scale-110 transition-transform"></button>
+</div>
+</div>
+<!-- Key Features Grid -->
+<div class="bg-surface-container-lowest rounded-xl p-4 card-shadow border border-[#E9E2DD]/30">
+<div class="grid grid-cols-2 gap-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">volume_off</span>
+<span class="font-body-sm text-body-sm text-on-surface">إلغاء الضوضاء النشط</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">battery_charging_full</span>
+<span class="font-body-sm text-body-sm text-on-surface">عمر بطارية ٤٠ ساعة</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">bluetooth</span>
+<span class="font-body-sm text-body-sm text-on-surface">بلوتوث ٥.٣</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">mic</span>
+<span class="font-body-sm text-body-sm text-on-surface">ميكروفون مدمج</span>
+</div>
+</div>
+</div>
+<!-- Desktop Add to Cart (Hidden on Mobile) -->
+<div class="hidden md:flex flex-col gap-4 mt-auto">
+<button class="w-full bg-primary text-on-primary font-button text-button py-4 px-8 rounded-xl hover:bg-primary-container transition-colors shadow-lg active:scale-95 duration-150 flex justify-center items-center gap-2">
+<span class="material-symbols-outlined">shopping_bag</span>
+                    أضف للسلة
+                </button>
+</div>
+</section>
+</main>
+<!-- Mobile Sticky Action Bar -->
+<div class="fixed bottom-0 w-full bg-surface-container-lowest border-t border-[#E9E2DD]/50 p-margin-mobile shadow-[0px_-4px_20px_rgba(139,30,63,0.08)] z-50 md:hidden flex items-center justify-between gap-4">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">المجموع</span>
+<span class="font-headline-sm text-headline-sm text-primary">١٣٩.٠٠ د.أ</span>
+</div>
+<button class="flex-1 bg-primary text-on-primary font-button text-button py-3 px-6 rounded-xl hover:bg-primary-container transition-colors active:scale-95 duration-150 flex justify-center items-center gap-2">
+<span class="material-symbols-outlined">shopping_bag</span>
+            أضف للسلة
+        </button>
+</div>
+</body></html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>تفاصيل العنوان - COOP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        /* Custom Input Focus Glow */
+        .input-glow:focus-within {
+            box-shadow: 0 0 0 2px rgba(108, 0, 41, 0.1);
+            border-color: #6c0029;
+        }
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar { display: none; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-low": "#f4f3f7",
+                        "on-secondary-container": "#794222",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#ddbfc3",
+                        "on-primary-container": "#ff9db0",
+                        "surface-container-highest": "#e3e2e6",
+                        "surface-container": "#efedf1",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2f3033",
+                        "outline": "#897174",
+                        "on-primary-fixed-variant": "#871b3c",
+                        "surface-container-high": "#e9e7eb",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#ffb2bf",
+                        "tertiary-container": "#802c42",
+                        "on-surface-variant": "#564145",
+                        "on-primary-fixed": "#3f0015",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#6c0029",
+                        "secondary-container": "#feb289",
+                        "surface-dim": "#dbd9dd",
+                        "tertiary-fixed": "#ffd9de",
+                        "tertiary": "#62152c",
+                        "error-container": "#ffdad6",
+                        "surface": "#faf9fd",
+                        "surface-variant": "#e3e2e6",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#89502e",
+                        "on-surface": "#1a1b1e",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1b1e",
+                        "surface-tint": "#a73453",
+                        "primary-container": "#8b1e3f",
+                        "surface-bright": "#faf9fd",
+                        "on-tertiary-fixed-variant": "#7c293f",
+                        "primary-fixed": "#ffd9de",
+                        "background": "#faf9fd",
+                        "tertiary-fixed-dim": "#ffb1c0",
+                        "on-tertiary-container": "#ff9db1",
+                        "primary-fixed-dim": "#ffb2bf",
+                        "secondary-fixed": "#ffdbca",
+                        "on-tertiary-fixed": "#3f0016",
+                        "on-secondary-fixed-variant": "#6d3919",
+                        "on-secondary-fixed": "#331200",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f1f0f4",
+                        "secondary-fixed-dim": "#ffb68f"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "unit": "4px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px",
+                        "margin-desktop": "40px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "16px"
+                    },
+                    fontFamily: {
+                        "label-caps": ["Montserrat", "sans-serif"],
+                        "button": ["Montserrat", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "headline-sm": ["Montserrat", "sans-serif"],
+                        "display-lg": ["Montserrat", "sans-serif"],
+                        "headline-md": ["Montserrat", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "display-lg-mobile": ["Montserrat", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"]
+                    },
+                    fontSize: {
+                        "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "700" }],
+                        "button": ["16px", { lineHeight: "20px", fontWeight: "600" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "headline-sm": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+                        "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "display-lg-mobile": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "700" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#FFF9F5] text-on-surface min-h-screen flex flex-col items-center">
+<!-- Top App Bar (Task Focused, Custom Back Action) -->
+<header class="bg-surface shadow-sm docked full-width top-0 w-full z-50">
+<div class="flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full max-w-container-max mx-auto dir-rtl">
+<button aria-label="Back" class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95 duration-100">
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary italic font-black">COOP</h1>
+<div class="w-10"></div> <!-- Spacer for balance -->
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-[600px] px-margin-mobile md:px-0 py-stack-lg mx-auto flex flex-col gap-stack-lg">
+<div class="flex flex-col gap-stack-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">تفاصيل العنوان</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">الرجاء تأكيد موقعك وإضافة تفاصيل المبنى لضمان دقة التوصيل.</p>
+</div>
+<!-- Form Card -->
+<form class="bg-surface-container-lowest rounded-[12px] p-4 md:p-6 shadow-[0px_4px_20px_rgba(139,30,63,0.04)] flex flex-col gap-stack-lg border border-[#E9E2DD]">
+<!-- Map Snippet Placeholder -->
+<div class="w-full h-40 rounded-[8px] overflow-hidden border border-[#E9E2DD] relative">
+<img class="w-full h-full object-cover" data-alt="A clean, minimal vector map snippet showing a stylized pin on a street grid in a warm, premium light mode aesthetic. The map features soft cream roads, subtle off-white blocks, and a sharp burgundy location pin to match a high-end UI design language." data-location="Riyadh, Saudi Arabia" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0yIN3ilu5PIAZcc0peattdiQG7-FkiAIwqUtEOlDjH94VfU7UFTgHU4JKz4tKnoo_GXvKMnOJEbD4C2Watst1j4w3_cr1tz_EVHERZZyMu_HqeSU1AzrstYjdUWkuaJuF58xquxn39TlhvUuKsQ6O1AXWKimkoF4enEjAuPOUvuK2gfUxMPJl6yBf3cdyq_rWg2YSepE9mHbYnnc73jMwvtOwC0_A3vhSJrMOwY9bn44A9LkUGvO-Hg"/>
+<div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]" data-icon="my_location" data-weight="fill" style="font-variation-settings: 'FILL' 1;">my_location</span>
+<span class="font-label-caps text-label-caps text-on-surface">حي الملقا، الرياض</span>
+</div>
+</div>
+<!-- Address Labels -->
+<div class="flex flex-col gap-stack-sm">
+<label class="font-label-caps text-label-caps text-on-surface-variant">نوع العنوان</label>
+<div class="flex gap-3">
+<label class="cursor-pointer flex-1">
+<input checked="" class="peer sr-only" name="address_type" type="radio" value="home"/>
+<div class="text-center py-2 px-4 rounded-xl border border-[#E9E2DD] bg-surface-container-lowest text-on-surface-variant peer-checked:bg-primary-container/10 peer-checked:border-primary peer-checked:text-primary transition-all font-button text-button">
+                            المنزل
+                        </div>
+</label>
+<label class="cursor-pointer flex-1">
+<input class="peer sr-only" name="address_type" type="radio" value="work"/>
+<div class="text-center py-2 px-4 rounded-xl border border-[#E9E2DD] bg-surface-container-lowest text-on-surface-variant peer-checked:bg-primary-container/10 peer-checked:border-primary peer-checked:text-primary transition-all font-button text-button">
+                            العمل
+                        </div>
+</label>
+<label class="cursor-pointer flex-1">
+<input class="peer sr-only" name="address_type" type="radio" value="other"/>
+<div class="text-center py-2 px-4 rounded-xl border border-[#E9E2DD] bg-surface-container-lowest text-on-surface-variant peer-checked:bg-primary-container/10 peer-checked:border-primary peer-checked:text-primary transition-all font-button text-button">
+                            أخرى
+                        </div>
+</label>
+</div>
+</div>
+<!-- Details Grid -->
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-stack-sm col-span-2 md:col-span-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">رقم المبنى</label>
+<input class="w-full p-3 rounded-[8px] border border-[#E9E2DD] bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-outline-variant outline-none transition-all input-glow" placeholder="مثال: 45A" type="text"/>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<label class="font-label-caps text-label-caps text-on-surface-variant">الدور</label>
+<input class="w-full p-3 rounded-[8px] border border-[#E9E2DD] bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-outline-variant outline-none transition-all input-glow" placeholder="مثال: 2" type="text"/>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<label class="font-label-caps text-label-caps text-on-surface-variant">رقم الشقة</label>
+<input class="w-full p-3 rounded-[8px] border border-[#E9E2DD] bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-outline-variant outline-none transition-all input-glow" placeholder="مثال: 12" type="text"/>
+</div>
+</div>
+<!-- Instructions -->
+<div class="flex flex-col gap-stack-sm">
+<label class="font-label-caps text-label-caps text-on-surface-variant">تعليمات إضافية للتوصيل (اختياري)</label>
+<textarea class="w-full p-3 rounded-[8px] border border-[#E9E2DD] bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-outline-variant outline-none transition-all input-glow resize-none" placeholder="مثال: يرجى ترك الطلب عند الباب..." rows="3"></textarea>
+</div>
+<!-- Action Area -->
+<div class="pt-stack-md mt-auto">
+<button class="w-full bg-primary text-on-primary rounded-[12px] py-4 px-8 font-button text-button shadow-md hover:shadow-lg hover:bg-[#5a0022] transition-all active:scale-95 duration-200" type="button">
+                    حفظ العنوان
+                </button>
+</div>
+</form>
+</main>
+</body></html>

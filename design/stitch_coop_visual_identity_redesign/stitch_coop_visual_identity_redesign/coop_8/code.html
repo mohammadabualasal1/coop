@@ -1,0 +1,298 @@
+<!DOCTYPE html><html class="h-full" dir="rtl" lang="ar"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>COOP - سلتك</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Google Fonts: Inter and Montserrat -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;family=Cairo:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#871b3c",
+                      "on-secondary-fixed": "#331200",
+                      "on-tertiary-container": "#ff9db1",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-container": "#ff9db0",
+                      "inverse-surface": "#2f3033",
+                      "primary": "#6c0029",
+                      "on-secondary-fixed-variant": "#6d3919",
+                      "tertiary-fixed-dim": "#ffb1c0",
+                      "on-primary-fixed": "#3f0015",
+                      "secondary-fixed": "#ffdbca",
+                      "secondary": "#89502e",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed-dim": "#ffb68f",
+                      "surface-tint": "#a73453",
+                      "inverse-primary": "#ffb2bf",
+                      "surface-dim": "#dbd9dd",
+                      "surface-container-high": "#e9e7eb",
+                      "outline": "#897174",
+                      "tertiary-container": "#802c42",
+                      "on-background": "#1a1b1e",
+                      "surface-container": "#efedf1",
+                      "tertiary": "#62152c",
+                      "on-error": "#ffffff",
+                      "background": "#faf9fd",
+                      "primary-container": "#8b1e3f",
+                      "on-surface": "#1a1b1e",
+                      "on-error-container": "#93000a",
+                      "primary-fixed": "#ffd9de",
+                      "surface-bright": "#faf9fd",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#7c293f",
+                      "inverse-on-surface": "#f1f0f4",
+                      "outline-variant": "#ddbfc3",
+                      "primary-fixed-dim": "#ffb2bf",
+                      "on-surface-variant": "#564145",
+                      "tertiary-fixed": "#ffd9de",
+                      "error-container": "#ffdad6",
+                      "error": "#ba1a1a",
+                      "surface-container-highest": "#e3e2e6",
+                      "on-tertiary-fixed": "#3f0016",
+                      "surface": "#faf9fd",
+                      "surface-container-low": "#f4f3f7",
+                      "on-secondary-container": "#794222",
+                      "surface-variant": "#e3e2e6",
+                      "secondary-container": "#feb289",
+                      "custom-bg": "#FFF9F5",
+                      "custom-card-bg": "#FFFFFF",
+                      "custom-card-border": "#E9E2DD",
+                      "custom-badge-bg": "#FFB38A",
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1280px",
+                      "stack-sm": "8px",
+                      "stack-lg": "32px",
+                      "margin-desktop": "40px",
+                      "stack-md": "16px",
+                      "gutter": "24px",
+                      "unit": "4px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "body-md": ["Cairo", "Inter"],
+                      "body-lg": ["Cairo", "Inter"],
+                      "label-caps": ["Cairo", "Montserrat"],
+                      "body-sm": ["Cairo", "Inter"],
+                      "display-lg-mobile": ["Cairo", "Montserrat"],
+                      "button": ["Cairo", "Montserrat"],
+                      "headline-md": ["Cairo", "Montserrat"],
+                      "headline-sm": ["Cairo", "Montserrat"],
+                      "display-lg": ["Cairo", "Montserrat"]
+              },
+              "fontSize": {
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "button": ["16px", {"lineHeight": "20px", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body { background-color: #FFF9F5; }
+        .card-shadow { box-shadow: 0px 4px 20px rgba(139, 30, 63, 0.04); }
+        .card-shadow-hover:hover { box-shadow: 0px 8px 30px rgba(139, 30, 63, 0.08); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="font-body-md text-body-md text-on-surface antialiased bg-custom-bg flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-background dark:bg-background flat no shadows">
+<div class="flex items-center justify-between px-margin-mobile h-16 w-full max-w-container-max mx-auto">
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors active:scale-95 duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile font-bold text-primary dark:text-primary-fixed-dim hidden md:block">COOP</h1>
+<h1 class="font-display-lg-mobile text-display-lg-mobile font-bold text-primary dark:text-primary-fixed-dim md:hidden">COOP</h1>
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors active:scale-95 duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-[80px] pb-[100px] md:pb-stack-lg max-w-container-max mx-auto w-full px-margin-mobile md:px-margin-desktop grid grid-cols-4 md:grid-cols-12 gap-gutter">
+<!-- Cart Items Section (8 cols on desktop) -->
+<section class="col-span-4 md:col-span-8 flex flex-col gap-stack-md">
+<div class="flex justify-between items-end mb-stack-sm">
+<h2 class="font-headline-md text-headline-md text-on-surface">سلتك</h2>
+<span class="font-body-sm text-on-surface-variant text-body-md">٣ منتجات</span>
+</div>
+<!-- Item 1 -->
+<div class="bg-custom-card-bg rounded-xl card-shadow p-4 flex gap-4 items-start transition-shadow card-shadow-hover">
+<div class="w-24 h-24 rounded-lg bg-surface-container-low border border-custom-card-border overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="طقم تحضير قهوة سيراميك فاخر باللون الأسود المطفي" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxlVlUeYRJdCetZNwhymS7wdrkmJuX7Gc6UPSa0C8ml2dpi21r30vw2w_6a6Lxz-d7CayZGQ_D1fflRMLCwhBab6Z_ABoe_WdNyr_6eLkk2yC_zh1dfgyX_QmQ1zwQ__Qq5ZlFyX6D22bWX6-GA_Txqtr8ehsXo1XomY_Ph0QT1bOP1HNy9EK8n0hdlJaUFcJNXPEFS9R2yxCptPBdt1-IgdZSXI0ZKa10-OCY6iPZf885ruob4yzlmA">
+</div>
+<div class="flex-grow flex flex-col justify-between h-full">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">طقم قهوة سيراميك</h3>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">أسود مطفي</p>
+</div>
+<div class="flex justify-between items-center mt-4">
+<div class="flex items-center gap-3 bg-surface-container-lowest border border-custom-card-border rounded-lg px-2 py-1">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined" style="font-size: 18px;">remove</span></button>
+<span class="font-body-md text-body-md w-4 text-center">1</span>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined" style="font-size: 18px;">add</span></button>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">٤٥.٠٠ د.أ</span>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-custom-card-bg rounded-xl card-shadow p-4 flex gap-4 items-start transition-shadow card-shadow-hover">
+<div class="w-24 h-24 rounded-lg bg-surface-container-low border border-custom-card-border overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="سماعات رأس عازلة للضوضاء بلون كريمي" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTpKAfWaweOLdmQYj6D8T5qlkLbjscMME2VXorQFqjrRaME-C5BN-1KFmLMLd1pbfHLuOoXktBDY79LXASo5dXepczGxceg_Ub4vLJQb4ox77N-fQnWynMZmBTa7CL9-m3YzC2CYNqv5nONSwwx9O3sgFh4z8mNdyne2QmghF2aZneQbAj0tS3NTwBxxU8TqiaAbYqUL7K8m4Rw2Hyh6gw8bWUybgLTQWZ5ULfxU4Xfbx1keiBqagbHQ">
+</div>
+<div class="flex-grow flex flex-col justify-between h-full">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">سماعات أورا برو لاسلكية</h3>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">أبيض كريمي</p>
+<div class="mt-2 inline-block px-3 py-1 bg-custom-badge-bg rounded-full">
+<span class="font-label-caps text-label-caps text-on-background">١٥٪ خصم</span>
+</div>
+</div>
+<div class="flex justify-between items-center mt-4">
+<div class="flex items-center gap-3 bg-surface-container-lowest border border-custom-card-border rounded-lg px-2 py-1">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined" style="font-size: 18px;">remove</span></button>
+<span class="font-body-md text-body-md w-4 text-center">1</span>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined" style="font-size: 18px;">add</span></button>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-headline-sm text-headline-sm text-on-surface">١٧٠.٠٠ د.أ</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant line-through">٢٠٠.٠٠ د.أ</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="bg-custom-card-bg rounded-xl card-shadow p-4 flex gap-4 items-start transition-shadow card-shadow-hover">
+<div class="w-24 h-24 rounded-lg bg-surface-container-low border border-custom-card-border overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="دفتر يوميات بغلاف كتاني" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoZVDCRxn6PNbJeoPMLiRt_7rR4vkWJC-GK-IbQ-TbKUsP-CvffLunTPN753AD6_pbBReZcEgjFMdJJhYbHDJIIY3UKNchVL0DjNe7tJeMYYGG6l14ZKRC2B8ccLFKRYRVP76IR3az5hNj9hG3dULF6q375wlx_LotDUn80dYqNaHi3AAJ_GH9lXNJFkU1JIcDJRbw0FGBPvFkxQXNaW26DBZhfWeABcheoLLT7QGldnlv1VH1HoHuQg">
+</div>
+<div class="flex-grow flex flex-col justify-between h-full">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">دفتر يوميات كتاني</h3>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">أخضر مريمية</p>
+</div>
+<div class="flex justify-between items-center mt-4">
+<div class="flex items-center gap-3 bg-surface-container-lowest border border-custom-card-border rounded-lg px-2 py-1">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined" style="font-size: 18px;">remove</span></button>
+<span class="font-body-md text-body-md w-4 text-center">2</span>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined" style="font-size: 18px;">add</span></button>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">٥٦.٠٠ د.أ</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Order Summary Section (4 cols on desktop) -->
+<aside class="col-span-4 md:col-span-4 mt-stack-lg md:mt-0">
+<div class="bg-custom-card-bg rounded-xl card-shadow p-6 sticky top-24">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-stack-md">ملخص الطلب</h2>
+<div class="flex flex-col gap-3 font-body-md text-body-md text-on-surface-variant">
+<div class="flex justify-between">
+<span class="">المجموع الفرعي</span>
+<span class="text-on-surface">٢٧١.٠٠ د.أ</span>
+</div>
+<div class="flex justify-between">
+<span class="">الخصم</span>
+<span class="text-primary">-٣٠.٠٠ د.أ</span>
+</div>
+<div class="flex justify-between">
+<span class="">التوصيل</span>
+<span class="text-on-surface">يُحسب في الخطوة التالية</span>
+</div>
+</div>
+<hr class="my-6 border-custom-card-border">
+<div class="flex justify-between items-center mb-6">
+<span class="font-headline-sm text-headline-sm text-on-surface">المجموع الكلي</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold">٢٤١.٠٠ د.أ</span>
+</div>
+<button class="w-full bg-primary text-on-primary font-button text-button py-4 px-8 rounded-xl hover:bg-primary-container transition-colors shadow-sm mb-4">
+                    إتمام الطلب
+                </button>
+<!-- Promo Input -->
+<div class="mt-4">
+<label class="font-label-caps text-on-surface-variant block mb-2 text-body-sm">رمز الخصم</label>
+<div class="flex gap-2">
+<input class="flex-grow bg-custom-card-bg border border-custom-card-border rounded-lg px-4 py-2 text-body-md focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" placeholder="أدخل الرمز" type="text">
+<button class="bg-transparent border border-primary text-primary font-button px-4 rounded-lg hover:bg-primary/5 transition-colors">
+                            تطبيق
+                        </button>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container-lowest dark:bg-surface-container-lowest shadow-[0px_-4px_20px_rgba(139,30,63,0.04)] md:hidden">
+<div class="flex justify-around items-center w-full h-16 pb-safe px-margin-mobile"><!-- Home -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 duration-200 w-full h-full" href="#">
+  <span class="material-symbols-outlined">home</span>
+  <span class="font-label-caps text-label-caps mt-1" style="font-size: 10px;">الرئيسية</span>
+</a>
+<!-- Categories -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 duration-200 w-full h-full" href="#">
+  <span class="material-symbols-outlined">grid_view</span>
+  <span class="font-label-caps text-label-caps mt-1" style="font-size: 10px;">التصنيفات</span>
+</a>
+<!-- Orders -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 duration-200 w-full h-full" href="#">
+  <span class="material-symbols-outlined">receipt_long</span>
+  <span class="font-label-caps text-label-caps mt-1" style="font-size: 10px;">الطلبات</span>
+</a>
+<!-- Favorites -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 duration-200 w-full h-full" href="#">
+  <span class="material-symbols-outlined">favorite</span>
+  <span class="font-label-caps text-label-caps mt-1" style="font-size: 10px;">المفضلة</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 duration-200 w-full h-full" href="#">
+  <span class="material-symbols-outlined">person</span>
+  <span class="font-label-caps text-label-caps mt-1" style="font-size: 10px;">حسابي</span>
+</a></div>
+</nav>
+
+
+</body></html>

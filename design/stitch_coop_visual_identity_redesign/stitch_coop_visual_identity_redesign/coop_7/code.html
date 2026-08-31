@@ -1,0 +1,269 @@
+<!DOCTYPE html><html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>COOP - الرئيسية</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#871b3c",
+                        "on-secondary-fixed": "#331200",
+                        "on-tertiary-container": "#ff9db1",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#ff9db0",
+                        "inverse-surface": "#2f3033",
+                        "primary": "#6c0029",
+                        "on-secondary-fixed-variant": "#6d3919",
+                        "tertiary-fixed-dim": "#ffb1c0",
+                        "on-primary-fixed": "#3f0015",
+                        "secondary-fixed": "#ffdbca",
+                        "secondary": "#89502e",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#ffb68f",
+                        "surface-tint": "#a73453",
+                        "inverse-primary": "#ffb2bf",
+                        "surface-dim": "#dbd9dd",
+                        "surface-container-high": "#e9e7eb",
+                        "outline": "#897174",
+                        "tertiary-container": "#802c42",
+                        "on-background": "#1a1b1e",
+                        "surface-container": "#efedf1",
+                        "tertiary": "#62152c",
+                        "on-error": "#ffffff",
+                        "background": "#faf9fd",
+                        "primary-container": "#8b1e3f",
+                        "on-surface": "#1a1b1e",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#ffd9de",
+                        "surface-bright": "#faf9fd",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#7c293f",
+                        "inverse-on-surface": "#f1f0f4",
+                        "outline-variant": "#ddbfc3",
+                        "primary-fixed-dim": "#ffb2bf",
+                        "on-surface-variant": "#564145",
+                        "tertiary-fixed": "#ffd9de",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e3e2e6",
+                        "on-tertiary-fixed": "#3f0016",
+                        "surface": "#faf9fd",
+                        "surface-container-low": "#f4f3f7",
+                        "on-secondary-container": "#794222",
+                        "surface-variant": "#e3e2e6",
+                        "secondary-container": "#feb289"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "stack-sm": "8px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "40px",
+                        "stack-md": "16px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Montserrat"],
+                        "body-sm": ["Inter"],
+                        "display-lg-mobile": ["Montserrat"],
+                        "button": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "headline-sm": ["Montserrat"],
+                        "display-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "button": ["16px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            background-color: #FFF9F5;
+        }
+        .card-shadow {
+            box-shadow: 0px 4px 20px rgba(139, 30, 63, 0.04);
+        }
+        .card-shadow-hover:hover {
+            box-shadow: 0px 8px 30px rgba(139, 30, 63, 0.08);
+        }
+    </style>
+</head>
+<body class="text-on-background font-body-md bg-[#FFF9F5] pb-24 md:pb-0 pt-16 md:pt-0 antialiased">
+<!-- Mobile Top App Bar (Hidden on md) -->
+<header class="md:hidden bg-background dark:bg-background fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile h-16 w-full max-w-container-max mx-auto flat no shadows">
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors active:scale-95 duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<div class="h-8 flex items-center justify-center">
+<img alt="COOP Logo" class="h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbUFe7cEcqcgYojNDCpR_g2kDf81uSWuZ4nqI9YU0xEiDKP75o5UPdLdkvdbe8ZnFkmuKfk4cOJuW4QhGbDHAjgjblKWNf28DmTcSoTN4zJhSCS46AFad9q98_c3ygG7n3aNB1Cl76-igTLvVksGPdqZzORPU6zpsrP_0lGsVh2zpdXOCh049glMYt-9JW1kJluSk8GKMIM7xBpQ1JxiP6aMRidX7nkG0q-ZZ-JAkSSOCW9_2REfYZfw">
+</div>
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors active:scale-95 duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</header>
+<!-- Desktop Navigation (Hidden on mobile) -->
+<nav class="hidden md:flex bg-surface-container-lowest border-b border-surface-variant sticky top-0 z-50 h-20 w-full items-center px-margin-desktop justify-between shadow-sm">
+<div class="flex items-center gap-8">
+<div class="h-10">
+<img alt="COOP Logo" class="h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbUFe7cEcqcgYojNDCpR_g2kDf81uSWuZ4nqI9YU0xEiDKP75o5UPdLdkvdbe8ZnFkmuKfk4cOJuW4QhGbDHAjgjblKWNf28DmTcSoTN4zJhSCS46AFad9q98_c3ygG7n3aNB1Cl76-igTLvVksGPdqZzORPU6zpsrP_0lGsVh2zpdXOCh049glMYt-9JW1kJluSk8GKMIM7xBpQ1JxiP6aMRidX7nkG0q-ZZ-JAkSSOCW9_2REfYZfw">
+</div>
+<div class="flex gap-6">
+<a class="font-button text-button text-primary border-b-2 border-primary pb-1" href="#">الرئيسية</a>
+<a class="font-button text-button text-on-surface-variant hover:text-primary transition-colors" href="#">الأقسام</a>
+<a class="font-button text-button text-on-surface-variant hover:text-primary transition-colors" href="#">عروض فلاش</a>
+</div>
+</div>
+<div class="flex items-center gap-4 flex-1 max-w-md mx-8">
+<div class="relative w-full">
+<input class="w-full bg-white border border-[#E9E2DD] rounded-lg py-2 pr-10 pl-4 font-body-sm text-body-sm focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none" placeholder="ابحث عن منتجات..." type="text">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute -top-1 -left-1 bg-secondary-container text-on-secondary-container font-bold w-4 h-4 rounded-full flex items-center justify-center text-body-sm">2</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">person</span>
+</button>
+</div>
+</nav>
+<main class="max-w-container-max mx-auto md:px-margin-desktop md:py-stack-lg">
+<!-- Mobile Search (Visible only on mobile) -->
+<div class="md:hidden px-margin-mobile mt-4 mb-6">
+<div class="relative w-full">
+<input class="w-full bg-white border border-[#E9E2DD] rounded-lg py-3 pr-10 pl-4 font-body-sm text-body-sm focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none" placeholder="ابحث عن منتجات..." type="text">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+</div>
+</div>
+<!-- Category Chips Scroll -->
+<section class="mb-stack-lg overflow-x-auto no-scrollbar px-margin-mobile md:px-0">
+<div class="flex gap-3 w-max pb-2">
+<button class="bg-[#FFF9F5] border border-[#E9E2DD] text-on-background font-body-sm text-body-sm px-4 py-2 rounded-full whitespace-nowrap hover:border-primary transition-colors">جميع الأقسام</button>
+<button class="bg-[#FFF9F5] border border-[#E9E2DD] text-on-background font-body-sm text-body-sm px-4 py-2 rounded-full whitespace-nowrap hover:border-primary transition-colors">الإلكترونيات</button>
+<button class="bg-[#FFF9F5] border border-[#E9E2DD] text-on-background font-body-sm text-body-sm px-4 py-2 rounded-full whitespace-nowrap hover:border-primary transition-colors">الموضة</button>
+<button class="bg-[#FFF9F5] border border-[#E9E2DD] text-on-background font-body-sm text-body-sm px-4 py-2 rounded-full whitespace-nowrap hover:border-primary transition-colors">المنزل والمعيشة</button>
+<button class="bg-[#FFF9F5] border border-[#E9E2DD] text-on-background font-body-sm text-body-sm px-4 py-2 rounded-full whitespace-nowrap hover:border-primary transition-colors">الجمال</button>
+<button class="bg-[#FFF9F5] border border-[#E9E2DD] text-on-background font-body-sm text-body-sm px-4 py-2 rounded-full whitespace-nowrap hover:border-primary transition-colors">الرياضة</button>
+</div>
+</section>
+<!-- Hero Banner -->
+<section class="mb-stack-lg px-margin-mobile md:px-0">
+<div class="relative bg-secondary-container rounded-xl overflow-hidden p-6 md:p-12 flex items-center justify-between shadow-sm min-h-[200px] md:min-h-[300px]">
+<!-- Abstract Pattern Background -->
+<div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 2px 2px, #8B1E3F 1px, transparent 0); background-size: 20px 20px;"></div>
+<div class="relative z-10 max-w-md">
+<span class="inline-block bg-[#FFF9F5] text-primary font-label-caps text-label-caps px-3 py-1 rounded-full mb-4 shadow-sm" dir="ltr">ينتهي في 04:23:15</span>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-secondary-container mb-4">تركيز مبيعات الفلاش</h1>
+<p class="font-body-md text-body-md text-on-secondary-container mb-6 opacity-90">خصومات مميزة على أفضل العلامات التجارية. اختيارات مختارة تحدث يوميًا.</p>
+<button class="bg-primary text-white font-button text-button px-8 py-4 rounded-lg hover:bg-primary-container transition-colors shadow-md active:scale-95 duration-150">تسوق الآن</button>
+</div>
+<div class="hidden md:block relative z-10 w-1/3 h-full">
+<!-- Decorative element replacing an image for cleaner look -->
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-48 h-48 bg-white/30 rounded-full blur-2xl"></div>
+<div class="absolute left-10 top-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-xl"></div>
+</div>
+</div>
+</section>
+<!-- Daily Deals Grid -->
+<section class="px-margin-mobile md:px-0 mb-stack-lg">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-headline-sm text-headline-sm md:font-headline-md md:text-headline-md text-on-background">عروض اليوم</h2>
+<a class="font-button text-button text-primary hover:underline flex items-center gap-1" href="#">عرض الكل <span class="material-symbols-outlined text-sm transform rotate-180">arrow_forward</span></a>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-gutter">
+<!-- Product Card 1 -->
+<div class="bg-white rounded-xl p-4 card-shadow card-shadow-hover transition-shadow group cursor-pointer border border-transparent hover:border-[#E9E2DD]">
+<div class="relative w-full aspect-square mb-4 bg-[#FFF9F5] rounded-lg border border-[#E9E2DD] overflow-hidden">
+<span class="absolute top-2 right-2 bg-secondary-container text-on-secondary-container font-label-caps text-[10px] px-2 py-1 rounded-full z-10" dir="ltr">-40%</span>
+<div class="absolute inset-0 bg-gradient-to-tr from-surface-variant to-surface opacity-50"></div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A minimalist, high-key studio shot of premium wireless over-ear headphones in a matte beige finish, resting on a clean white pedestal against a soft, warm off-white background. The lighting is diffused and professional, highlighting the texture and sleek design, embodying a premium modern tech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRNzQaGEmyQgX-NvP4ZYcURcorh9EZx4ptdqEffvHy7cmOJbX3juQoLQfjXN2yBRSAdOcJe407sAsQi5uTmXUYyqBf8n0I992CBbaN5ZiiGUwd8Dw_8WTzmo3VHUrIQCvBY6EIWdpPCiLxoZNHa2sL_2zIDPQqptR5uoCa4saS1pW4AInif72KHjXmREBEVAh2TA-qF_B8zpX9A-Th6HhqZsanJlO0isVCvax5Cyqtp7uezkTdq9qYFw">
+</div>
+<h3 class="font-body-sm text-body-sm text-on-background line-clamp-2 mb-2 font-semibold">سماعات رأس لاسلكية فاخرة عازلة للضوضاء</h3>
+<div class="flex items-baseline gap-2 mb-3">
+<span class="font-headline-sm text-headline-sm text-primary">92.00 د.أ</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant line-through">١٥٦ د.أ</span>
+</div>
+<button class="w-full bg-transparent border border-primary text-primary font-button text-sm py-2 rounded-lg hover:bg-primary/5 transition-colors">92.00 د.أ</button>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-white rounded-xl p-4 card-shadow card-shadow-hover transition-shadow group cursor-pointer border border-transparent hover:border-[#E9E2DD]">
+<div class="relative w-full aspect-square mb-4 bg-[#FFF9F5] rounded-lg border border-[#E9E2DD] overflow-hidden">
+<span class="absolute top-2 right-2 bg-secondary-container text-on-secondary-container font-label-caps text-[10px] px-2 py-1 rounded-full z-10">جديد</span>
+<div class="absolute inset-0 bg-gradient-to-tr from-surface-variant to-surface opacity-50"></div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A beautifully styled flat lay of organic skincare products in minimalist frosted glass bottles with soft peach accents, arranged on a pristine white marble surface with a hint of warm sunlight filtering through, creating a calm, luxurious, and natural wellness aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsFwr7vvRHtAyYipXyyc5Fh4jvMCNWC9-wEZfd9f4AaYDrWrb6No40Q-8Za6BLUTw2TWz5pK79uD1l9E5rj6T8t_wbX92NbmxpS3CsBgYdMueS2zmshsV1r5AvxTyMbTzbLdQaXKsomMigiyEVQBs1yLrBr94PVlubs60gOxnHKGSLAu-rZn0ZjogrffvQdQnNVxJqAXIaV1A6xaHiFZGxgb9l-Zyzi_4dhbqXyQMOIo69hYYMhqrqiA">
+</div>
+<h3 class="font-body-sm text-body-sm text-on-background line-clamp-2 mb-2 font-semibold">مجموعة سيروم مرطب عضوي</h3>
+<div class="flex items-baseline gap-2 mb-3">
+<span class="font-headline-sm text-headline-sm text-primary">32.00 د.أ</span>
+</div>
+<button class="w-full bg-transparent border border-primary text-primary font-button text-sm py-2 rounded-lg hover:bg-primary/5 transition-colors">32.00 د.أ</button>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-white rounded-xl p-4 card-shadow card-shadow-hover transition-shadow group cursor-pointer border border-transparent hover:border-[#E9E2DD]">
+<div class="relative w-full aspect-square mb-4 bg-[#FFF9F5] rounded-lg border border-[#E9E2DD] overflow-hidden">
+<span class="absolute top-2 right-2 bg-secondary-container text-on-secondary-container font-label-caps text-[10px] px-2 py-1 rounded-full z-10" dir="ltr">-25%</span>
+<div class="absolute inset-0 bg-gradient-to-tr from-surface-variant to-surface opacity-50"></div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A sleek, modern matte black pour-over coffee kettle on a minimalist wooden countertop in a bright, sunlit modern kitchen. The composition is clean and architectural, utilizing warm natural light and heavy whitespace to convey a sophisticated, artisanal lifestyle aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4UZTGiw8EBNGDNyKMnEewjPf5A34VqRaqPG_3aKxs4BKhcfPmQW1FaFsoUJjpph7KBgarkFLNpBPSuENnIHt6Jo42x2pUpd-zV-Dj8vBgow1JaYv-xCNcMs2l2A76xKoy4E1oyOUnlk0c2gzjBylwmCXVhD475jr98XF1KWKjE1epIO3m8jc8-Ej5mS9eMZun4s8OsYpjOIkyr1u4ntpBbPCKlcMVFKfTP0pORflC0ElBd2XtfZKpPg">
+</div>
+<h3 class="font-body-sm text-body-sm text-on-background line-clamp-2 mb-2 font-semibold">غلاية قهوة حرفية باللون الأسود غير اللامع</h3>
+<div class="flex items-baseline gap-2 mb-3">
+<span class="font-headline-sm text-headline-sm text-primary">42.00 د.أ</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant line-through">٥٦ د.أ</span>
+</div>
+<button class="w-full bg-transparent border border-primary text-primary font-button text-sm py-2 rounded-lg hover:bg-primary/5 transition-colors">42.00 د.أ</button>
+</div>
+<!-- Product Card 4 -->
+<div class="bg-white rounded-xl p-4 card-shadow card-shadow-hover transition-shadow group cursor-pointer border border-transparent hover:border-[#E9E2DD]">
+<div class="relative w-full aspect-square mb-4 bg-[#FFF9F5] rounded-lg border border-[#E9E2DD] overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-tr from-surface-variant to-surface opacity-50"></div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A minimal, elegant arrangement of neutral-toned ceramic mugs and plates on a lightly textured beige linen cloth. The lighting is soft and natural, emphasizing the organic shapes and matte textures of the ceramics against a warm off-white background, creating a cozy yet refined home goods aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPTh5MGsoJ3gIh_MvT1dov84TC1ZUYava7lcKfHLTkgQ5t9PzcskSNsx4NeBNXzhf_FoZBcQcML2UzoCAVi6pSiD-rB6eJ5SW-68gN32SFzw8YGsQp_n5EwAZSNAQKgaf8QS7tw35Eb-WpR_i4KPMjS99Qczf4KyJbkHiWvftbVvL1mtDvVlcek5XjksR1XjGvatozFjxCawXxqYbewmYDuVw5kSs9vAbpcX-ga9BWovWzSfILq27f-w">
+</div>
+<h3 class="font-body-sm text-body-sm text-on-background line-clamp-2 mb-2 font-semibold">مجموعة أواني طعام سيراميك بسيطة</h3>
+<div class="flex items-baseline gap-2 mb-3">
+<span class="font-headline-sm text-headline-sm text-primary">63.00 د.أ</span>
+</div>
+<button class="w-full bg-transparent border border-primary text-primary font-button text-sm py-2 rounded-lg hover:bg-primary/5 transition-colors">63.00 د.أ</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Nav Bar (Hidden on md) -->
+<nav class="md:hidden bg-surface-container-lowest dark:bg-surface-container-lowest fixed bottom-0 w-full z-50 rounded-t-xl shadow-[0px_-4px_20px_rgba(139,30,63,0.04)] flex justify-around items-center h-16 pb-safe px-margin-mobile"><a class="flex flex-col items-center justify-center text-primary font-bold active:scale-90 duration-200 w-16" href="#"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span><span class="font-label-caps text-[12px] mt-1">الرئيسية</span></a><a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 duration-200 w-16" href="#"><span class="material-symbols-outlined">grid_view</span><span class="font-label-caps text-[12px] mt-1">التصنيفات</span></a><a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 duration-200 w-16" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="font-label-caps text-[12px] mt-1">الطلبات</span></a><a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 duration-200 w-16" href="#"><span class="material-symbols-outlined">favorite</span><span class="font-label-caps text-[12px] mt-1">المفضلة</span></a><a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 duration-200 w-16" href="#"><span class="material-symbols-outlined">person</span><span class="font-label-caps text-[12px] mt-1">حسابي</span></a></nav>
+
+
+</body></html>

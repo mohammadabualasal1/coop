@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>COOP - تسجيل الدخول</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f4f3f7",
+                        "on-secondary-container": "#794222",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#ddbfc3",
+                        "on-primary-container": "#ff9db0",
+                        "surface-container-highest": "#e3e2e6",
+                        "surface-container": "#efedf1",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2f3033",
+                        "outline": "#897174",
+                        "on-primary-fixed-variant": "#871b3c",
+                        "surface-container-high": "#e9e7eb",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#ffb2bf",
+                        "tertiary-container": "#802c42",
+                        "on-surface-variant": "#564145",
+                        "on-primary-fixed": "#3f0015",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#6c0029",
+                        "secondary-container": "#feb289",
+                        "surface-dim": "#dbd9dd",
+                        "tertiary-fixed": "#ffd9de",
+                        "tertiary": "#62152c",
+                        "error-container": "#ffdad6",
+                        "surface": "#faf9fd",
+                        "surface-variant": "#e3e2e6",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#89502e",
+                        "on-surface": "#1a1b1e",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1b1e",
+                        "surface-tint": "#a73453",
+                        "primary-container": "#8b1e3f",
+                        "surface-bright": "#faf9fd",
+                        "on-tertiary-fixed-variant": "#7c293f",
+                        "primary-fixed": "#ffd9de",
+                        "background": "#faf9fd",
+                        "tertiary-fixed-dim": "#ffb1c0",
+                        "on-tertiary-container": "#ff9db1",
+                        "primary-fixed-dim": "#ffb2bf",
+                        "secondary-fixed": "#ffdbca",
+                        "on-tertiary-fixed": "#3f0016",
+                        "on-secondary-fixed-variant": "#6d3919",
+                        "on-secondary-fixed": "#331200",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f1f0f4",
+                        "secondary-fixed-dim": "#ffb68f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px",
+                        "margin-desktop": "40px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Montserrat"],
+                        "button": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-sm": ["Inter"],
+                        "display-lg-mobile": ["Montserrat"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "button": ["16px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col items-center justify-center p-margin-mobile md:p-margin-desktop font-body-md antialiased selection:bg-primary/20 selection:text-primary">
+<div class="w-full max-w-[420px] bg-surface-container-lowest rounded-xl p-stack-lg md:p-10 shadow-[0px_4px_20px_rgba(139,30,63,0.04)] relative overflow-hidden">
+<div class="flex justify-center mb-stack-lg">
+<img alt="COOP Logo" class="h-24 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLujX7ELrSZHrnVz4bofisZDVd_3teHdvYauEBWc_FqNzqsu-O_AEDZBX0mCFnu6XINBzEV_4_46Op6a41FMQA9XD1ogrEVSdwOnBtQNvbV8nOFBCVaC66o6SSEVxtFFqz96iu8KxykeBuE9a8jiAoIUn3gyCmH7hSOTowHtG76AzmmBjtqzHRRNfu6um2l0UaRYFY4aiSagR_cphko3_HDWvq43E5oIFk2WG_GZn_nKcI_SRxMPqTdn8_YP"/>
+</div>
+<div class="text-center mb-stack-lg">
+<h1 class="font-headline-md text-headline-md text-on-surface mb-2">مرحباً بعودتك</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">الرجاء إدخال بياناتك للمتابعة</p>
+</div>
+<form action="#" class="flex flex-col gap-y-stack-md" method="POST" onsubmit="event.preventDefault(); document.getElementById('error-state').classList.remove('hidden'); document.getElementById('password-input').classList.add('border-error');">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-unit text-right" for="identifier">رقم الهاتف أو البريد الإلكتروني</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute right-4 text-outline-variant pointer-events-none">mail</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg pr-12 pl-4 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline-variant/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all shadow-sm" id="identifier" name="identifier" placeholder="أدخل رقمك أو بريدك" required="" type="text"/>
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-unit text-right" for="password-input">كلمة المرور</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute right-4 text-outline-variant pointer-events-none">lock</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg pr-12 pl-12 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline-variant/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all shadow-sm" id="password-input" name="password" placeholder="أدخل كلمة المرور" required="" type="password"/>
+<button class="absolute left-4 text-outline hover:text-primary transition-colors flex items-center justify-center" onclick="const input = document.getElementById('password-input'); const icon = this.querySelector('span'); if(input.type === 'password') { input.type = 'text'; icon.innerText = 'visibility_off'; } else { input.type = 'password'; icon.innerText = 'visibility'; }" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+<div class="hidden mt-2 flex items-center gap-x-1 text-error" id="error-state">
+<span class="material-symbols-outlined text-[16px]">error</span>
+<p class="font-body-sm text-[12px]">بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-unit mb-2">
+<div class="flex items-center gap-x-2">
+<input class="rounded border-outline-variant text-primary focus:ring-primary/20 w-4 h-4 cursor-pointer" id="remember" type="checkbox"/>
+<label class="font-body-sm text-body-sm text-on-surface-variant cursor-pointer mt-1" for="remember">تذكرني</label>
+</div>
+<a class="font-body-sm text-body-sm text-primary hover:text-primary-container font-medium transition-colors" href="#">نسيت كلمة المرور؟</a>
+</div>
+<button class="w-full bg-primary text-on-primary font-button text-button py-4 rounded-xl shadow-[0_4px_12px_rgba(108,0,41,0.2)] hover:shadow-[0_8px_24px_rgba(108,0,41,0.3)] hover:bg-primary-container active:scale-[0.98] transition-all duration-200 mt-2 flex items-center justify-center gap-x-2" type="submit">
+                تسجيل الدخول
+                <span class="material-symbols-outlined text-[20px] rtl:rotate-180">arrow_forward</span>
+</button>
+</form>
+<div class="mt-stack-lg text-center border-t border-outline-variant/30 pt-stack-md">
+<p class="font-body-sm text-body-sm text-on-surface-variant inline-block">ليس لديك حساب؟</p>
+<a class="font-body-sm text-body-sm text-primary font-semibold hover:underline mr-2 transition-all" href="#">إنشاء حساب جديد</a>
+</div>
+</div>
+</body></html>

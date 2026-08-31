@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>COOP - Notifications</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;0,900;1,900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f4f3f7",
+                        "on-secondary-container": "#794222",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#ddbfc3",
+                        "on-primary-container": "#ff9db0",
+                        "surface-container-highest": "#e3e2e6",
+                        "surface-container": "#efedf1",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2f3033",
+                        "outline": "#897174",
+                        "on-primary-fixed-variant": "#871b3c",
+                        "surface-container-high": "#e9e7eb",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#ffb2bf",
+                        "tertiary-container": "#802c42",
+                        "on-surface-variant": "#564145",
+                        "on-primary-fixed": "#3f0015",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#6c0029",
+                        "secondary-container": "#feb289",
+                        "surface-dim": "#dbd9dd",
+                        "tertiary-fixed": "#ffd9de",
+                        "tertiary": "#62152c",
+                        "error-container": "#ffdad6",
+                        "surface": "#faf9fd",
+                        "surface-variant": "#e3e2e6",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#89502e",
+                        "on-surface": "#1a1b1e",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1b1e",
+                        "surface-tint": "#a73453",
+                        "primary-container": "#8b1e3f",
+                        "surface-bright": "#faf9fd",
+                        "on-tertiary-fixed-variant": "#7c293f",
+                        "primary-fixed": "#ffd9de",
+                        "background": "#faf9fd",
+                        "tertiary-fixed-dim": "#ffb1c0",
+                        "on-tertiary-container": "#ff9db1",
+                        "primary-fixed-dim": "#ffb2bf",
+                        "secondary-fixed": "#ffdbca",
+                        "on-tertiary-fixed": "#3f0016",
+                        "on-secondary-fixed-variant": "#6d3919",
+                        "on-secondary-fixed": "#331200",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f1f0f4",
+                        "secondary-fixed-dim": "#ffb68f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px",
+                        "margin-desktop": "40px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Montserrat", "sans-serif"],
+                        "button": ["Montserrat", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "headline-sm": ["Montserrat", "sans-serif"],
+                        "display-lg": ["Montserrat", "sans-serif"],
+                        "headline-md": ["Montserrat", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "display-lg-mobile": ["Montserrat", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "button": ["16px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #FFF9F5; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .card-shadow { box-shadow: 0px 4px 20px rgba(139, 30, 63, 0.04); }
+        .card-shadow:hover { box-shadow: 0px 8px 30px rgba(139, 30, 63, 0.08); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface antialiased bg-[#FFF9F5] min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim docked full-width top-0 shadow-sm flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full dir-rtl sticky z-40 bg-[#FFF9F5]">
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<div class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed italic font-black">
+            COOP
+        </div>
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-stack-lg">
+<!-- Header & Actions -->
+<div class="flex items-center justify-between mb-stack-lg">
+<h1 class="font-headline-md text-headline-md text-on-surface">التنبيهات</h1>
+<button class="font-button text-button text-primary bg-transparent border border-primary px-4 py-2 rounded-xl hover:bg-primary-container/10 transition-colors">
+                تحديد الكل كمقروء
+            </button>
+</div>
+<!-- Notifications Container -->
+<div class="space-y-stack-sm md:space-y-stack-md max-w-3xl mx-auto">
+<!-- Notification Item: Unread (Order Status) -->
+<div class="bg-surface-container-lowest rounded-xl p-4 flex gap-4 items-start relative overflow-hidden card-shadow transition-shadow group border border-outline-variant/30">
+<!-- Unread Indicator Line -->
+<div class="absolute right-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex-shrink-0 w-12 h-12 bg-primary-container/20 rounded-full flex items-center justify-center text-primary mt-1">
+<span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface text-[18px]">تم شحن طلبك #10294</h3>
+<span class="font-body-sm text-body-sm text-on-surface-variant whitespace-nowrap mr-4">منذ ٥ دقائق</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">طلبك في الطريق إليك! يمكنك تتبع حالة التوصيل من خلال صفحة الطلبات.</p>
+</div>
+</div>
+<!-- Notification Item: Unread (Discount) -->
+<div class="bg-surface-container-lowest rounded-xl p-4 flex gap-4 items-start relative overflow-hidden card-shadow transition-shadow group border border-outline-variant/30">
+<div class="absolute right-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex-shrink-0 w-12 h-12 bg-secondary-container/30 rounded-full flex items-center justify-center text-secondary mt-1">
+<span class="material-symbols-outlined" data-icon="sell">sell</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface text-[18px]">خصم ٢٠٪ على منتجات الألبان</h3>
+<span class="bg-[#FFB38A] text-on-surface font-label-caps text-label-caps px-2 py-0.5 rounded-full">جديد</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant whitespace-nowrap mr-4">منذ ساعتين</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">استفد من خصم خاص لفترة محدودة على جميع منتجات الألبان الطازجة.</p>
+</div>
+</div>
+<!-- Notification Item: Read (Driver) -->
+<div class="bg-surface-container-lowest rounded-xl p-4 flex gap-4 items-start relative overflow-hidden card-shadow transition-shadow group border border-transparent opacity-80">
+<div class="flex-shrink-0 w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center text-on-surface-variant mt-1">
+<span class="material-symbols-outlined" data-icon="person_check">person_check</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface text-[18px]">تم تعيين المندوب لطلبك</h3>
+<span class="font-body-sm text-body-sm text-on-surface-variant whitespace-nowrap mr-4">أمس</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">المندوب أحمد في طريقه لاستلام طلبك من الفرع.</p>
+</div>
+</div>
+<!-- Notification Item: Read (Account Update) -->
+<div class="bg-surface-container-lowest rounded-xl p-4 flex gap-4 items-start relative overflow-hidden card-shadow transition-shadow group border border-transparent opacity-80">
+<div class="flex-shrink-0 w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center text-on-surface-variant mt-1">
+<span class="material-symbols-outlined" data-icon="manage_accounts">manage_accounts</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface text-[18px]">تم تحديث معلومات الحساب</h3>
+<span class="font-body-sm text-body-sm text-on-surface-variant whitespace-nowrap mr-4">٢٣ أكتوبر</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">تم تحديث عنوان التوصيل الافتراضي الخاص بك بنجاح.</p>
+</div>
+</div>
+</div>
+<!-- Empty State (Hidden by default, shown here for structure reference if needed, commented out for active state display) -->
+<!--
+        <div class="flex flex-col items-center justify-center py-stack-lg text-center h-[442px]">
+            <div class="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center text-outline mb-4">
+                <span class="material-symbols-outlined text-[48px]" data-icon="notifications_off">notifications_off</span>
+            </div>
+            <h2 class="font-headline-md text-headline-md text-on-surface mb-2">لا توجد تنبيهات</h2>
+            <p class="font-body-md text-body-md text-on-surface-variant max-w-sm">أنت على اطلاع بكل جديد. سنقوم بإعلامك هنا عند وجود تحديثات لطلباتك أو عروض جديدة.</p>
+        </div>
+        -->
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-stack-sm bg-surface border-t border-outline-variant dir-rtl z-50 md:hidden bg-[#FFF9F5] shadow-[0px_-4px_20px_rgba(139,30,63,0.04)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:bg-surface-container-highest transition-all active:scale-90 duration-200 w-16 h-14 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps">الرئيسية</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:bg-surface-container-highest transition-all active:scale-90 duration-200 w-16 h-14 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="category">category</span>
+<span class="font-label-caps text-label-caps">التصنيفات</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:bg-surface-container-highest transition-all active:scale-90 duration-200 w-16 h-14 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-label-caps text-label-caps">الطلبات</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:bg-surface-container-highest transition-all active:scale-90 duration-200 w-16 h-14 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="favorite">favorite</span>
+<span class="font-label-caps text-label-caps">المفضلة</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-on-primary-container bg-primary-container/10 rounded-xl px-2 py-1 hover:bg-surface-container-highest transition-all active:scale-90 duration-200 w-16 h-14" href="#">
+<span class="material-symbols-outlined fill mb-1 text-primary" data-icon="person">person</span>
+<span class="font-label-caps text-label-caps">حسابي</span>
+</a>
+</nav>
+<script>
+        // Simple script to handle 'mark all as read' interaction
+        document.querySelector('button.border-primary').addEventListener('click', function() {
+            const unreadIndicators = document.querySelectorAll('.bg-primary.absolute');
+            const unreadCards = document.querySelectorAll('.border-outline-variant\\/30');
+            
+            unreadIndicators.forEach(indicator => indicator.classList.add('hidden'));
+            unreadCards.forEach(card => {
+                card.classList.remove('border-outline-variant/30');
+                card.classList.add('border-transparent', 'opacity-80');
+                
+                // Dim icons slightly for read state consistency
+                const iconContainer = card.querySelector('.rounded-full');
+                if(iconContainer) {
+                    iconContainer.className = 'flex-shrink-0 w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center text-on-surface-variant mt-1';
+                }
+            });
+            
+            // Remove 'New' badges
+            const badges = document.querySelectorAll('.bg-\\[\\#FFB38A\\]');
+            badges.forEach(badge => badge.classList.add('hidden'));
+        });
+    </script>
+</body></html>

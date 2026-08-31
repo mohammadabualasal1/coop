@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>COOP - Search &amp; Discovery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f4f3f7",
+                        "on-secondary-container": "#794222",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#ddbfc3",
+                        "on-primary-container": "#ff9db0",
+                        "surface-container-highest": "#e3e2e6",
+                        "surface-container": "#efedf1",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2f3033",
+                        "outline": "#897174",
+                        "on-primary-fixed-variant": "#871b3c",
+                        "surface-container-high": "#e9e7eb",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#ffb2bf",
+                        "tertiary-container": "#802c42",
+                        "on-surface-variant": "#564145",
+                        "on-primary-fixed": "#3f0015",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#6c0029",
+                        "secondary-container": "#feb289",
+                        "surface-dim": "#dbd9dd",
+                        "tertiary-fixed": "#ffd9de",
+                        "tertiary": "#62152c",
+                        "error-container": "#ffdad6",
+                        "surface": "#faf9fd",
+                        "surface-variant": "#e3e2e6",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#89502e",
+                        "on-surface": "#1a1b1e",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1b1e",
+                        "surface-tint": "#a73453",
+                        "primary-container": "#8b1e3f",
+                        "surface-bright": "#faf9fd",
+                        "on-tertiary-fixed-variant": "#7c293f",
+                        "primary-fixed": "#ffd9de",
+                        "background": "#faf9fd",
+                        "tertiary-fixed-dim": "#ffb1c0",
+                        "on-tertiary-container": "#ff9db1",
+                        "primary-fixed-dim": "#ffb2bf",
+                        "secondary-fixed": "#ffdbca",
+                        "on-tertiary-fixed": "#3f0016",
+                        "on-secondary-fixed-variant": "#6d3919",
+                        "on-secondary-fixed": "#331200",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f1f0f4",
+                        "secondary-fixed-dim": "#ffb68f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "card": "12px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px",
+                        "margin-desktop": "40px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Montserrat"],
+                        "button": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-sm": ["Inter"],
+                        "display-lg-mobile": ["Montserrat"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "button": ["16px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    },
+                    boxShadow: {
+                        'card-base': '0px 4px 20px rgba(139, 30, 63, 0.04)',
+                        'card-hover': '0px 8px 30px rgba(139, 30, 63, 0.08)',
+                        'bottom-nav': '0px -4px 20px rgba(139, 30, 63, 0.04)'
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #FFF9F5; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-background min-h-screen relative pb-[80px]">
+<!-- Top Navigation (Shared Component) -->
+<header class="bg-surface dark:bg-surface-dim docked full-width top-0 shadow-sm flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full dir-rtl sticky z-40">
+<button class="text-on-surface-variant dark:text-outline hover:bg-surface-container-high transition-colors active:scale-95 duration-100 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed italic font-black">COOP</h1>
+<div class="w-10"></div> <!-- Placeholder for balance -->
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg">
+<!-- Search Field Section -->
+<div class="relative w-full mb-stack-lg">
+<div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+<span class="material-symbols-outlined text-outline" data-icon="search">search</span>
+</div>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl py-4 pr-12 pl-4 text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-shadow font-body-md shadow-card-base" placeholder="ابحث عن منتجات أو متاجر" type="text"/>
+</div>
+<!-- Recent Searches & Popular Chips -->
+<section class="mb-stack-lg">
+<div class="flex items-center justify-between mb-stack-sm">
+<h2 class="font-headline-sm text-on-surface">عمليات البحث الأخيرة</h2>
+<button class="text-primary font-button text-sm">مسح</button>
+</div>
+<div class="flex flex-wrap gap-2 mb-stack-md">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-full px-4 py-2 flex items-center gap-2 cursor-pointer hover:shadow-card-hover transition-shadow shadow-card-base">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="history">history</span>
+<span class="font-body-sm text-on-surface-variant">قهوة مختصة</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-full px-4 py-2 flex items-center gap-2 cursor-pointer hover:shadow-card-hover transition-shadow shadow-card-base">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="history">history</span>
+<span class="font-body-sm text-on-surface-variant">مخبوزات طازجة</span>
+</div>
+</div>
+<h2 class="font-headline-sm text-on-surface mb-stack-sm mt-stack-md">الأكثر بحثاً</h2>
+<div class="flex flex-wrap gap-2">
+<span class="bg-secondary-container/20 text-on-surface px-4 py-2 rounded-full font-body-sm cursor-pointer hover:bg-secondary-container/40 transition-colors">عروض الخضار</span>
+<span class="bg-secondary-container/20 text-on-surface px-4 py-2 rounded-full font-body-sm cursor-pointer hover:bg-secondary-container/40 transition-colors">مكسرات</span>
+<span class="bg-secondary-container/20 text-on-surface px-4 py-2 rounded-full font-body-sm cursor-pointer hover:bg-secondary-container/40 transition-colors">منظفات</span>
+<span class="bg-secondary-container/20 text-on-surface px-4 py-2 rounded-full font-body-sm cursor-pointer hover:bg-secondary-container/40 transition-colors">أدوات منزلية</span>
+</div>
+</section>
+<!-- Suggested Categories Grid (Bento style) -->
+<section class="mb-stack-lg">
+<h2 class="font-headline-sm text-on-surface mb-stack-md">اكتشف الفئات</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<!-- Category Card 1 -->
+<div class="relative rounded-card overflow-hidden h-32 group cursor-pointer shadow-card-base hover:shadow-card-hover transition-shadow bg-surface-container-lowest">
+<div class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:scale-105 transition-transform duration-500" data-alt="A beautifully styled composition of fresh, vibrant vegetables and fruits in a modern, well-lit setting. Soft, warm lighting highlights the natural colors against a clean, off-white background, embodying a premium discount grocery aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDw9QYqBOmpU8kgs1l9mTKO7TCsTwiK0rwGFJtczewL3o1nXoXUCG_dDtZ9BF-bO33QEAukINELM88AVUvqZ8J3XZbcDqkb3a5Fk813Y5XxdpfrH0i32YnDY2JQ9nZ6jdndlPyya7fTSEiw8Dbpin-tdNR-apwBUbhQm_gGB3LfShFG9kVx-kXLrZoHGQosjM1K2F0lYoGqB0Vrvfb-i97ZjPRgb300o8XxMXW_9KuqYUqpJIiWPcU-Cw')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<span class="absolute bottom-4 right-4 font-headline-sm text-white">البقالة</span>
+</div>
+<!-- Category Card 2 -->
+<div class="relative rounded-card overflow-hidden h-32 group cursor-pointer shadow-card-base hover:shadow-card-hover transition-shadow bg-surface-container-lowest">
+<div class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:scale-105 transition-transform duration-500" data-alt="A sleek, modern arrangement of household cleaning supplies and home essentials. The composition is clean, organized, and brightly lit, conveying a sense of premium quality and freshness associated with a high-end discount store." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuALFLJN8GL1128L2mZiPm9v43ckIny9l_ndWi2Jjlz98v-u5UxtOAYTgBj8tkJ7S3dKnmKT0L-OV-jkI5kqvBO2gd8-F7ayoi4R1fidi8mmvU4Rm5CcO5fKjwTbzPspcfz-XZujt2D_z-Sgu8muaYIMAZreLAhymGQ16fP7kFoKe7J905UhY5eC9Yv-dIqteD4fq1vuhh13_s43N9wF0PdONEoF33mWX1MCBeIgoBzSCfVWmMxS3GaTwg')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<span class="absolute bottom-4 right-4 font-headline-sm text-white">المنزل</span>
+</div>
+<!-- Category Card 3 -->
+<div class="relative rounded-card overflow-hidden h-32 group cursor-pointer shadow-card-base hover:shadow-card-hover transition-shadow bg-surface-container-lowest">
+<div class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:scale-105 transition-transform duration-500" data-alt="A minimalist display of personal care and beauty products. Soft warm peach and white tones dominate the scene, with gentle shadows adding depth. The styling reflects a curated, boutique shopping experience." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBWxbx-TLHPPbdQ8jN0nhxRDvbPP55VLBJgGHyqzJws6nTkxP_14fg80BjzHLVSouSZJ3oB5l095jkNc9jAWlC133-8y_bjBY-q_JlmbIMMcGnOh74yKuotHMCpCbg2xBvJ92p-4EK6NWJIzrPbAYx7ka_24eEa1aQgUUKei52XHWWzLWudio6prgYaSbkRd5w1kAM_rutFgTY709GZKtqXMl2LCm75bWhem5QI1I46fngFTR2QOd1OZg')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<span class="absolute bottom-4 right-4 font-headline-sm text-white">العناية</span>
+</div>
+<!-- Category Card 4 -->
+<div class="relative rounded-card overflow-hidden h-32 group cursor-pointer shadow-card-base hover:shadow-card-hover transition-shadow bg-surface-container-lowest">
+<div class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:scale-105 transition-transform duration-500" data-alt="A tantalizing presentation of freshly baked goods and artisanal snacks. Warm, inviting lighting emphasizes textures, creating a cozy and premium feel suitable for a curated discount market's bakery section." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDaE1xrd2N69TCNK-qaczpTWJ00b3eH2hId_zI5RQ0AlJZDFireXodJWUbZx_-_Tyc47h2q4WpifgGVsoviv7g-nPd4cbgHQhJPDj95v9V7A-n3U6s-01dV44XlNFayx-D7BTOIrGRNxpPHvxzC6p8BiztwAwss9EW6XBcNPGo8GgJMxFmi5Swx2pQ1RfF-h0bh9W9mPuGU-0ezP_wsvZD9mb8EFnz1QxLd_XUEIj4d9Z_N1bgv3lFdeQ')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<span class="absolute bottom-4 right-4 font-headline-sm text-white">المخبوزات</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation (Shared Component) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-stack-sm bg-surface-container-lowest border-t-0 dir-rtl z-50 md:hidden shadow-bottom-nav">
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:bg-surface-container-highest transition-all active:scale-90 duration-200 w-16 h-12 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps mt-1">الرئيسية</span>
+</a>
+<!-- Active Tab: Explore/Categories -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-on-primary-container bg-primary-container/10 rounded-xl px-2 py-1 hover:bg-surface-container-highest transition-all active:scale-90 duration-200 w-16 h-12" href="#">
+<span class="material-symbols-outlined" data-icon="category" data-weight="fill">category</span>
+<span class="font-label-caps text-label-caps mt-1">التصنيفات</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:bg-surface-container-highest transition-all active:scale-90 duration-200 w-16 h-12 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-label-caps text-label-caps mt-1">الطلبات</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:bg-surface-container-highest transition-all active:scale-90 duration-200 w-16 h-12 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-label-caps text-label-caps mt-1">المفضلة</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:bg-surface-container-highest transition-all active:scale-90 duration-200 w-16 h-12 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-caps text-label-caps mt-1">حسابي</span>
+</a>
+</nav>
+</body></html>

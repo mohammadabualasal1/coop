@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>COOP - تحديد الموقع</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-low": "#f4f3f7",
+                      "on-secondary-container": "#794222",
+                      "on-primary": "#ffffff",
+                      "outline-variant": "#ddbfc3",
+                      "on-primary-container": "#ff9db0",
+                      "surface-container-highest": "#e3e2e6",
+                      "surface-container": "#efedf1",
+                      "on-error": "#ffffff",
+                      "inverse-surface": "#2f3033",
+                      "outline": "#897174",
+                      "on-primary-fixed-variant": "#871b3c",
+                      "surface-container-high": "#e9e7eb",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#ffb2bf",
+                      "tertiary-container": "#802c42",
+                      "on-surface-variant": "#564145",
+                      "on-primary-fixed": "#3f0015",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#6c0029",
+                      "secondary-container": "#feb289",
+                      "surface-dim": "#dbd9dd",
+                      "tertiary-fixed": "#ffd9de",
+                      "tertiary": "#62152c",
+                      "error-container": "#ffdad6",
+                      "surface": "#faf9fd",
+                      "surface-variant": "#e3e2e6",
+                      "on-tertiary": "#ffffff",
+                      "secondary": "#89502e",
+                      "on-surface": "#1a1b1e",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#1a1b1e",
+                      "surface-tint": "#a73453",
+                      "primary-container": "#8b1e3f",
+                      "surface-bright": "#faf9fd",
+                      "on-tertiary-fixed-variant": "#7c293f",
+                      "primary-fixed": "#ffd9de",
+                      "background": "#faf9fd",
+                      "tertiary-fixed-dim": "#ffb1c0",
+                      "on-tertiary-container": "#ff9db1",
+                      "primary-fixed-dim": "#ffb2bf",
+                      "secondary-fixed": "#ffdbca",
+                      "on-tertiary-fixed": "#3f0016",
+                      "on-secondary-fixed-variant": "#6d3919",
+                      "on-secondary-fixed": "#331200",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#f1f0f4",
+                      "secondary-fixed-dim": "#ffb68f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "container-max": "1280px",
+                      "gutter": "24px",
+                      "stack-lg": "32px",
+                      "stack-md": "16px",
+                      "margin-desktop": "40px",
+                      "stack-sm": "8px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "Montserrat"
+                      ],
+                      "button": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Montserrat"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "display-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "button": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+          body {
+              background-color: #FFF9F5;
+              color: #1a1b1e;
+          }
+      </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-body-md antialiased min-h-screen flex flex-col relative overflow-hidden">
+<!-- Top Navigation (Hidden on transactional flow, kept only Logo) -->
+<header class="w-full flex justify-center py-stack-md bg-surface border-b border-outline-variant/30">
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary italic font-black">COOP</h1>
+</header>
+<!-- Main Content Container -->
+<main class="flex-grow flex flex-col md:flex-row relative w-full max-w-[100vw] overflow-hidden">
+<!-- Screen 1: Permission Flow -->
+<section class="w-full h-full flex flex-col items-center justify-center p-margin-mobile md:p-margin-desktop transition-transform duration-500 z-10 absolute inset-0 bg-[#FFF9F5]" id="permission-screen">
+<div class="max-w-md w-full flex flex-col items-center text-center space-y-stack-lg">
+<!-- Illustration -->
+<div class="w-48 h-48 bg-surface-container-low rounded-full flex items-center justify-center shadow-lg border border-outline-variant/20 mb-4" data-alt="A clean, minimalist 3D illustration of a map pin dropping onto a stylized city map. The pin is a rich deep burgundy color. The map surface is a soft off-white with subtle warm gray roads. The lighting is soft and studio-like, casting gentle, ambient shadows that emphasize the tactile, premium aesthetic of the 'Premium Discount' brand identity. The background is a clean, warm cream color." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCh7D5fUwi46OovRqi0ZonoAVxKTK_wlJ4NefOPd8qpFpJ006j6MNM80J0AxJOullhgcuqWcgjdfKk-moaq4wQM4G1_b5DG0xf2h2ZeTtaIekKvw9SHQbla6lYsjZBUFKg7dHfCAmF7MJ0aNRQM7xEbCnpRac2WcOBvFOJqk2N-RIkjU4ckeVKMJ7EZVOPe-C_4i0O8qll__aU6fA614qhbgTbD3f8-xY518fo3QOKqwIh8t4UEay4SGA'); background-size: cover; background-position: center;">
+<!-- Placeholder for image via background -->
+</div>
+<div class="space-y-stack-sm">
+<h2 class="font-headline-md text-headline-md text-on-surface">حدد موقعك</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm mx-auto">
+                        يساعدنا تحديد موقعك في عرض المتاجر القريبة منك وحساب رسوم التوصيل بدقة لتقديم أفضل العروض.
+                    </p>
+</div>
+<div class="w-full flex flex-col space-y-stack-md mt-8">
+<button class="w-full bg-primary text-on-primary font-button text-button py-4 px-8 rounded-xl shadow-[0px_4px_20px_rgba(139,30,63,0.15)] hover:shadow-[0px_8px_30px_rgba(139,30,63,0.25)] hover:bg-primary-container transition-all active:scale-95 flex items-center justify-center gap-2" id="btn-use-location">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">my_location</span>
+                        استخدام موقعي الحالي
+                    </button>
+<button class="w-full bg-transparent border border-primary text-primary font-button text-button py-4 px-8 rounded-xl hover:bg-surface-container-low transition-all active:scale-95" id="btn-manual-location">
+                        اختيار الموقع يدوياً
+                    </button>
+</div>
+</div>
+</section>
+<!-- Screen 2: Map Selection -->
+<section class="w-full h-full flex flex-col absolute inset-0 transform translate-x-full transition-transform duration-500 bg-[#FFF9F5] z-20" id="map-screen">
+<!-- Header for Map -->
+<div class="w-full p-margin-mobile flex items-center gap-4 bg-surface z-30 shadow-sm relative">
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors text-primary active:scale-95" id="btn-back">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<div class="flex-grow">
+<div class="relative w-full max-w-lg mx-auto">
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-4 pr-12 py-3 bg-white border border-[#E9E2DD] rounded-xl font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all shadow-[0px_4px_20px_rgba(139,30,63,0.04)]" placeholder="ابحث عن شارع أو حي..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Map Area -->
+<div class="flex-grow relative w-full overflow-hidden" data-location="Riyadh" style="">
+<!-- Map Background Placeholder -->
+<div class="absolute inset-0 bg-surface-container-lowest" data-alt="A detailed overhead view of a clean, minimalist city map interface showing streets and blocks in Riyadh. The map uses a very subtle, high-end color palette with off-white roads and warm cream building blocks. There are no cluttered labels, just a clean vector-style aesthetic. The lighting implies a soft, overcast daylight, fitting a premium digital product interface. The overall tone is calm, precise, and sophisticated." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDr88bfKJO9T6ThT-tf54LqIJZJoiIcbNng5GFDnDJZJ8-6D2Pok3Rz_1PZSd5JYSWlsrZV92sc7joTUosnprYWz7m7SO4NGPdDIODWImb7wCB7N1sLSKb1gGVebWq34Hj36ctCuL9v7Nc84AI9_ugNmkCoU7yxYrc1d3HX5S5POMB0RheWziEMBTfMckVuzCOUvjXSMpRNeDC7mt2WjVHpVdYK6X4j5-_mvz5f-VSMEDlm3ywfB-SsmA'); background-size: cover; background-position: center;"></div>
+<!-- Center Pin Overlay -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none z-10">
+<div class="bg-primary text-on-primary py-1 px-3 rounded-full font-label-caps text-label-caps mb-2 shadow-md animate-bounce">
+                        موقع التوصيل
+                    </div>
+<span class="material-symbols-outlined text-primary text-5xl" style="font-variation-settings: 'FILL' 1; filter: drop-shadow(0px 4px 6px rgba(139,30,63,0.3));">location_on</span>
+</div>
+</div>
+<!-- Bottom Sheet Confirm -->
+<div class="w-full bg-surface rounded-t-3xl shadow-[0px_-8px_30px_rgba(139,30,63,0.08)] p-margin-mobile pb-8 z-30 relative">
+<div class="w-12 h-1 bg-outline-variant/50 rounded-full mx-auto mb-6"></div>
+<div class="flex items-start gap-4 mb-6">
+<div class="w-12 h-12 bg-primary-container/10 rounded-xl flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home_pin</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-1">الرياض، حي العليا</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">شارع الملك فهد، مبنى رقم ٤٥</p>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary font-button text-button py-4 px-8 rounded-xl shadow-[0px_4px_20px_rgba(139,30,63,0.15)] hover:shadow-[0px_8px_30px_rgba(139,30,63,0.25)] transition-all active:scale-95">
+                    تأكيد الموقع
+                </button>
+</div>
+</section>
+</main>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const screen1 = document.getElementById('permission-screen');
+            const screen2 = document.getElementById('map-screen');
+            const btnManual = document.getElementById('btn-manual-location');
+            const btnUseLoc = document.getElementById('btn-use-location');
+            const btnBack = document.getElementById('btn-back');
+
+            // Navigate to Map
+            const showMap = () => {
+                screen2.classList.remove('translate-x-full');
+                screen1.classList.add('-translate-x-full');
+            };
+
+            // Navigate back to Permission
+            const showPermission = () => {
+                screen2.classList.add('translate-x-full');
+                screen1.classList.remove('-translate-x-full');
+            };
+
+            btnManual.addEventListener('click', showMap);
+            btnUseLoc.addEventListener('click', () => {
+                // Simulate loading then show map
+                const originalText = btnUseLoc.innerHTML;
+                btnUseLoc.innerHTML = `<span class="material-symbols-outlined animate-spin">refresh</span> جاري التحديد...`;
+                setTimeout(() => {
+                    btnUseLoc.innerHTML = originalText;
+                    showMap();
+                }, 800);
+            });
+            
+            btnBack.addEventListener('click', showPermission);
+        });
+    </script>
+</body></html>

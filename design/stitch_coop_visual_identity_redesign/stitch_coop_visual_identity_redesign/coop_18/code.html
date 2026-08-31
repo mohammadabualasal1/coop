@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>تعديل الملف الشخصي - COOP</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,900;1,900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f4f3f7",
+                        "on-secondary-container": "#794222",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#ddbfc3",
+                        "on-primary-container": "#ff9db0",
+                        "surface-container-highest": "#e3e2e6",
+                        "surface-container": "#efedf1",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2f3033",
+                        "outline": "#897174",
+                        "on-primary-fixed-variant": "#871b3c",
+                        "surface-container-high": "#e9e7eb",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#ffb2bf",
+                        "tertiary-container": "#802c42",
+                        "on-surface-variant": "#564145",
+                        "on-primary-fixed": "#3f0015",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#6c0029",
+                        "secondary-container": "#feb289",
+                        "surface-dim": "#dbd9dd",
+                        "tertiary-fixed": "#ffd9de",
+                        "tertiary": "#62152c",
+                        "error-container": "#ffdad6",
+                        "surface": "#faf9fd",
+                        "surface-variant": "#e3e2e6",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#89502e",
+                        "on-surface": "#1a1b1e",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1b1e",
+                        "surface-tint": "#a73453",
+                        "primary-container": "#8b1e3f",
+                        "surface-bright": "#faf9fd",
+                        "on-tertiary-fixed-variant": "#7c293f",
+                        "primary-fixed": "#ffd9de",
+                        "background": "#faf9fd",
+                        "tertiary-fixed-dim": "#ffb1c0",
+                        "on-tertiary-container": "#ff9db1",
+                        "primary-fixed-dim": "#ffb2bf",
+                        "secondary-fixed": "#ffdbca",
+                        "on-tertiary-fixed": "#3f0016",
+                        "on-secondary-fixed-variant": "#6d3919",
+                        "on-secondary-fixed": "#331200",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f1f0f4",
+                        "secondary-fixed-dim": "#ffb68f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px",
+                        "margin-desktop": "40px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Montserrat"],
+                        "button": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-sm": ["Inter"],
+                        "display-lg-mobile": ["Montserrat"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "button": ["16px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md antialiased dir-rtl pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-surface shadow-sm docked full-width top-0 z-40 sticky">
+<div class="flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full dir-rtl max-w-container-max mx-auto">
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors p-2 rounded-full active:scale-95 duration-100 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<div class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary italic font-black">COOP</div>
+<div class="w-10"></div> <!-- Placeholder for balance -->
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-2xl mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg">
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(139,30,63,0.04)] p-6 md:p-8 border border-outline-variant/30 relative">
+<h1 class="font-headline-md text-headline-md text-on-surface mb-stack-lg text-center">تعديل الملف الشخصي</h1>
+<form action="#" class="space-y-stack-md flex flex-col items-center" method="POST">
+<!-- Profile Photo Upload -->
+<div class="relative group cursor-pointer mb-stack-md flex flex-col items-center">
+<div class="w-32 h-32 rounded-full overflow-hidden border-2 border-outline-variant relative bg-surface-container flex items-center justify-center transition-all duration-300 group-hover:border-primary">
+<img class="w-full h-full object-cover" data-alt="A close up, high quality studio portrait of a young professional wearing modern casual attire, smiling warmly against a soft, light warm gray background. The lighting is soft and flattering, creating a premium lifestyle aesthetic suitable for a profile picture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAq6tvJIDdIPOGgEPZqoQc5YWxTivbAOcMSUQB90WyrXBfYMvSkzB9LtaP0HGqc10jD_L9V0RC-6BTi99VkDl6Z4Vbb7UFQFWfICnsKpnn7rjOKax3MhV2ctopAFVnAqcfJ0WWTqJW7KVf5J6HabrEZ_3qagD01m0MVpXMh5a0B3vdj78szXzwMcv94NLFTuK8icfMQXPe0P9j5FDf7FO5NJBEPN92qJWMiD8tlFZZARXDmNf8bOpyTmA"/>
+<div class="absolute inset-0 bg-on-background/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+<span class="material-symbols-outlined text-on-primary text-3xl">photo_camera</span>
+</div>
+</div>
+<span class="mt-2 text-primary font-button text-button hover:underline">تغيير الصورة</span>
+<input accept="image/*" class="hidden" type="file"/>
+</div>
+<!-- Full Name Field -->
+<div class="w-full">
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-unit" for="fullName">الاسم الكامل</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-3 px-4 text-on-surface font-body-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-on-surface-variant/50" id="fullName" name="fullName" type="text" value="أحمد محمد"/>
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/50">person</span>
+</div>
+</div>
+<!-- Phone Number Field -->
+<div class="w-full">
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-unit" for="phoneNumber">رقم الهاتف</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-3 px-4 text-on-surface font-body-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-on-surface-variant/50 text-left" dir="ltr" id="phoneNumber" name="phoneNumber" type="tel" value="+966 50 123 4567"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/50 pointer-events-none">phone</span>
+</div>
+</div>
+<!-- Email Field (with validation feedback state example) -->
+<div class="w-full mb-stack-lg">
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-unit" for="emailAddress">البريد الإلكتروني</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-3 px-4 text-on-surface font-body-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-on-surface-variant/50 text-left" dir="ltr" id="emailAddress" name="emailAddress" type="email" value="ahmed@example.com"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/50 pointer-events-none">mail</span>
+</div>
+<!-- Example of a validation message if needed in the future, hidden by default -->
+<!-- <p class="text-error font-body-sm text-body-sm mt-1">الرجاء إدخال بريد إلكتروني صحيح.</p> -->
+</div>
+<!-- Actions -->
+<div class="w-full pt-stack-sm flex flex-col gap-3">
+<button class="w-full bg-primary text-on-primary font-button text-button py-4 px-8 rounded-xl shadow-[0px_4px_20px_rgba(108,0,41,0.2)] hover:shadow-[0px_8px_30px_rgba(108,0,41,0.3)] hover:-translate-y-0.5 active:scale-95 active:translate-y-0 transition-all duration-200" type="submit">
+                        حفظ التغييرات
+                    </button>
+<button class="w-full bg-transparent border border-primary text-primary font-button text-button py-3 px-8 rounded-xl hover:bg-primary-container/10 active:scale-95 transition-all duration-200" type="button">
+                        إلغاء
+                    </button>
+</div>
+</form>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on MD+, Rendered because user is in context of their account, mapping to 'حسابي') -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center py-stack-sm bg-surface shadow-[0px_-4px_20px_rgba(139,30,63,0.04)] z-50 dir-rtl border-t-0">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-90 duration-200 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps mt-1">الرئيسية</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-90 duration-200 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="category">category</span>
+<span class="font-label-caps text-label-caps mt-1">التصنيفات</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-90 duration-200 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-label-caps text-label-caps mt-1">الطلبات</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-90 duration-200 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-label-caps text-label-caps mt-1">المفضلة</span>
+</a>
+<!-- Active Tab: Profile (حسابي) -->
+<a class="flex flex-col items-center justify-center text-primary bg-primary-container/10 rounded-xl px-4 py-1 hover:bg-surface-container-highest transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined filled" data-icon="person">person</span>
+<span class="font-label-caps text-label-caps mt-1">حسابي</span>
+</a>
+</nav>
+</body></html>

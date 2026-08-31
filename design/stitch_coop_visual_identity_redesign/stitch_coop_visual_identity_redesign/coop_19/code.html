@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>COOP - إدارة الطلبات</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-low": "#f4f3f7",
+                      "on-secondary-container": "#794222",
+                      "on-primary": "#ffffff",
+                      "outline-variant": "#ddbfc3",
+                      "on-primary-container": "#ff9db0",
+                      "surface-container-highest": "#e3e2e6",
+                      "surface-container": "#efedf1",
+                      "on-error": "#ffffff",
+                      "inverse-surface": "#2f3033",
+                      "outline": "#897174",
+                      "on-primary-fixed-variant": "#871b3c",
+                      "surface-container-high": "#e9e7eb",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#ffb2bf",
+                      "tertiary-container": "#802c42",
+                      "on-surface-variant": "#564145",
+                      "on-primary-fixed": "#3f0015",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#6c0029",
+                      "secondary-container": "#feb289",
+                      "surface-dim": "#dbd9dd",
+                      "tertiary-fixed": "#ffd9de",
+                      "tertiary": "#62152c",
+                      "error-container": "#ffdad6",
+                      "surface": "#faf9fd",
+                      "surface-variant": "#e3e2e6",
+                      "on-tertiary": "#ffffff",
+                      "secondary": "#89502e",
+                      "on-surface": "#1a1b1e",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#1a1b1e",
+                      "surface-tint": "#a73453",
+                      "primary-container": "#8b1e3f",
+                      "surface-bright": "#faf9fd",
+                      "on-tertiary-fixed-variant": "#7c293f",
+                      "primary-fixed": "#ffd9de",
+                      "background": "#faf9fd",
+                      "tertiary-fixed-dim": "#ffb1c0",
+                      "on-tertiary-container": "#ff9db1",
+                      "primary-fixed-dim": "#ffb2bf",
+                      "secondary-fixed": "#ffdbca",
+                      "on-tertiary-fixed": "#3f0016",
+                      "on-secondary-fixed-variant": "#6d3919",
+                      "on-secondary-fixed": "#331200",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#f1f0f4",
+                      "secondary-fixed-dim": "#ffb68f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "container-max": "1280px",
+                      "gutter": "24px",
+                      "stack-lg": "32px",
+                      "stack-md": "16px",
+                      "margin-desktop": "40px",
+                      "stack-sm": "8px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "Montserrat"
+                      ],
+                      "button": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Montserrat"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "display-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "button": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body { background-color: #FFF9F5; }
+        .card-shadow { box-shadow: 0px 4px 20px rgba(139, 30, 63, 0.04); }
+        .card-shadow-hover:hover { box-shadow: 0px 8px 30px rgba(139, 30, 63, 0.08); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface min-h-screen pb-24 text-on-surface flex flex-col font-body-md">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim docked full-width top-0 shadow-sm flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full dir-rtl sticky z-40 border-b border-outline-variant/30">
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed italic font-black">COOP</h1>
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95 duration-100 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-md md:py-stack-lg flex flex-col gap-stack-lg">
+<!-- Header & Tabs -->
+<div class="flex flex-col gap-stack-md">
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">طلباتي</h2>
+<!-- Tabs -->
+<div class="flex gap-4 border-b border-outline-variant/50 w-full overflow-x-auto hide-scrollbar">
+<button class="pb-3 px-2 font-button text-button text-primary border-b-2 border-primary whitespace-nowrap transition-colors" id="tab-current" onclick="switchTab('current')">الطلبات الحالية</button>
+<button class="pb-3 px-2 font-button text-button text-on-surface-variant hover:text-primary whitespace-nowrap transition-colors border-b-2 border-transparent" id="tab-previous" onclick="switchTab('previous')">الطلبات السابقة</button>
+</div>
+</div>
+<!-- Content Area -->
+<div class="flex flex-col gap-stack-md" id="content-area">
+<!-- Current Orders View (Default) -->
+<div class="flex flex-col gap-stack-md" id="view-current">
+<!-- Active Order Card 1 -->
+<article class="bg-surface-container-lowest rounded-xl p-4 card-shadow card-shadow-hover transition-shadow flex flex-col gap-4 border border-outline-variant/20">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg border border-outline-variant/30 overflow-hidden shrink-0">
+<img alt="Store Logo" class="w-full h-full object-cover" data-alt="A clean, minimalist logo for a premium grocery store featuring fresh produce iconography, set against a soft warm peach background, well lit, vector art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDg8nnTCPNuA8Df6xVvd4w6TSmOAz_0d7WrgDogn-X2x989IvhUqG42iLx9sawmVby6pQNsY9pFghF3d7pyAHKBYrXm7DF5ouVGdL76MzNWkdAy0AquO4j8vTlaHbVnTKKVvVLla22jEbaKYcFLy_aYlNRA95YRi9dKNPQWVwzU6e5d8ufFpZ8KLgXNRQqJXYlmaLIsgwl8Hx91JTQeRuiGiAagwiJM2Hm9Crv9oTrGLRPPwp58xJWk2g"/>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">سوبر ماركت التعاون</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">طلب #ORD-84729</p>
+</div>
+</div>
+<span class="bg-secondary-container text-on-secondary-container font-label-caps text-label-caps px-3 py-1 rounded-full whitespace-nowrap">جاري التجهيز</span>
+</div>
+<div class="flex justify-between items-end pt-2 border-t border-outline-variant/20 mt-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface-variant">التاريخ: 15 مايو 2024</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold mt-1">45.50 د.أ</span>
+</div>
+<button class="bg-primary text-on-primary font-button text-button px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors active:scale-95 duration-200">
+                            تتبع الطلب
+                        </button>
+</div>
+</article>
+<!-- Active Order Card 2 -->
+<article class="bg-surface-container-lowest rounded-xl p-4 card-shadow card-shadow-hover transition-shadow flex flex-col gap-4 border border-outline-variant/20">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg border border-outline-variant/30 overflow-hidden shrink-0">
+<img alt="Store Logo" class="w-full h-full object-cover" data-alt="A modern minimalist icon for an electronics store, subtle warm gray tones with a sleek laptop silhouette, white background, crisp vector graphic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCciagtn-ZwseDWfw7LNsJbwXxUxbxDP7e4kmVf1HKmCd7Qx7f-XTrt3aUXSHQL1FlljqrbeDVqHjVqSxVjmuZE9pU03V3xwbuJDpyb2QsfRPIoxCVGHYp9SwS0X6JcNUE9A5RdXPZSi1kMVTO1MjLci5hZb1dD8gb1lO6f1vJoyx1NKPBS2Qk7iZ7yK_ltsuWiWQV1bOJGZLyEnHBOWqHFy9-cobUBncvD7rMWfQK9veZOxa0jrOdc0Q"/>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">إلكترونيات تك</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">طلب #ORD-84735</p>
+</div>
+</div>
+<span class="bg-surface-container-high text-on-surface font-label-caps text-label-caps px-3 py-1 rounded-full whitespace-nowrap flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">local_shipping</span> في الطريق
+                        </span>
+</div>
+<div class="flex justify-between items-end pt-2 border-t border-outline-variant/20 mt-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface-variant">التاريخ: 16 مايو 2024</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold mt-1">120.00 د.أ</span>
+</div>
+<button class="bg-primary text-on-primary font-button text-button px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors active:scale-95 duration-200">
+                            تتبع الطلب
+                        </button>
+</div>
+</article>
+</div>
+<!-- Previous Orders View (Hidden by default) -->
+<div class="hidden flex-col gap-stack-md" id="view-previous">
+<!-- Completed Order -->
+<article class="bg-surface-container-lowest rounded-xl p-4 card-shadow card-shadow-hover transition-shadow flex flex-col gap-4 border border-outline-variant/20 opacity-80 hover:opacity-100">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg border border-outline-variant/30 overflow-hidden shrink-0">
+<img alt="Store Logo" class="w-full h-full object-cover" data-alt="A stylized minimalist icon of an artisanal bakery, featuring an artisan bread loaf in warm brown tones on a subtle cream background, flat design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALS0zuVKp1juVHEw1vhRqD31fIzAKaJ4vSUiJOqBYhfBPAWtiEc16cKIXTlfQLdaEpjTpv2M5fHj2M2mUyQUmH5m2otltHQz8FKwIW4KrazqphHdHU52kAJfwKyZie3vGblnAWmWTJfcNd0DKbPWWlJo9E4y1x7kC-H9IR2zgVt4viHGquikKEuHIgnUVxkG-bKhVA8D7Vn_IKK8ft39i6KPHonFgi1O-GKGRAnFJf8U8dPeaSBUT9tw"/>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">مخبز الأرتيزان</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">طلب #ORD-83210</p>
+</div>
+</div>
+<span class="bg-surface-variant text-on-surface-variant font-label-caps text-label-caps px-3 py-1 rounded-full whitespace-nowrap">تم التسليم</span>
+</div>
+<div class="flex justify-between items-end pt-2 border-t border-outline-variant/20 mt-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface-variant">التاريخ: 10 مايو 2024</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold mt-1">15.25 د.أ</span>
+</div>
+<div class="flex gap-2">
+<button class="bg-transparent border border-outline text-on-surface-variant font-button text-button px-4 py-2 rounded-xl hover:bg-surface-container-high transition-colors active:scale-95 duration-200">
+                                عرض التفاصيل
+                            </button>
+<button class="bg-transparent border border-primary text-primary font-button text-button px-4 py-2 rounded-xl hover:bg-primary-container/10 transition-colors active:scale-95 duration-200 flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">refresh</span> إعادة الطلب
+                            </button>
+</div>
+</div>
+</article>
+<!-- Cancelled Order -->
+<article class="bg-surface-container-lowest rounded-xl p-4 card-shadow card-shadow-hover transition-shadow flex flex-col gap-4 border border-outline-variant/20 opacity-70">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg border border-outline-variant/30 overflow-hidden shrink-0 grayscale">
+<img alt="Store Logo" class="w-full h-full object-cover" data-alt="A sleek minimalist fashion boutique logo icon, abstract hanger shape in muted gray on a white background, highly polished vector graphic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-ELUUBuNgKs8k67WZHTilEV9NWp9OD4TEJ_s3iUWTBaIjIwypjdmUktJVNyiBBvdSmBCbzpP9Dca0bNJEOSkg8IOt-wfzKtjq5urxID3q8-Jh-L_LP49uI-8PaKrVusqoGYQaGSBROfKgImC0Pv59UkluuNM1gGrAkoSj8tscZe6Z4L-vgffmIIyilx9OZ7Y74CXs5ocx5xg9C544XaCENLW1FRrKb9Q-LhFyvrb9rUWF-kuuaidG3w"/>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">بوتيك الأناقة</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">طلب #ORD-82999</p>
+</div>
+</div>
+<span class="bg-error-container text-on-error-container font-label-caps text-label-caps px-3 py-1 rounded-full whitespace-nowrap">ملغي</span>
+</div>
+<div class="flex justify-between items-end pt-2 border-t border-outline-variant/20 mt-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface-variant">التاريخ: 05 مايو 2024</span>
+<span class="font-headline-sm text-headline-sm text-on-surface-variant font-bold mt-1 line-through">85.00 د.أ</span>
+</div>
+<button class="bg-transparent text-on-surface-variant font-button text-button px-4 py-2 hover:bg-surface-container-high rounded-xl transition-colors active:scale-95 duration-200">
+                            عرض التفاصيل
+                        </button>
+</div>
+</article>
+<!-- Empty State Example (Hidden by default, shown for demo purposes within this code block if uncommented) -->
+<!-- 
+                 <div class="flex flex-col items-center justify-center py-12 px-4 text-center">
+                    <span class="material-symbols-outlined text-[64px] text-outline-variant mb-4 font-[200]">shopping_bag</span>
+                    <h3 class="font-headline-md text-headline-md text-on-surface mb-2">لا توجد طلبات سابقة</h3>
+                    <p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-xs">يبدو أنك لم تقم بإجراء أي طلبات حتى الآن. اكتشف عروضنا المذهلة وابدأ التسوق.</p>
+                    <button class="bg-primary text-on-primary font-button text-button px-8 py-3 rounded-xl hover:bg-primary/90 transition-colors active:scale-95 duration-200 shadow-md">
+                        تسوق الآن
+                    </button>
+                </div>
+                -->
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-stack-sm bg-surface shadow-[0px_-4px_20px_rgba(139,30,63,0.04)] z-50 dir-rtl border-t border-outline-variant/20 md:hidden">
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-90 duration-200 p-2 rounded-xl group">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps group-hover:text-primary transition-colors">الرئيسية</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-90 duration-200 p-2 rounded-xl group">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors" data-icon="category">category</span>
+<span class="font-label-caps text-label-caps group-hover:text-primary transition-colors">التصنيفات</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary bg-primary-container/10 rounded-xl px-4 py-2 transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1 text-primary" data-icon="shopping_bag" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+<span class="font-label-caps text-label-caps text-primary">الطلبات</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-90 duration-200 p-2 rounded-xl group">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors" data-icon="favorite">favorite</span>
+<span class="font-label-caps text-label-caps group-hover:text-primary transition-colors">المفضلة</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-all active:scale-90 duration-200 p-2 rounded-xl group">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors" data-icon="person">person</span>
+<span class="font-label-caps text-label-caps group-hover:text-primary transition-colors">حسابي</span>
+</button>
+</nav>
+<script>
+        function switchTab(tabId) {
+            // Tab buttons
+            const currentTabBtn = document.getElementById('tab-current');
+            const previousTabBtn = document.getElementById('tab-previous');
+            
+            // Views
+            const currentView = document.getElementById('view-current');
+            const previousView = document.getElementById('view-previous');
+
+            if (tabId === 'current') {
+                // Update buttons
+                currentTabBtn.className = "pb-3 px-2 font-button text-button text-primary border-b-2 border-primary whitespace-nowrap transition-colors";
+                previousTabBtn.className = "pb-3 px-2 font-button text-button text-on-surface-variant hover:text-primary whitespace-nowrap transition-colors border-b-2 border-transparent";
+                
+                // Update views
+                currentView.classList.remove('hidden');
+                currentView.classList.add('flex');
+                previousView.classList.add('hidden');
+                previousView.classList.remove('flex');
+            } else {
+                // Update buttons
+                previousTabBtn.className = "pb-3 px-2 font-button text-button text-primary border-b-2 border-primary whitespace-nowrap transition-colors";
+                currentTabBtn.className = "pb-3 px-2 font-button text-button text-on-surface-variant hover:text-primary whitespace-nowrap transition-colors border-b-2 border-transparent";
+                
+                // Update views
+                previousView.classList.remove('hidden');
+                previousView.classList.add('flex');
+                currentView.classList.add('hidden');
+                currentView.classList.remove('flex');
+            }
+        }
+    </script>
+</body></html>
