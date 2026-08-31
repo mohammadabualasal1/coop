@@ -26,6 +26,14 @@
   color: var(--coop-primary);
 }
 
+.heading {
+  margin-block: var(--coop-space-sm) 0;
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--coop-text);
+}
+
 .subtitle {
   margin-block: var(--coop-space-xs) var(--coop-space-lg);
   text-align: center;
@@ -57,6 +65,7 @@ label {
 
 input {
   min-height: 44px;
+  width: 100%;
   padding-inline: var(--coop-space-md);
   border: 1px solid var(--coop-border);
   border-radius: var(--coop-radius-md);
@@ -71,24 +80,33 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
-.field-error {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--coop-danger);
+.input-with-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.link-button {
-  display: block;
-  margin-block-end: var(--coop-space-lg);
-  margin-inline-start: auto;
+.input-with-toggle input {
+  padding-inline-end: calc(var(--coop-space-xl) * 1.6);
+}
+
+.toggle-button {
+  position: absolute;
+  inset-inline-end: var(--coop-space-sm);
   background: none;
   border: none;
   padding: 0;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--coop-primary);
-  text-decoration: underline;
   cursor: pointer;
+}
+
+.field-error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--coop-danger);
 }
 
 .submit-button {
@@ -98,6 +116,7 @@ input:focus-visible {
   align-items: center;
   justify-content: center;
   gap: var(--coop-space-sm);
+  margin-block-start: var(--coop-space-sm);
   border: none;
   border-radius: var(--coop-radius-md);
   background: var(--coop-primary);

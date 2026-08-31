@@ -1,18 +1,23 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { UserRole } from '../../../core/enums';
 import { AuthService } from '../../../core/services/auth.service';
 import { TokenStorageService } from '../../../core/services/token-storage.service';
 import { extractErrorMessage } from '../../../core/utils/http-error';
 
-const MOBILE_ONLY_MESSAGE =
-  'هذا الحساب مخصص لتطبيق الجوال. لوحة التحكم للتجار والمشرفين فقط.';
+const DRIVER_ONLY_MESSAGE = 'حساب السائق يعمل من تطبيق الجوال فقط.';
+
+const ROLE_HOME_URL: Partial<Record<UserRole, string>> = {
+  [UserRole.Customer]: '/shop',
+  [UserRole.Merchant]: '/merchant',
+  [UserRole.Admin]: '/admin'
+};
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -57,30 +62,31 @@ export class LoginComponent {
   }
 
   private handleSuccess(role: UserRole): void {
-    if (role === UserRole.Merchant || role === UserRole.Admin) {
-      const defaultUrl = role === UserRole.Merchant ? '/merchant' : '/admin';
-      const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-      const targetUrl = returnUrl && returnUrl.startsWith(defaultUrl) ? returnUrl : defaultUrl;
+    const defaultUrl = ROLE_HOME_URL[role];
 
-      this.submitting.set(false);
-      this.router.navigateByUrl(targetUrl);
+    if (!defaultUrl) {
+      this.rejectDriverAccount();
       return;
     }
 
-    this.rejectMobileOnlyAccount();
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    const targetUrl = returnUrl && returnUrl.startsWith(defaultUrl) ? returnUrl : defaultUrl;
+
+    this.submitting.set(false);
+    this.router.navigateByUrl(targetUrl);
   }
 
-  private rejectMobileOnlyAccount(): void {
+  private rejectDriverAccount(): void {
     const refreshToken = this.tokenStorage.refreshToken ?? '';
 
     this.auth.logout({ refreshToken }).subscribe({
-      next: () => this.finishWithMobileOnlyMessage(),
-      error: () => this.finishWithMobileOnlyMessage()
+      next: () => this.finishWithDriverMessage(),
+      error: () => this.finishWithDriverMessage()
     });
   }
 
-  private finishWithMobileOnlyMessage(): void {
+  private finishWithDriverMessage(): void {
     this.submitting.set(false);
-    this.errorMessage.set(MOBILE_ONLY_MESSAGE);
+    this.errorMessage.set(DRIVER_ONLY_MESSAGE);
   }
 }
