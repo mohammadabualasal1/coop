@@ -1,0 +1,180 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="page-title">الشكاوى</h2>
+        <coop-button (click)="openCreateModal()">تقديم شكوى</coop-button>
+      </div>
+
+      @if (successMessage(); as message) {
+        <coop-alert tone="success">{{ message }}</coop-alert>
+      }
+
+      <div class="status-filter">
+        <button
+          type="button"
+          class="status-chip"
+          [class.active]="selectedStatus() === 'all'"
+          (click)="selectStatus('all')"
+        >
+          الكل
+        </button>
+        @for (statusValue of allStatuses; track statusValue) {
+          <button
+            type="button"
+            class="status-chip"
+            [class.active]="selectedStatus() === statusValue"
+            (click)="selectStatus(statusValue)"
+          >
+            {{ statusLabel(statusValue) }}
+          </button>
+        }
+      </div>
+
+      @if (complaints().length === 0) {
+        <coop-empty-state
+          title="لا توجد شكاوى"
+          message="إذا واجهتك مشكلة في طلب أو سائق يمكنك تقديم شكوى"
+        />
+      } @else {
+        <div class="complaints-list">
+          @for (complaint of complaints(); track complaint.id) {
+            <coop-card>
+              <div class="complaint-header">
+                <h3 class="complaint-category">{{ complaint.category }}</h3>
+                <coop-badge [tone]="statusTone(complaint.status)">
+                  {{ statusLabel(complaint.status) }}
+                </coop-badge>
+                <span class="complaint-date">{{ complaint.createdAt | coopDate }}</span>
+              </div>
+
+              @if (complaint.orderNumber) {
+                <p class="complaint-meta">رقم الطلب: {{ complaint.orderNumber }}</p>
+              }
+
+              @if (complaint.targetName) {
+                <p class="complaint-meta">بخصوص: {{ complaint.targetName }}</p>
+              }
+
+              <div class="complaint-description">{{ complaint.description }}</div>
+
+              @if (complaint.evidenceUrl) {
+                <a
+                  [href]="complaint.evidenceUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="evidence-link"
+                >
+                  مرفق
+                </a>
+              }
+
+              @if (complaint.adminResponse) {
+                <coop-alert tone="info" class="admin-response">
+                  <p class="admin-response-title">رد الإدارة</p>
+                  <p class="admin-response-text">{{ complaint.adminResponse }}</p>
+                  @if (complaint.resolvedAt) {
+                    <p class="admin-response-date">{{ complaint.resolvedAt | coopDate }}</p>
+                  }
+                </coop-alert>
+              }
+            </coop-card>
+          }
+        </div>
+      }
+    </div>
+  }
+}
+
+<coop-modal title="تقديم شكوى" [open]="createModalOpen()" size="md" (closed)="closeCreateModal()">
+  @if (createErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <form [formGroup]="createForm" (ngSubmit)="submitCreate()" novalidate class="create-form">
+    <coop-field label="نوع الشكوى">
+      <div class="radio-group">
+        <label class="radio-option">
+          <input
+            type="radio"
+            name="targetMode"
+            [checked]="targetMode() === 'order'"
+            (change)="setTargetMode('order')"
+          />
+          <span>بخصوص طلب</span>
+        </label>
+        <label class="radio-option">
+          <input
+            type="radio"
+            name="targetMode"
+            [checked]="targetMode() === 'general'"
+            (change)="setTargetMode('general')"
+          />
+          <span>شكوى عامة</span>
+        </label>
+      </div>
+    </coop-field>
+
+    @if (targetMode() === 'order') {
+      <coop-field label="الطلب" [error]="orderErrorMessage()" [touched]="attemptedSubmit()">
+        <select formControlName="orderId">
+          <option value="">اختر طلباً</option>
+          @for (order of orders(); track order.id) {
+            <option [value]="order.id">{{ order.orderNumber }}</option>
+          }
+        </select>
+      </coop-field>
+    }
+
+    <coop-field
+      label="التصنيف"
+      [error]="categoryErrorMessage()"
+      [touched]="createForm.controls.category.touched"
+    >
+      <input formControlName="category" type="text" />
+    </coop-field>
+    <p class="field-hint">مثال: مشكلة في التوصيل</p>
+
+    <coop-field
+      label="الوصف"
+      [error]="descriptionErrorMessage()"
+      [touched]="createForm.controls.description.touched"
+    >
+      <textarea formControlName="description" rows="4"></textarea>
+    </coop-field>
+
+    <coop-field label="رابط مرفق" [error]="evidenceUrlErrorMessage()">
+      <input formControlName="evidenceUrl" type="url" placeholder="https://... (اختياري)" />
+    </coop-field>
+  </form>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" class="cancel-button" (click)="closeCreateModal()">
+      إلغاء
+    </coop-button>
+    <coop-button
+      size="sm"
+      class="save-button"
+      [loading]="createSaving()"
+      [disabled]="createSaving()"
+      (click)="submitCreate()"
+    >
+      تقديم
+    </coop-button>
+  </div>
+</coop-modal>

@@ -10,3 +10,4 @@ export * from './ui-confirm-modal/ui-confirm-modal';
 export * from './ui-password-toggle/ui-password-toggle';
 export * from './ui-stat-tile/ui-stat-tile';
 export * from './notifications-page/notifications-page';
+export * from './ui-rating-stars/ui-rating-stars';

@@ -1,75 +1,70 @@
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { Observable, of, switchMap } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 
-import { Merchant } from '../../../../core/models/merchant.models';
-import { Review } from '../../../../core/models/review.models';
-import { MerchantService } from '../../../../core/services/merchant.service';
-import { ReviewService } from '../../../../core/services/review.service';
+import { OfferSummary } from '../../../../core/models/marketplace.models';
+import { MarketplaceService } from '../../../../core/services/marketplace.service';
 import { extractErrorMessage } from '../../../../core/utils/http-error';
 import {
   UiAlertComponent,
   UiButtonComponent,
   UiCardComponent,
   UiEmptyStateComponent,
-  UiRatingStarsComponent,
   UiSpinnerComponent
 } from '../../../../shared/components';
-import { CoopDatePipe } from '../../../../shared/pipes/coop-date.pipe';
+import { OfferCardComponent } from '../../components/offer-card/offer-card';
 
 type PageStatus = 'loading' | 'error' | 'loaded';
 
 const PAGE_SIZE = 20;
 
 @Component({
-  selector: 'app-merchant-reviews',
+  selector: 'app-customer-search',
   imports: [
-    CoopDatePipe,
     UiCardComponent,
     UiButtonComponent,
     UiAlertComponent,
     UiSpinnerComponent,
     UiEmptyStateComponent,
-    UiRatingStarsComponent
+    OfferCardComponent
   ],
-  templateUrl: './reviews.html',
-  styleUrl: './reviews.scss',
+  templateUrl: './search.html',
+  styleUrl: './search.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ReviewsComponent implements OnInit {
-  private readonly merchantService = inject(MerchantService);
-  private readonly reviewService = inject(ReviewService);
+export class SearchComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly marketplace = inject(MarketplaceService);
 
   readonly status = signal<PageStatus>('loading');
   readonly loadErrorMessage = signal<string | null>(null);
-  readonly merchant = signal<Merchant | null>(null);
-  readonly reviews = signal<Review[]>([]);
+  readonly offers = signal<OfferSummary[]>([]);
   readonly totalCount = signal(0);
   readonly pageNumber = signal(1);
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalCount() / PAGE_SIZE)));
+  readonly searchTerm = signal('');
 
   ngOnInit(): void {
-    this.load();
-  }
-
-  private ensureMerchant(): Observable<Merchant> {
-    const cached = this.merchantService.merchant();
-    return cached ? of(cached) : this.merchantService.getMy();
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      this.searchTerm.set(params.get('q') ?? '');
+      this.pageNumber.set(1);
+      this.load();
+    });
   }
 
   load(): void {
     this.status.set('loading');
     this.loadErrorMessage.set(null);
 
-    this.ensureMerchant()
-      .pipe(
-        switchMap((merchant) => {
-          this.merchant.set(merchant);
-          return this.reviewService.getForMerchant(merchant.id, this.pageNumber(), PAGE_SIZE);
-        })
-      )
+    this.marketplace
+      .searchOffers({
+        search: this.searchTerm() || null,
+        pageNumber: this.pageNumber(),
+        pageSize: PAGE_SIZE
+      })
       .subscribe({
         next: (result) => {
-          this.reviews.set(result.items);
+          this.offers.set(result.items);
           this.totalCount.set(result.totalCount);
           this.status.set('loaded');
         },
@@ -78,11 +73,6 @@ export class ReviewsComponent implements OnInit {
           this.status.set('error');
         }
       });
-  }
-
-  averageRatingDisplay(): string {
-    const merchant = this.merchant();
-    return merchant?.averageRating != null ? merchant.averageRating.toFixed(1) : '0.0';
   }
 
   goToPreviousPage(): void {

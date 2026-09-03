@@ -1,0 +1,24 @@
+<a class="offer-card" [routerLink]="['/shop/offers', offer().id]">
+  <div class="cover">
+    @if (offer().mainImageUrl) {
+      <img [src]="offer().mainImageUrl" [alt]="offer().title" />
+    } @else {
+      <div class="cover-placeholder"></div>
+    }
+    <span class="discount-pill">خصم {{ discountDisplay() }}%</span>
+  </div>
+
+  <div class="body">
+    <h3 class="title">{{ offer().title }}</h3>
+    <p class="merchant">{{ offer().merchantName }}</p>
+
+    <div class="price-row">
+      <span class="discounted-price">{{ offer().discountedPrice | jod }}</span>
+      <span class="original-price">{{ offer().originalPrice | jod }}</span>
+    </div>
+
+    @if (hoursRemaining(); as hours) {
+      <p class="ending-soon">ينتهي خلال {{ hours }} ساعة</p>
+    }
+  </div>
+</a>
