@@ -3,13 +3,17 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { ComplaintStatus } from '../enums';
 import {
+  AdminComplaint,
   AdminUser,
   CreateDriverUserRequest,
   CreateMerchantUserRequest,
   GetUsersParams,
   PagedResult,
-  PendingOffer
+  PendingOffer,
+  ResolveComplaintRequest,
+  ResolveComplaintResponse
 } from '../models/admin.models';
 
 @Injectable({ providedIn: 'root' })
@@ -63,5 +67,19 @@ export class AdminService {
 
   activateUser(id: string): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/users/${id}/activate`, null);
+  }
+
+  getComplaints(status?: ComplaintStatus | null): Observable<AdminComplaint[]> {
+    let httpParams = new HttpParams();
+
+    if (status != null) {
+      httpParams = httpParams.set('status', status);
+    }
+
+    return this.http.get<AdminComplaint[]>(`${this.baseUrl}/complaints`, { params: httpParams });
+  }
+
+  resolveComplaint(id: string, body: ResolveComplaintRequest): Observable<ResolveComplaintResponse> {
+    return this.http.put<ResolveComplaintResponse>(`${this.baseUrl}/complaints/${id}/resolve`, body);
   }
 }

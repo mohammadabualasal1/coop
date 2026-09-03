@@ -3,7 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, of, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { Category } from '../models/category.models';
+import { Category, CategoryRequest, UpdateCategoryRequest } from '../models/category.models';
 
 export interface CategoryOption {
   id: string;
@@ -54,5 +54,23 @@ export class CategoryService {
 
   nameAr(categoryId: string): string {
     return this.categoryMap().get(categoryId)?.nameAr ?? '';
+  }
+
+  create(body: CategoryRequest): Observable<Category> {
+    return this.http
+      .post<Category>(this.baseUrl, body)
+      .pipe(tap(() => this._categories.set(null)));
+  }
+
+  update(id: string, body: UpdateCategoryRequest): Observable<Category> {
+    return this.http
+      .put<Category>(`${this.baseUrl}/${id}`, body)
+      .pipe(tap(() => this._categories.set(null)));
+  }
+
+  deactivate(id: string): Observable<void> {
+    return this.http
+      .delete<void>(`${this.baseUrl}/${id}`)
+      .pipe(tap(() => this._categories.set(null)));
   }
 }

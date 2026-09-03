@@ -1,4 +1,4 @@
-import { UserRole, UserStatus } from '../enums';
+import { ComplaintStatus, UserRole, UserStatus } from '../enums';
 
 export interface PendingOffer {
   id: string;
@@ -56,4 +56,30 @@ export interface CreateDriverUserRequest {
   vehicleType: string;
   vehiclePlateNumber: string;
   maximumCapacity: number;
+}
+
+export interface AdminComplaint {
+  id: string;
+  createdByName: string;
+  orderNumber: string | null;
+  targetName: string | null;
+  category: string;
+  description: string;
+  evidenceUrl: string | null;
+  status: ComplaintStatus;
+  adminResponse: string | null;
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
+export interface ResolveComplaintRequest {
+  status: ComplaintStatus;
+  adminResponse: string;
+}
+
+export interface ResolveComplaintResponse {
+  id: string;
+  status: ComplaintStatus;
+  adminResponse: string | null;
+  resolvedAt: string | null;
 }
