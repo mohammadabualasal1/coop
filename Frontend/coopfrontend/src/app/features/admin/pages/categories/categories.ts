@@ -192,7 +192,7 @@ export class CategoriesComponent implements OnInit {
       description: category.description ?? '',
       imageUrl: category.imageUrl ?? '',
       displayOrder: category.displayOrder,
-      isActive: category.isActive
+      isActive: category.isActive !== false
     });
     this.formModalOpen.set(true);
   }

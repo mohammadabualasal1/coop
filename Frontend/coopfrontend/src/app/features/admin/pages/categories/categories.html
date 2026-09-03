@@ -53,7 +53,7 @@
 
                 <span class="order-chip">{{ node.root.displayOrder }}</span>
 
-                @if (!node.root.isActive) {
+                @if (node.root.isActive === false) {
                   <coop-badge tone="neutral">غير مفعّل</coop-badge>
                 }
 
@@ -87,7 +87,7 @@
 
                       <span class="order-chip">{{ child.displayOrder }}</span>
 
-                      @if (!child.isActive) {
+                      @if (child.isActive === false) {
                         <coop-badge tone="neutral">غير مفعّل</coop-badge>
                       }
 
