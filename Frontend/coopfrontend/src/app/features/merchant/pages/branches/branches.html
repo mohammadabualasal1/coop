@@ -200,33 +200,14 @@
   </div>
 </coop-modal>
 
-<coop-modal
+<coop-confirm-modal
   title="تأكيد إلغاء التفعيل"
+  [message]="deactivateMessage()"
+  confirmLabel="إلغاء التفعيل"
+  tone="danger"
   [open]="confirmDeactivateOpen()"
-  size="sm"
-  (closed)="closeDeactivateConfirm()"
->
-  @if (deactivateErrorMessage(); as message) {
-    <coop-alert tone="danger">{{ message }}</coop-alert>
-  }
-
-  <p>
-    هل أنت متأكد من إلغاء تفعيل فرع
-    @if (branchToDeactivate(); as b) {
-      «{{ b.name }}»؟
-    }
-  </p>
-
-  <div modal-footer>
-    <coop-button variant="secondary" size="sm" (click)="closeDeactivateConfirm()">تراجع</coop-button>
-    <coop-button
-      variant="danger"
-      size="sm"
-      [loading]="deactivateSaving()"
-      [disabled]="deactivateSaving()"
-      (click)="confirmDeactivate()"
-    >
-      إلغاء التفعيل
-    </coop-button>
-  </div>
-</coop-modal>
+  [saving]="deactivateSaving()"
+  [errorMessage]="deactivateErrorMessage()"
+  (cancelled)="closeDeactivateConfirm()"
+  (confirmed)="confirmDeactivate()"
+/>

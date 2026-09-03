@@ -9,6 +9,7 @@ import {
   UiBadgeComponent,
   UiButtonComponent,
   UiCardComponent,
+  UiConfirmModalComponent,
   UiEmptyStateComponent,
   UiFieldComponent,
   UiModalComponent,
@@ -40,7 +41,8 @@ function stripSeconds(time: string): string {
     UiFieldComponent,
     UiSpinnerComponent,
     UiEmptyStateComponent,
-    UiModalComponent
+    UiModalComponent,
+    UiConfirmModalComponent
   ],
   templateUrl: './branches.html',
   styleUrl: './branches.scss',
@@ -67,6 +69,10 @@ export class BranchesComponent implements OnInit {
   readonly branchToDeactivate = signal<MerchantBranch | null>(null);
   readonly deactivateSaving = signal(false);
   readonly deactivateErrorMessage = signal<string | null>(null);
+  readonly deactivateMessage = computed(() => {
+    const branch = this.branchToDeactivate();
+    return branch ? `هل أنت متأكد من إلغاء تفعيل فرع «${branch.name}»؟` : '';
+  });
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],

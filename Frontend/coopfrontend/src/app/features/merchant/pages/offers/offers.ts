@@ -15,6 +15,7 @@ import {
   UiBadgeComponent,
   UiButtonComponent,
   UiCardComponent,
+  UiConfirmModalComponent,
   UiEmptyStateComponent,
   UiFieldComponent,
   UiModalComponent,
@@ -95,7 +96,8 @@ function offerFormGroupValidator(group: AbstractControl): ValidationErrors | nul
     UiFieldComponent,
     UiSpinnerComponent,
     UiEmptyStateComponent,
-    UiModalComponent
+    UiModalComponent,
+    UiConfirmModalComponent
   ],
   templateUrl: './offers.html',
   styleUrl: './offers.scss',

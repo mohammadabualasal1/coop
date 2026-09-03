@@ -242,47 +242,29 @@
   </div>
 </coop-modal>
 
-<coop-modal title="تأكيد الحذف" [open]="confirmDeleteOpen()" size="sm" (closed)="closeDeleteConfirm()">
-  @if (deleteErrorMessage(); as message) {
-    <coop-alert tone="danger">{{ message }}</coop-alert>
-  }
+<coop-confirm-modal
+  title="تأكيد الحذف"
+  message="سيتم حذف العرض نهائياً."
+  confirmLabel="حذف"
+  tone="danger"
+  [open]="confirmDeleteOpen()"
+  [saving]="deleteSaving()"
+  [errorMessage]="deleteErrorMessage()"
+  (cancelled)="closeDeleteConfirm()"
+  (confirmed)="confirmDelete()"
+/>
 
-  <p>سيتم حذف العرض نهائياً.</p>
-
-  <div modal-footer>
-    <coop-button variant="secondary" size="sm" (click)="closeDeleteConfirm()">تراجع</coop-button>
-    <coop-button
-      variant="danger"
-      size="sm"
-      [loading]="deleteSaving()"
-      [disabled]="deleteSaving()"
-      (click)="confirmDelete()"
-    >
-      حذف
-    </coop-button>
-  </div>
-</coop-modal>
-
-<coop-modal title="تأكيد الإلغاء" [open]="confirmCancelOpen()" size="sm" (closed)="closeCancelConfirm()">
-  @if (cancelErrorMessage(); as message) {
-    <coop-alert tone="danger">{{ message }}</coop-alert>
-  }
-
-  <p>سيتم إلغاء العرض ولا يمكن التراجع.</p>
-
-  <div modal-footer>
-    <coop-button variant="secondary" size="sm" (click)="closeCancelConfirm()">تراجع</coop-button>
-    <coop-button
-      variant="danger"
-      size="sm"
-      [loading]="cancelSaving()"
-      [disabled]="cancelSaving()"
-      (click)="confirmCancel()"
-    >
-      إلغاء
-    </coop-button>
-  </div>
-</coop-modal>
+<coop-confirm-modal
+  title="تأكيد الإلغاء"
+  message="سيتم إلغاء العرض ولا يمكن التراجع."
+  confirmLabel="إلغاء"
+  tone="danger"
+  [open]="confirmCancelOpen()"
+  [saving]="cancelSaving()"
+  [errorMessage]="cancelErrorMessage()"
+  (cancelled)="closeCancelConfirm()"
+  (confirmed)="confirmCancel()"
+/>
 
 <coop-modal
   [title]="stockModalTitle()"
@@ -449,28 +431,14 @@
   </div>
 </coop-modal>
 
-<coop-modal
+<coop-confirm-modal
   title="تأكيد الإزالة"
+  message="لا يمكن إزالة الفرع إذا كان يحتوي على مخزون محجوز."
+  confirmLabel="إزالة"
+  tone="danger"
   [open]="confirmRemoveBranchOpen()"
-  size="sm"
-  (closed)="closeRemoveBranchConfirm()"
->
-  @if (removeBranchErrorMessage(); as message) {
-    <coop-alert tone="danger">{{ message }}</coop-alert>
-  }
-
-  <p>لا يمكن إزالة الفرع إذا كان يحتوي على مخزون محجوز.</p>
-
-  <div modal-footer>
-    <coop-button variant="secondary" size="sm" (click)="closeRemoveBranchConfirm()">تراجع</coop-button>
-    <coop-button
-      variant="danger"
-      size="sm"
-      [loading]="removeBranchSaving()"
-      [disabled]="removeBranchSaving()"
-      (click)="confirmRemoveBranch()"
-    >
-      إزالة
-    </coop-button>
-  </div>
-</coop-modal>
+  [saving]="removeBranchSaving()"
+  [errorMessage]="removeBranchErrorMessage()"
+  (cancelled)="closeRemoveBranchConfirm()"
+  (confirmed)="confirmRemoveBranch()"
+/>

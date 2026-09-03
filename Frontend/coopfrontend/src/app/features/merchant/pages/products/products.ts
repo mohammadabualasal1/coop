@@ -16,6 +16,7 @@ import {
   UiAlertComponent,
   UiButtonComponent,
   UiCardComponent,
+  UiConfirmModalComponent,
   UiEmptyStateComponent,
   UiFieldComponent,
   UiModalComponent,
@@ -54,7 +55,8 @@ function optionalUrlValidator(control: AbstractControl): ValidationErrors | null
     UiFieldComponent,
     UiSpinnerComponent,
     UiEmptyStateComponent,
-    UiModalComponent
+    UiModalComponent,
+    UiConfirmModalComponent
   ],
   templateUrl: './products.html',
   styleUrl: './products.scss',
@@ -95,6 +97,10 @@ export class ProductsComponent implements OnInit {
   readonly productToDeactivate = signal<Product | null>(null);
   readonly deactivateSaving = signal(false);
   readonly deactivateErrorMessage = signal<string | null>(null);
+  readonly deactivateMessage = computed(() => {
+    const product = this.productToDeactivate();
+    return product ? `هل أنت متأكد من إلغاء تفعيل منتج «${product.name}»؟` : '';
+  });
 
   readonly imagesModalOpen = signal(false);
   readonly imagesModalProduct = signal<Product | null>(null);
