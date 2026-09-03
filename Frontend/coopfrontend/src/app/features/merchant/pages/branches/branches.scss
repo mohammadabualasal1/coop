@@ -95,7 +95,7 @@ coop-alert {
 .branch-form {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0 var(--coop-space-md);
+  gap: 0 20px;
 }
 
 @media (min-width: 700px) {
@@ -106,6 +106,14 @@ coop-alert {
 
 .span-2 {
   grid-column: 1 / -1;
+}
+
+.cancel-button {
+  min-width: 96px;
+}
+
+.save-button {
+  min-width: 140px;
 }
 
 .coordinates-note {

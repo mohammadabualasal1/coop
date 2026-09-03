@@ -127,7 +127,7 @@ export type ModalSize = 'sm' | 'md' | 'lg';
       border-block-start: 1px solid var(--coop-border);
       display: flex;
       justify-content: flex-end;
-      gap: var(--coop-space-sm);
+      gap: 12px;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush

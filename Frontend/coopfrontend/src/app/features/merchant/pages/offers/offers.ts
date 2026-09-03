@@ -21,6 +21,7 @@ import {
   UiModalComponent,
   UiSpinnerComponent
 } from '../../../../shared/components';
+import { CoopDatePipe } from '../../../../shared/pipes/coop-date.pipe';
 import { JodPipe } from '../../../../shared/pipes/jod.pipe';
 
 type PageStatus = 'loading' | 'error' | 'loaded';
@@ -89,6 +90,7 @@ function offerFormGroupValidator(group: AbstractControl): ValidationErrors | nul
   imports: [
     ReactiveFormsModule,
     JodPipe,
+    CoopDatePipe,
     UiCardComponent,
     UiButtonComponent,
     UiBadgeComponent,
@@ -239,10 +241,6 @@ export class OffersComponent implements OnInit {
 
   offerActions(offer: Offer): OfferAction[] {
     return offerActionsForStatus(offer.status);
-  }
-
-  formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('ar-JO');
   }
 
   discountPercentagePreview(): number | null {

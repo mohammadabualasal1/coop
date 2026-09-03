@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import {
   AbstractControl,
@@ -20,6 +19,7 @@ import {
   UiFieldComponent,
   UiSpinnerComponent
 } from '../../../../shared/components';
+import { CoopDatePipe } from '../../../../shared/pipes/coop-date.pipe';
 
 const PHONE_PATTERN = /^07[789][0-9]{7}$/;
 const SAVE_SUCCESS_DISPLAY_MS = 4000;
@@ -49,7 +49,7 @@ function optionalUrlValidator(control: AbstractControl): ValidationErrors | null
   selector: 'app-merchant-profile',
   imports: [
     ReactiveFormsModule,
-    DatePipe,
+    CoopDatePipe,
     UiCardComponent,
     UiFieldComponent,
     UiButtonComponent,

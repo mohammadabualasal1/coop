@@ -161,9 +161,12 @@
   </form>
 
   <div modal-footer>
-    <coop-button variant="secondary" size="sm" (click)="closeFormModal()">إلغاء</coop-button>
+    <coop-button variant="secondary" size="sm" class="cancel-button" (click)="closeFormModal()">
+      إلغاء
+    </coop-button>
     <coop-button
       size="sm"
+      class="save-button"
       [loading]="formSaving()"
       [disabled]="formSaving()"
       (click)="submitForm()"

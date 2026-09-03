@@ -78,7 +78,9 @@
                 <span class="discount-pill">خصم {{ discountPercentageDisplay(offer) }}%</span>
               </div>
 
-              <p class="offer-validity">من {{ formatDate(offer.startAt) }} إلى {{ formatDate(offer.endAt) }}</p>
+              <p class="offer-validity">
+                من {{ offer.startAt | coopDate }} إلى {{ offer.endAt | coopDate }}
+              </p>
 
               @if (offer.status === OfferStatus.Rejected && offer.adminReviewNote) {
                 <coop-alert tone="danger">{{ offer.adminReviewNote }}</coop-alert>
@@ -230,9 +232,12 @@
   </form>
 
   <div modal-footer>
-    <coop-button variant="secondary" size="sm" (click)="closeFormModal()">إلغاء</coop-button>
+    <coop-button variant="secondary" size="sm" class="cancel-button" (click)="closeFormModal()">
+      إلغاء
+    </coop-button>
     <coop-button
       size="sm"
+      class="save-button"
       [loading]="formSaving()"
       [disabled]="formSaving()"
       (click)="submitForm()"

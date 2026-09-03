@@ -14,6 +14,7 @@ import {
   UiFieldComponent,
   UiSpinnerComponent
 } from '../../../../shared/components';
+import { CoopDatePipe } from '../../../../shared/pipes/coop-date.pipe';
 
 type PageStatus = 'loading' | 'error' | 'loaded';
 
@@ -23,6 +24,7 @@ const SUCCESS_MESSAGE_MS = 4000;
   selector: 'app-admin-offers',
   imports: [
     ReactiveFormsModule,
+    CoopDatePipe,
     UiCardComponent,
     UiButtonComponent,
     UiBadgeComponent,
@@ -92,10 +94,6 @@ export class OffersComponent implements OnInit {
 
   discountPercentageDisplay(offer: PendingOffer): number {
     return Math.round(offer.discountPercentage * 10) / 10;
-  }
-
-  formatDateTime(iso: string): string {
-    return new Date(iso).toLocaleString('ar-JO', { dateStyle: 'medium', timeStyle: 'short' });
   }
 
   private showSuccessMessage(message: string): void {

@@ -30,8 +30,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
     .field {
       display: flex;
       flex-direction: column;
-      gap: var(--coop-space-xs);
-      margin-block-end: var(--coop-space-md);
+      gap: 6px;
+      margin-block-end: 20px;
     }
 
     .field-label {

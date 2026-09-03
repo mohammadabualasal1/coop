@@ -46,9 +46,7 @@
               formControlName="password"
               autocomplete="new-password"
             />
-            <button type="button" class="toggle-button" (click)="togglePasswordVisibility()">
-              {{ showPassword() ? 'إخفاء' : 'إظهار' }}
-            </button>
+            <coop-password-toggle [visible]="showPassword()" (toggled)="togglePasswordVisibility()" />
           </div>
         </coop-field>
 
@@ -64,13 +62,10 @@
               formControlName="confirmPassword"
               autocomplete="new-password"
             />
-            <button
-              type="button"
-              class="toggle-button"
-              (click)="toggleConfirmPasswordVisibility()"
-            >
-              {{ showConfirmPassword() ? 'إخفاء' : 'إظهار' }}
-            </button>
+            <coop-password-toggle
+              [visible]="showConfirmPassword()"
+              (toggled)="toggleConfirmPasswordVisibility()"
+            />
           </div>
         </coop-field>
 

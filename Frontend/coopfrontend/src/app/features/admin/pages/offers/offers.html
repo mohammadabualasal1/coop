@@ -50,7 +50,7 @@
                   <td>
                     <span class="discount-pill">خصم {{ discountPercentageDisplay(offer) }}%</span>
                   </td>
-                  <td>{{ formatDateTime(offer.submittedAt) }}</td>
+                  <td>{{ offer.submittedAt | coopDate: 'datetime' }}</td>
                   <td class="row-actions">
                     <coop-button size="sm" (click)="openApproveConfirm(offer)">موافقة</coop-button>
                     <coop-button variant="danger" size="sm" (click)="openRejectConfirm(offer)">

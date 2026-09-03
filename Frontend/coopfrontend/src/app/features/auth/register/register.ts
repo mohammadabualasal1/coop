@@ -15,7 +15,8 @@ import {
   UiAlertComponent,
   UiButtonComponent,
   UiCardComponent,
-  UiFieldComponent
+  UiFieldComponent,
+  UiPasswordToggleComponent
 } from '../../../shared/components';
 
 const PHONE_PATTERN = /^07[789][0-9]{7}$/;
@@ -49,7 +50,8 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
     UiCardComponent,
     UiFieldComponent,
     UiButtonComponent,
-    UiAlertComponent
+    UiAlertComponent,
+    UiPasswordToggleComponent
   ],
   templateUrl: './register.html',
   styleUrl: './register.scss',
