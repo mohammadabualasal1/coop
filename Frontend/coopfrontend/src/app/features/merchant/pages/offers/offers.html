@@ -1,0 +1,285 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="page-title">العروض</h2>
+        <coop-button (click)="openCreateModal()">إضافة عرض</coop-button>
+      </div>
+
+      @if (actionErrorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+      }
+
+      @if (offers().length > 0) {
+        <div class="status-filter">
+          <button
+            type="button"
+            class="status-chip"
+            [class.active]="selectedStatus() === 'all'"
+            (click)="selectedStatus.set('all')"
+          >
+            الكل
+          </button>
+          @for (statusValue of presentStatuses(); track statusValue) {
+            <button
+              type="button"
+              class="status-chip"
+              [class.active]="selectedStatus() === statusValue"
+              (click)="selectedStatus.set(statusValue)"
+            >
+              {{ statusLabel(statusValue) }}
+            </button>
+          }
+        </div>
+      }
+
+      @if (offers().length === 0) {
+        <coop-empty-state title="لا توجد عروض" message="أنشئ عرضاً على أحد منتجاتك ليظهر للزبائن">
+          <button
+            coopEmptyStateAction
+            type="button"
+            class="empty-action"
+            (click)="openCreateModal()"
+          >
+            إضافة عرض
+          </button>
+        </coop-empty-state>
+      } @else {
+        <div class="offers-grid">
+          @for (offer of filteredOffers(); track offer.id) {
+            <coop-card>
+              <div class="offer-header">
+                <h3 class="offer-title">{{ offer.title }}</h3>
+                <coop-badge [tone]="statusTone(offer.status)">{{ statusLabel(offer.status) }}</coop-badge>
+              </div>
+
+              @if (offer.productName) {
+                <p class="offer-product">{{ offer.productName }}</p>
+              }
+
+              <div class="price-line">
+                <span class="discounted-price">{{ offer.discountedPrice | jod }}</span>
+                <span class="original-price">{{ offer.originalPrice | jod }}</span>
+                <span class="discount-pill">خصم {{ offer.discountPercentage }}%</span>
+              </div>
+
+              <p class="offer-validity">من {{ formatDate(offer.startAt) }} إلى {{ formatDate(offer.endAt) }}</p>
+
+              @if (offer.status === OfferStatus.Rejected && offer.adminReviewNote) {
+                <coop-alert tone="danger">{{ offer.adminReviewNote }}</coop-alert>
+              }
+
+              <div class="offer-actions">
+                @if (offerActions(offer).includes('edit')) {
+                  <coop-button variant="secondary" size="sm" (click)="openEditModal(offer)">
+                    تعديل
+                  </coop-button>
+                }
+                @if (offerActions(offer).includes('stock')) {
+                  <coop-button variant="secondary" size="sm" (click)="openStockManagement(offer)">
+                    الفروع والمخزون
+                  </coop-button>
+                }
+                @if (offerActions(offer).includes('submit')) {
+                  <coop-button
+                    variant="secondary"
+                    size="sm"
+                    [loading]="submittingId() === offer.id"
+                    [disabled]="submittingId() === offer.id"
+                    (click)="submitForReview(offer)"
+                  >
+                    إرسال للمراجعة
+                  </coop-button>
+                }
+                @if (offerActions(offer).includes('pause')) {
+                  <coop-button
+                    variant="secondary"
+                    size="sm"
+                    [loading]="pausingId() === offer.id"
+                    [disabled]="pausingId() === offer.id"
+                    (click)="pauseOffer(offer)"
+                  >
+                    إيقاف مؤقت
+                  </coop-button>
+                }
+                @if (offerActions(offer).includes('resume')) {
+                  <coop-button
+                    variant="secondary"
+                    size="sm"
+                    [loading]="resumingId() === offer.id"
+                    [disabled]="resumingId() === offer.id"
+                    (click)="resumeOffer(offer)"
+                  >
+                    استئناف
+                  </coop-button>
+                }
+                @if (offerActions(offer).includes('cancel')) {
+                  <coop-button variant="danger" size="sm" (click)="openCancelConfirm(offer)">
+                    إلغاء
+                  </coop-button>
+                }
+                @if (offerActions(offer).includes('delete')) {
+                  <coop-button variant="danger" size="sm" (click)="openDeleteConfirm(offer)">
+                    حذف
+                  </coop-button>
+                }
+              </div>
+            </coop-card>
+          }
+        </div>
+      }
+    </div>
+  }
+}
+
+<coop-modal [title]="modalTitle()" [open]="formModalOpen()" size="lg" (closed)="closeFormModal()">
+  @if (formErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submitForm()" novalidate class="offer-form">
+    <div class="span-2">
+      <coop-field
+        label="المنتج"
+        [error]="productIdErrorMessage()"
+        [touched]="form.controls.productId.touched"
+      >
+        <select formControlName="productId">
+          <option value="" disabled>اختر منتجاً</option>
+          @for (product of products(); track product.id) {
+            <option [value]="product.id">{{ product.name }}</option>
+          }
+        </select>
+      </coop-field>
+    </div>
+
+    <div class="span-2">
+      <coop-field
+        label="عنوان العرض"
+        [error]="titleErrorMessage()"
+        [touched]="form.controls.title.touched"
+      >
+        <input formControlName="title" type="text" />
+      </coop-field>
+    </div>
+
+    <div class="span-2">
+      <coop-field label="الوصف">
+        <textarea formControlName="description" rows="3"></textarea>
+      </coop-field>
+    </div>
+
+    <coop-field
+      label="السعر الأصلي"
+      [error]="originalPriceErrorMessage()"
+      [touched]="form.controls.originalPrice.touched"
+    >
+      <input formControlName="originalPrice" type="number" step="0.01" min="0.01" />
+    </coop-field>
+
+    <coop-field
+      label="السعر بعد الخصم"
+      [error]="discountedPriceErrorMessage()"
+      [touched]="form.controls.discountedPrice.touched"
+    >
+      <input formControlName="discountedPrice" type="number" step="0.01" min="0.01" />
+    </coop-field>
+
+    @if (discountPercentagePreview(); as preview) {
+      <p class="discount-preview span-2">نسبة الخصم: {{ preview }}%</p>
+    }
+
+    <coop-field
+      label="تاريخ البداية"
+      [error]="startAtErrorMessage()"
+      [touched]="form.controls.startAt.touched"
+    >
+      <input formControlName="startAt" type="datetime-local" />
+    </coop-field>
+
+    <coop-field
+      label="تاريخ النهاية"
+      [error]="endAtErrorMessage()"
+      [touched]="form.controls.endAt.touched"
+    >
+      <input formControlName="endAt" type="datetime-local" />
+    </coop-field>
+
+    <coop-field
+      label="الحد الأقصى للكمية لكل زبون"
+      [error]="maximumQuantityPerCustomerErrorMessage()"
+      [touched]="form.controls.maximumQuantityPerCustomer.touched"
+    >
+      <input formControlName="maximumQuantityPerCustomer" type="number" min="1" />
+    </coop-field>
+  </form>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" (click)="closeFormModal()">إلغاء</coop-button>
+    <coop-button
+      size="sm"
+      [loading]="formSaving()"
+      [disabled]="formSaving()"
+      (click)="submitForm()"
+    >
+      حفظ
+    </coop-button>
+  </div>
+</coop-modal>
+
+<coop-modal title="تأكيد الحذف" [open]="confirmDeleteOpen()" size="sm" (closed)="closeDeleteConfirm()">
+  @if (deleteErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <p>سيتم حذف العرض نهائياً.</p>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" (click)="closeDeleteConfirm()">تراجع</coop-button>
+    <coop-button
+      variant="danger"
+      size="sm"
+      [loading]="deleteSaving()"
+      [disabled]="deleteSaving()"
+      (click)="confirmDelete()"
+    >
+      حذف
+    </coop-button>
+  </div>
+</coop-modal>
+
+<coop-modal title="تأكيد الإلغاء" [open]="confirmCancelOpen()" size="sm" (closed)="closeCancelConfirm()">
+  @if (cancelErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <p>سيتم إلغاء العرض ولا يمكن التراجع.</p>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" (click)="closeCancelConfirm()">تراجع</coop-button>
+    <coop-button
+      variant="danger"
+      size="sm"
+      [loading]="cancelSaving()"
+      [disabled]="cancelSaving()"
+      (click)="confirmCancel()"
+    >
+      إلغاء
+    </coop-button>
+  </div>
+</coop-modal>
