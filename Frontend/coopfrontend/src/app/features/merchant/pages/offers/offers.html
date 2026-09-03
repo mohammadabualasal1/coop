@@ -75,7 +75,7 @@
               <div class="price-line">
                 <span class="discounted-price">{{ offer.discountedPrice | jod }}</span>
                 <span class="original-price">{{ offer.originalPrice | jod }}</span>
-                <span class="discount-pill">خصم {{ discountPercentageDisplay(offer) }}%</span>
+                <span class="discount-pill">خصم {{ offer.discountPercentage | discountPercent }}%</span>
               </div>
 
               <p class="offer-validity">

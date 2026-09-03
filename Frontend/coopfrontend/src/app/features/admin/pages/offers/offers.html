@@ -48,7 +48,7 @@
                   <td>{{ offer.title }}</td>
                   <td>{{ offer.merchantName }}</td>
                   <td>
-                    <span class="discount-pill">خصم {{ discountPercentageDisplay(offer) }}%</span>
+                    <span class="discount-pill">خصم {{ offer.discountPercentage | discountPercent }}%</span>
                   </td>
                   <td>{{ offer.submittedAt | coopDate: 'datetime' }}</td>
                   <td class="row-actions">

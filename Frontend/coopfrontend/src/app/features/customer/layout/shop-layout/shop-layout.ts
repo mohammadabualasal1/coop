@@ -6,6 +6,7 @@ import { catchError, interval, of, startWith, switchMap } from 'rxjs';
 
 import { UserRole } from '../../../../core/enums';
 import { AuthService } from '../../../../core/services/auth.service';
+import { CartService } from '../../../../core/services/cart.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { TokenStorageService } from '../../../../core/services/token-storage.service';
 import { UiButtonComponent } from '../../../../shared/components';
@@ -25,6 +26,7 @@ export class ShopLayoutComponent {
   private readonly auth = inject(AuthService);
   private readonly tokenStorage = inject(TokenStorageService);
   private readonly notifications = inject(NotificationService);
+  private readonly cart = inject(CartService);
 
   readonly UserRole = UserRole;
   readonly isAuthenticated = this.auth.isAuthenticated;
@@ -34,8 +36,7 @@ export class ShopLayoutComponent {
   readonly isStaff = computed(() => this.role() === UserRole.Merchant || this.role() === UserRole.Admin);
   readonly dashboardLink = computed(() => (this.role() === UserRole.Admin ? '/admin' : '/merchant'));
 
-  // TODO: wire to CartService once it exists (cart step).
-  readonly cartCount = signal(0);
+  readonly cartCount = this.cart.itemCount;
   readonly unreadCount = this.notifications.unreadCount;
 
   readonly menuOpen = signal(false);

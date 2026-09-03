@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { RouterLink } from '@angular/router';
 
 import { OfferSummary } from '../../../../core/models/marketplace.models';
+import { DiscountPercentPipe } from '../../../../shared/pipes/discount-percent.pipe';
 import { JodPipe } from '../../../../shared/pipes/jod.pipe';
 
 const ENDING_SOON_HOURS = 24;
@@ -9,15 +10,13 @@ const MS_PER_HOUR = 3_600_000;
 
 @Component({
   selector: 'app-offer-card',
-  imports: [RouterLink, JodPipe],
+  imports: [RouterLink, JodPipe, DiscountPercentPipe],
   templateUrl: './offer-card.html',
   styleUrl: './offer-card.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OfferCardComponent {
   readonly offer = input.required<OfferSummary>();
-
-  readonly discountDisplay = computed(() => Math.round(this.offer().discountPercentage));
 
   readonly hoursRemaining = computed<number | null>(() => {
     const endAt = new Date(this.offer().endAt).getTime();

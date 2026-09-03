@@ -5,7 +5,7 @@
     } @else {
       <div class="cover-placeholder"></div>
     }
-    <span class="discount-pill">خصم {{ discountDisplay() }}%</span>
+    <span class="discount-pill">خصم {{ offer().discountPercentage | discountPercent }}%</span>
   </div>
 
   <div class="body">

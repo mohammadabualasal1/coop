@@ -15,6 +15,7 @@ import {
   UiSpinnerComponent
 } from '../../../../shared/components';
 import { CoopDatePipe } from '../../../../shared/pipes/coop-date.pipe';
+import { DiscountPercentPipe } from '../../../../shared/pipes/discount-percent.pipe';
 
 type PageStatus = 'loading' | 'error' | 'loaded';
 
@@ -25,6 +26,7 @@ const SUCCESS_MESSAGE_MS = 4000;
   imports: [
     ReactiveFormsModule,
     CoopDatePipe,
+    DiscountPercentPipe,
     UiCardComponent,
     UiButtonComponent,
     UiBadgeComponent,
@@ -90,10 +92,6 @@ export class OffersComponent implements OnInit {
         this.status.set('error');
       }
     });
-  }
-
-  discountPercentageDisplay(offer: PendingOffer): number {
-    return Math.round(offer.discountPercentage * 10) / 10;
   }
 
   private showSuccessMessage(message: string): void {

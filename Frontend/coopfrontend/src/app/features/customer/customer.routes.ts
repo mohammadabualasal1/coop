@@ -1,5 +1,9 @@
 import { Routes } from '@angular/router';
 
+import { UserRole } from '../../core/enums';
+import { authGuard } from '../../core/guards/auth.guard';
+import { roleGuard } from '../../core/guards/role.guard';
+
 export const CUSTOMER_ROUTES: Routes = [
   {
     path: '',
@@ -18,6 +22,32 @@ export const CUSTOMER_ROUTES: Routes = [
         path: 'offers/:id',
         loadComponent: () =>
           import('./pages/offer-detail/offer-detail').then((m) => m.OfferDetailComponent)
+      },
+      {
+        path: 'merchants/:id',
+        loadComponent: () =>
+          import('./pages/merchant-detail/merchant-detail').then((m) => m.MerchantDetailComponent)
+      },
+      {
+        path: 'cart',
+        canActivate: [authGuard, roleGuard(UserRole.Customer)],
+        loadComponent: () => import('./pages/cart/cart').then((m) => m.CartComponent)
+      },
+      {
+        path: 'addresses',
+        canActivate: [authGuard, roleGuard(UserRole.Customer)],
+        loadComponent: () =>
+          import('./pages/addresses/addresses').then((m) => m.AddressesComponent)
+      },
+      {
+        path: 'checkout',
+        canActivate: [authGuard, roleGuard(UserRole.Customer)],
+        loadComponent: () => import('./pages/checkout/checkout').then((m) => m.CheckoutComponent)
+      },
+      {
+        path: 'orders/:id',
+        loadComponent: () =>
+          import('./pages/order-detail/order-detail').then((m) => m.OrderDetailComponent)
       },
       { path: '**', redirectTo: '' }
     ]

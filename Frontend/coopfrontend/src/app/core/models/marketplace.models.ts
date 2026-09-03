@@ -13,6 +13,22 @@ export interface OfferSummary {
   distanceKm?: number; // only from /offers/nearby
 }
 
+export interface OfferBranchAvailability {
+  merchantBranchId: string;
+  branchName: string;
+  city: string;
+  area: string;
+  availableStock: number;
+}
+
+export interface OfferDetail extends OfferSummary {
+  description: string | null;
+  startAt: string;
+  maximumQuantityPerCustomer: number | null;
+  merchantLogoUrl?: string | null;
+  branches: OfferBranchAvailability[];
+}
+
 export interface PagedResponse<T> {
   items: T[];
   totalCount: number;

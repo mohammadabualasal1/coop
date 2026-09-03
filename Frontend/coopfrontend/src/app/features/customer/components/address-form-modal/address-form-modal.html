@@ -1,0 +1,101 @@
+<coop-modal
+  [title]="editingAddress() ? 'تعديل العنوان' : 'إضافة عنوان'"
+  [open]="open()"
+  size="md"
+  (closed)="cancel()"
+>
+  @if (errorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="address-form">
+    <div class="span-2">
+      <coop-field label="التسمية" [error]="labelErrorMessage()" [touched]="form.controls.label.touched">
+        <input formControlName="label" type="text" />
+      </coop-field>
+
+      <div class="label-chips">
+        @for (preset of labelPresets; track preset) {
+          <button type="button" class="chip" (click)="pickLabel(preset)">{{ preset }}</button>
+        }
+      </div>
+    </div>
+
+    <coop-field
+      label="اسم المستلم"
+      [error]="contactNameErrorMessage()"
+      [touched]="form.controls.contactName.touched"
+    >
+      <input formControlName="contactName" type="text" />
+    </coop-field>
+
+    <coop-field
+      label="رقم الهاتف"
+      [error]="contactPhoneErrorMessage()"
+      [touched]="form.controls.contactPhone.touched"
+    >
+      <input formControlName="contactPhone" type="tel" />
+    </coop-field>
+
+    <coop-field label="المدينة" [error]="cityErrorMessage()" [touched]="form.controls.city.touched">
+      <input formControlName="city" type="text" />
+    </coop-field>
+
+    <coop-field label="المنطقة" [error]="areaErrorMessage()" [touched]="form.controls.area.touched">
+      <input formControlName="area" type="text" />
+    </coop-field>
+
+    <div class="span-2">
+      <coop-field label="الشارع" [error]="streetErrorMessage()" [touched]="form.controls.street.touched">
+        <input formControlName="street" type="text" />
+      </coop-field>
+    </div>
+
+    <coop-field label="المبنى">
+      <input formControlName="building" type="text" />
+    </coop-field>
+
+    <coop-field label="الطابق">
+      <input formControlName="floor" type="text" />
+    </coop-field>
+
+    <div class="span-2">
+      <coop-field label="توجيهات إضافية">
+        <textarea formControlName="additionalDirections" rows="2"></textarea>
+      </coop-field>
+    </div>
+
+    <coop-field
+      label="خط العرض"
+      [error]="latitudeErrorMessage()"
+      [touched]="form.controls.latitude.touched"
+    >
+      <input formControlName="latitude" type="number" step="any" />
+    </coop-field>
+
+    <coop-field
+      label="خط الطول"
+      [error]="longitudeErrorMessage()"
+      [touched]="form.controls.longitude.touched"
+    >
+      <input formControlName="longitude" type="number" step="any" />
+    </coop-field>
+
+    <p class="coordinates-note span-2">يمكنك أخذ الإحداثيات من خرائط جوجل</p>
+  </form>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" class="cancel-button" (click)="cancel()">
+      إلغاء
+    </coop-button>
+    <coop-button
+      size="sm"
+      class="save-button"
+      [loading]="saving()"
+      [disabled]="saving()"
+      (click)="submit()"
+    >
+      حفظ
+    </coop-button>
+  </div>
+</coop-modal>

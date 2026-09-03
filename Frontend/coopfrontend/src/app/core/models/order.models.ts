@@ -39,3 +39,13 @@ export interface MarkReadyResponse {
   pickupCode: string;
   expiresAt: string;
 }
+
+export interface PlaceOrderRequest {
+  customerAddressId: string;
+  paymentMethod: PaymentMethod;
+  customerNotes: string | null;
+}
+
+export interface PlaceOrderResponse {
+  id: string;
+}

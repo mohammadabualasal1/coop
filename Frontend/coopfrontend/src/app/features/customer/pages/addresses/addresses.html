@@ -1,0 +1,95 @@
+@switch (status()) {
+  @case ('loading') {
+    <div class="loading-state">
+      <coop-spinner [size]="32" />
+    </div>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="page-title">عناويني</h2>
+        <coop-button (click)="openCreateModal()">إضافة عنوان</coop-button>
+      </div>
+
+      @if (actionErrorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+      }
+
+      @if (addresses().length === 0) {
+        <coop-empty-state title="لا توجد عناوين" message="أضف عنواناً لتتمكن من إتمام الطلب">
+          <button
+            coopEmptyStateAction
+            type="button"
+            class="empty-action"
+            (click)="openCreateModal()"
+          >
+            إضافة عنوان
+          </button>
+        </coop-empty-state>
+      } @else {
+        <div class="addresses-grid">
+          @for (address of addresses(); track address.id) {
+            <coop-card>
+              <div class="address-header">
+                <h3 class="address-label">{{ address.label }}</h3>
+                @if (address.isDefault) {
+                  <coop-badge tone="info">العنوان الافتراضي</coop-badge>
+                }
+              </div>
+
+              <p class="address-detail">{{ address.contactName }} — {{ address.contactPhone }}</p>
+              <p class="address-detail">{{ fullAddressLine(address) }}</p>
+
+              <div class="address-actions">
+                <coop-button variant="secondary" size="sm" (click)="openEditModal(address)">
+                  تعديل
+                </coop-button>
+                @if (!address.isDefault) {
+                  <coop-button
+                    variant="secondary"
+                    size="sm"
+                    [loading]="settingDefaultId() === address.id"
+                    [disabled]="settingDefaultId() === address.id"
+                    (click)="setDefault(address)"
+                  >
+                    تعيين كافتراضي
+                  </coop-button>
+                }
+                <coop-button variant="danger" size="sm" (click)="openDeleteConfirm(address)">
+                  حذف
+                </coop-button>
+              </div>
+            </coop-card>
+          }
+        </div>
+      }
+    </div>
+  }
+}
+
+<app-address-form-modal
+  [open]="formModalOpen()"
+  [editingAddress]="editingAddress()"
+  (closed)="onFormClosed()"
+  (saved)="onFormSaved()"
+/>
+
+<coop-confirm-modal
+  title="حذف العنوان"
+  [message]="addressToDelete() ? 'هل أنت متأكد من حذف عنوان «' + addressToDelete()!.label + '»؟' : ''"
+  confirmLabel="حذف"
+  tone="danger"
+  [open]="confirmDeleteOpen()"
+  [saving]="deleteSaving()"
+  [errorMessage]="deleteErrorMessage()"
+  (cancelled)="closeDeleteConfirm()"
+  (confirmed)="confirmDelete()"
+/>

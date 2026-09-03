@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   MerchantSummary,
+  OfferDetail,
   OfferSummary,
   PagedResponse,
   SearchMerchantsParams,
@@ -50,8 +51,8 @@ export class MarketplaceService {
     return this.http.get<OfferSummary[]>(`${this.baseUrl}/offers/top-discounts`);
   }
 
-  getOffer(id: string): Observable<OfferSummary> {
-    return this.http.get<OfferSummary>(`${this.baseUrl}/offers/${id}`);
+  getOffer(id: string): Observable<OfferDetail> {
+    return this.http.get<OfferDetail>(`${this.baseUrl}/offers/${id}`);
   }
 
   searchMerchants(params: SearchMerchantsParams): Observable<PagedResponse<MerchantSummary>> {

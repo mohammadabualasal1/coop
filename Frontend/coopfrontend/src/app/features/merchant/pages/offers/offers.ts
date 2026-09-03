@@ -22,6 +22,7 @@ import {
   UiSpinnerComponent
 } from '../../../../shared/components';
 import { CoopDatePipe } from '../../../../shared/pipes/coop-date.pipe';
+import { DiscountPercentPipe } from '../../../../shared/pipes/discount-percent.pipe';
 import { JodPipe } from '../../../../shared/pipes/jod.pipe';
 
 type PageStatus = 'loading' | 'error' | 'loaded';
@@ -91,6 +92,7 @@ function offerFormGroupValidator(group: AbstractControl): ValidationErrors | nul
     ReactiveFormsModule,
     JodPipe,
     CoopDatePipe,
+    DiscountPercentPipe,
     UiCardComponent,
     UiButtonComponent,
     UiBadgeComponent,
@@ -252,10 +254,6 @@ export class OffersComponent implements OnInit {
     }
 
     return Math.round(((original - discounted) / original) * 1000) / 10;
-  }
-
-  discountPercentageDisplay(offer: Offer): number {
-    return Math.round(offer.discountPercentage * 10) / 10;
   }
 
   openStockManagement(offer: Offer, showGuardWarning = false): void {
