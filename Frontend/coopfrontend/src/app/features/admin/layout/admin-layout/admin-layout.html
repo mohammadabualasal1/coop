@@ -1,0 +1,222 @@
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="wordmark-full">COOP</span>
+      <span class="wordmark-short">C</span>
+      <span class="admin-label">لوحة الإدارة</span>
+    </div>
+
+    <nav class="nav">
+      <a routerLink="overview" routerLinkActive="active" class="nav-link">
+        <svg
+          class="nav-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" />
+        </svg>
+        <span class="nav-label">الرئيسية</span>
+      </a>
+
+      <a routerLink="users" routerLinkActive="active" class="nav-link">
+        <svg
+          class="nav-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
+          <circle cx="10" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        <span class="nav-label">المستخدمون</span>
+      </a>
+
+      <a routerLink="merchants" routerLinkActive="active" class="nav-link">
+        <svg
+          class="nav-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M6 7h12l1 13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" />
+          <path d="M9 7a3 3 0 0 1 6 0" />
+        </svg>
+        <span class="nav-label">التجار</span>
+      </a>
+
+      <a routerLink="drivers" routerLinkActive="active" class="nav-link">
+        <svg
+          class="nav-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3 7h11v8H3z" />
+          <path d="M14 10h4l3 3v2h-7" />
+          <circle cx="7" cy="17" r="1.5" />
+          <circle cx="17" cy="17" r="1.5" />
+        </svg>
+        <span class="nav-label">السائقون</span>
+      </a>
+
+      <a routerLink="offers" routerLinkActive="active" class="nav-link">
+        <svg
+          class="nav-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="7" cy="7" r="1.5" />
+          <circle cx="17" cy="17" r="1.5" />
+          <path d="M6 18 18 6" />
+        </svg>
+        <span class="nav-label">مراجعة العروض</span>
+      </a>
+
+      <a routerLink="categories" routerLinkActive="active" class="nav-link">
+        <svg
+          class="nav-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="4" y="4" width="7" height="7" rx="1" />
+          <rect x="13" y="4" width="7" height="7" rx="1" />
+          <rect x="4" y="13" width="7" height="7" rx="1" />
+          <rect x="13" y="13" width="7" height="7" rx="1" />
+        </svg>
+        <span class="nav-label">التصنيفات</span>
+      </a>
+
+      <a routerLink="complaints" routerLinkActive="active" class="nav-link">
+        <svg
+          class="nav-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 8v5" />
+          <path d="M12 16h.01" />
+        </svg>
+        <span class="nav-label">الشكاوى</span>
+      </a>
+
+      <a routerLink="notifications" routerLinkActive="active" class="nav-link">
+        <svg
+          class="nav-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M6 8a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 12 6 8z" />
+          <path d="M9.5 17a2.5 2.5 0 0 0 5 0" />
+        </svg>
+        <span class="nav-label">الإشعارات</span>
+      </a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">{{ pageTitle() }}</h1>
+
+      <div class="topbar-actions">
+        <a routerLink="notifications" class="bell-button" aria-label="الإشعارات">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M6 8a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 12 6 8z" />
+            <path d="M9.5 17a2.5 2.5 0 0 0 5 0" />
+          </svg>
+          @if (unreadCount() > 0) {
+            <span class="badge">{{ unreadCount() }}</span>
+          }
+        </a>
+
+        <div class="user-menu">
+          <button type="button" class="user-button" (click)="toggleMenu($event)">
+            <span>{{ userName() }}</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+
+          @if (menuOpen()) {
+            <div class="dropdown">
+              <button type="button" class="dropdown-item" disabled>تغيير كلمة المرور</button>
+              <button type="button" class="dropdown-item" (click)="logout()">
+                تسجيل الخروج
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="content-inner">
+        <router-outlet />
+      </div>
+    </main>
+  </div>
+</div>

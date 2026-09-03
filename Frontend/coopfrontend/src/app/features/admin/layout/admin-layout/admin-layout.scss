@@ -1,0 +1,232 @@
+.layout {
+  display: flex;
+  min-height: 100dvh;
+}
+
+.sidebar {
+  flex-shrink: 0;
+  width: 260px;
+  position: sticky;
+  inset-inline-start: 0;
+  top: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  background: var(--coop-primary-dark);
+  color: var(--coop-surface);
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--coop-space-xs);
+  padding: var(--coop-space-lg) var(--coop-space-md);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 1.375rem;
+}
+
+.wordmark-short {
+  display: none;
+}
+
+.admin-label {
+  align-self: flex-start;
+  padding-inline: var(--coop-space-sm);
+  padding-block: 2px;
+  border-radius: var(--coop-radius-full);
+  background: rgba(255, 179, 138, 0.22);
+  color: var(--coop-accent);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.6875rem;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--coop-space-sm);
+  padding: var(--coop-space-sm) var(--coop-space-md);
+  border-inline-start: 3px solid transparent;
+  color: color-mix(in srgb, var(--coop-surface) 85%, transparent);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.nav-link:hover {
+  background: color-mix(in srgb, var(--coop-surface) 10%, transparent);
+  color: var(--coop-surface);
+}
+
+.nav-link.active {
+  background: var(--coop-primary);
+  border-inline-start-color: var(--coop-accent);
+  color: var(--coop-surface);
+}
+
+.nav-icon {
+  flex-shrink: 0;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: 64px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: var(--coop-space-lg);
+  background: var(--coop-surface);
+  border-block-end: 1px solid var(--coop-border);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--coop-text);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--coop-space-lg);
+}
+
+.bell-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--coop-text-muted);
+  text-decoration: none;
+}
+
+.badge {
+  position: absolute;
+  inset-block-start: -6px;
+  inset-inline-end: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding-inline: 3px;
+  border-radius: var(--coop-radius-full);
+  background: var(--coop-danger);
+  color: var(--coop-surface);
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-button {
+  display: flex;
+  align-items: center;
+  gap: var(--coop-space-xs);
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--coop-text);
+  cursor: pointer;
+}
+
+.dropdown {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: calc(100% + var(--coop-space-sm));
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  background: var(--coop-surface);
+  border: 1px solid var(--coop-border);
+  border-radius: var(--coop-radius-md);
+  box-shadow: var(--coop-shadow-md);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.dropdown-item {
+  padding: var(--coop-space-sm) var(--coop-space-md);
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.875rem;
+  text-align: start;
+  color: var(--coop-text);
+  cursor: pointer;
+}
+
+.dropdown-item:hover:not(:disabled) {
+  background: var(--coop-bg);
+}
+
+.dropdown-item:disabled {
+  color: var(--coop-text-muted);
+  cursor: not-allowed;
+}
+
+.content {
+  flex: 1;
+  background: var(--coop-bg);
+  padding: var(--coop-space-xl);
+}
+
+.content-inner {
+  max-width: 1280px;
+  margin-inline: auto;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 72px;
+  }
+
+  .wordmark-full {
+    display: none;
+  }
+
+  .wordmark-short {
+    display: block;
+    text-align: center;
+  }
+
+  .brand {
+    align-items: center;
+    padding-inline: 0;
+    text-align: center;
+  }
+
+  .admin-label {
+    display: none;
+  }
+
+  .nav-link {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .nav-label {
+    display: none;
+  }
+}

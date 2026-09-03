@@ -11,13 +11,13 @@ import { TokenStorageService } from '../../../../core/services/token-storage.ser
 const UNREAD_COUNT_POLL_MS = 60000;
 
 @Component({
-  selector: 'app-merchant-layout',
+  selector: 'app-admin-layout',
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
-  templateUrl: './merchant-layout.html',
-  styleUrl: './merchant-layout.scss',
+  templateUrl: './admin-layout.html',
+  styleUrl: './admin-layout.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MerchantLayoutComponent implements OnInit {
+export class AdminLayoutComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly tokenStorage = inject(TokenStorageService);
