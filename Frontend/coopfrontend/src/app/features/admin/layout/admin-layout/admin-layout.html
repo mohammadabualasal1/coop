@@ -44,7 +44,7 @@
         <span class="nav-label">المستخدمون</span>
       </a>
 
-      <a routerLink="merchants" routerLinkActive="active" class="nav-link">
+      <a routerLink="/admin/users" [queryParams]="{ role: 1 }" routerLinkActive="active" class="nav-link">
         <svg
           class="nav-icon"
           width="20"
@@ -62,7 +62,7 @@
         <span class="nav-label">التجار</span>
       </a>
 
-      <a routerLink="drivers" routerLinkActive="active" class="nav-link">
+      <a routerLink="/admin/users" [queryParams]="{ role: 2 }" routerLinkActive="active" class="nav-link">
         <svg
           class="nav-icon"
           width="20"

@@ -1,6 +1,7 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { UserRole, UserRoleLabels, UserRoleTones, UserStatus, UserStatusLabels, UserStatusTones } from '../../../../core/enums';
@@ -50,6 +51,15 @@ function optionalUrlValidator(control: AbstractControl): ValidationErrors | null
   return !value || isValidUrl(value) ? null : { url: true };
 }
 
+function parseEnumParam<T extends number>(raw: string | null, enumObj: Record<string, unknown>): T | null {
+  if (raw === null) {
+    return null;
+  }
+
+  const value = Number(raw);
+  return !Number.isNaN(value) && Object.values(enumObj).includes(value) ? (value as T) : null;
+}
+
 @Component({
   selector: 'app-admin-users',
   imports: [
@@ -73,6 +83,8 @@ function optionalUrlValidator(control: AbstractControl): ValidationErrors | null
 export class UsersComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly adminService = inject(AdminService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly UserRole = UserRole;
   readonly UserStatus = UserStatus;
@@ -158,7 +170,37 @@ export class UsersComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.seedFiltersFromQueryParams();
     this.load();
+  }
+
+  private seedFiltersFromQueryParams(): void {
+    const params = this.route.snapshot.queryParamMap;
+    const role = parseEnumParam<UserRole>(params.get('role'), UserRole);
+    const status = parseEnumParam<UserStatus>(params.get('status'), UserStatus);
+
+    if (role !== null) {
+      this.roleFilter.set(role);
+    }
+
+    if (status !== null) {
+      this.statusFilter.set(status);
+    }
+  }
+
+  private syncFiltersToUrl(): void {
+    const role = this.roleFilter();
+    const status = this.statusFilter();
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        role: role === 'all' ? null : role,
+        status: status === 'all' ? null : status
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
   }
 
   load(): void {
@@ -209,6 +251,7 @@ export class UsersComponent implements OnInit {
     const value = (event.target as HTMLSelectElement).value;
     this.roleFilter.set(value === '' ? 'all' : (Number(value) as UserRole));
     this.pageNumber.set(1);
+    this.syncFiltersToUrl();
     this.load();
   }
 
@@ -216,6 +259,7 @@ export class UsersComponent implements OnInit {
     const value = (event.target as HTMLSelectElement).value;
     this.statusFilter.set(value === '' ? 'all' : (Number(value) as UserStatus));
     this.pageNumber.set(1);
+    this.syncFiltersToUrl();
     this.load();
   }
 
@@ -681,6 +725,7 @@ export class UsersComponent implements OnInit {
 
   private afterCreateSuccess(email: string): void {
     this.resetFiltersAfterCreate();
+    this.syncFiltersToUrl();
     this.successMessage.set(`تم إنشاء الحساب: ${email}`);
     this.load();
   }

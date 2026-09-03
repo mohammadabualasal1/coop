@@ -1,0 +1,112 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="queue-grid">
+        <coop-stat-tile
+          label="عروض بانتظار المراجعة"
+          [value]="pendingOffersCount()"
+          [tone]="pendingOffersCount() > 0 ? 'accent' : 'plain'"
+          [hint]="pendingOffersCount() === 0 ? 'لا شيء بانتظارك' : null"
+          link="/admin/offers"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 5h6a2 2 0 0 1 2 2v12a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V7a2 2 0 0 1 2-2z" />
+            <path d="M9 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1H9z" />
+            <path d="m9 13 2 2 4-4" />
+          </svg>
+        </coop-stat-tile>
+
+        <coop-stat-tile
+          label="شكاوى مفتوحة"
+          [value]="openComplaintsCount()"
+          [tone]="openComplaintsCount() > 0 ? 'accent' : 'plain'"
+          [hint]="openComplaintsCount() === 0 ? 'لا شيء بانتظارك' : null"
+          link="/admin/complaints"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v5" />
+            <path d="M12 16h.01" />
+          </svg>
+        </coop-stat-tile>
+      </div>
+
+      <div class="platform-grid">
+        <coop-stat-tile label="إجمالي المستخدمين" [value]="totalUsers()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="8" r="3" />
+            <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+            <circle cx="17" cy="9" r="2.5" />
+            <path d="M15.5 14.2c2.5.4 4.5 2.5 4.5 5.8" />
+          </svg>
+        </coop-stat-tile>
+
+        <coop-stat-tile label="التجار" [value]="totalMerchants()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 8l1-4h14l1 4" />
+            <path d="M4 8v11a1 1 0 0 0 1 1h3v-6h8v6h3a1 1 0 0 0 1-1V8" />
+            <path d="M4 8h16" />
+          </svg>
+        </coop-stat-tile>
+
+        <coop-stat-tile label="السائقون" [value]="totalDrivers()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 16V9a1 1 0 0 1 1-1h9l4 4h1a1 1 0 0 1 1 1v3" />
+            <circle cx="7.5" cy="16.5" r="1.75" />
+            <circle cx="16.5" cy="16.5" r="1.75" />
+          </svg>
+        </coop-stat-tile>
+
+        <coop-stat-tile label="الزبائن" [value]="totalCustomers()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="3.5" />
+            <path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7" />
+          </svg>
+        </coop-stat-tile>
+      </div>
+
+      <coop-card title="أقدم العروض بانتظار المراجعة">
+        @if (oldestPendingOffers().length === 0) {
+          <p class="muted-line">لا توجد عروض بانتظار المراجعة</p>
+        } @else {
+          <div class="offers-table-wrap">
+            <table class="offers-table">
+              <thead>
+                <tr>
+                  <th>العرض</th>
+                  <th>التاجر</th>
+                  <th>تاريخ الإرسال</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (offer of oldestPendingOffers(); track offer.id) {
+                  <tr>
+                    <td>{{ offer.title }}</td>
+                    <td>{{ offer.merchantName }}</td>
+                    <td>{{ offer.submittedAt | coopDate: 'datetime' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        <a class="view-all-link" routerLink="/admin/offers">مراجعة العروض</a>
+      </coop-card>
+    </div>
+  }
+}

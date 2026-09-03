@@ -1,0 +1,111 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="greeting">
+        <h2 class="greeting-title">أهلاً، {{ merchant()?.name }}</h2>
+        <p class="greeting-subtitle">إليك ملخص متجرك اليوم</p>
+      </div>
+
+      <div class="stats-grid">
+        <coop-stat-tile
+          label="الطلبات الجديدة"
+          [value]="newOrdersCount()"
+          [tone]="newOrdersCount() > 0 ? 'accent' : 'plain'"
+          link="/merchant/orders"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" />
+            <path d="M9 8h6" />
+            <path d="M9 12h6" />
+            <path d="M9 16h3" />
+          </svg>
+        </coop-stat-tile>
+
+        <coop-stat-tile label="قيد التحضير" [value]="preparingCount()" link="/merchant/orders">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3.5 2" />
+          </svg>
+        </coop-stat-tile>
+
+        <coop-stat-tile label="العروض النشطة" [value]="activeOffersCount()" link="/merchant/offers">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.4 13.4 11.6 4.6a2 2 0 0 0-1.4-.6H6a1 1 0 0 0-1 1v4.2a2 2 0 0 0 .6 1.4l8.8 8.8a2 2 0 0 0 2.8 0l4.2-4.2a2 2 0 0 0 0-2.8z" />
+            <circle cx="8" cy="8" r="1" fill="currentColor" stroke="none" />
+            <path d="M11 17l6-6" />
+            <circle cx="11.3" cy="13.7" r="0.6" fill="currentColor" stroke="none" />
+            <circle cx="15.7" cy="9.3" r="0.6" fill="currentColor" stroke="none" />
+          </svg>
+        </coop-stat-tile>
+
+        <coop-stat-tile label="المنتجات" [value]="productsCount()" link="/merchant/products">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7l9-4 9 4-9 4-9-4z" />
+            <path d="M3 7v10l9 4 9-4V7" />
+            <path d="M12 11v10" />
+          </svg>
+        </coop-stat-tile>
+      </div>
+
+      @if (attentionItems().length > 0) {
+        <coop-card title="يحتاج انتباهك">
+          <div class="attention-list">
+            @for (item of attentionItems(); track item.text) {
+              <a class="attention-row" [routerLink]="item.link">
+                <span>{{ item.text }}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </a>
+            }
+          </div>
+        </coop-card>
+      }
+
+      <coop-card title="أحدث الطلبات">
+        @if (latestOrders().length === 0) {
+          <p class="muted-line">لا توجد طلبات بعد</p>
+        } @else {
+          <div class="orders-table-wrap">
+            <table class="orders-table">
+              <thead>
+                <tr>
+                  <th>رقم الطلب</th>
+                  <th>الحالة</th>
+                  <th>الإجمالي</th>
+                  <th>التاريخ</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (order of latestOrders(); track order.id) {
+                  <tr>
+                    <td>{{ order.orderNumber }}</td>
+                    <td><coop-badge [tone]="statusTone(order.status)">{{ statusLabel(order.status) }}</coop-badge></td>
+                    <td>{{ order.totalAmount | jod }}</td>
+                    <td>{{ order.createdAt | coopDate: 'datetime' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        <a class="view-all-link" routerLink="/merchant/orders">عرض كل الطلبات</a>
+      </coop-card>
+    </div>
+  }
+}

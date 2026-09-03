@@ -25,7 +25,7 @@ export class AdminLayoutComponent implements OnInit {
   private readonly pageTitleService = inject(PageTitleService);
 
   readonly pageTitle = this.pageTitleService.title;
-  readonly unreadCount = signal(0);
+  readonly unreadCount = this.notifications.unreadCount;
   readonly menuOpen = signal(false);
   readonly userName = computed(() => this.auth.user()?.fullName ?? '');
 
@@ -33,12 +33,10 @@ export class AdminLayoutComponent implements OnInit {
     interval(UNREAD_COUNT_POLL_MS)
       .pipe(
         startWith(0),
-        switchMap(() =>
-          this.notifications.getUnreadCount().pipe(catchError(() => of({ unreadCount: 0 })))
-        ),
+        switchMap(() => this.notifications.getUnreadCount().pipe(catchError(() => of(null)))),
         takeUntilDestroyed()
       )
-      .subscribe((res) => this.unreadCount.set(res.unreadCount));
+      .subscribe();
   }
 
   ngOnInit(): void {

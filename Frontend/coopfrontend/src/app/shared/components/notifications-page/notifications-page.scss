@@ -1,0 +1,153 @@
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--coop-space-2xl) 0;
+  color: var(--coop-primary);
+}
+
+.page-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--coop-space-lg);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--coop-space-md);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--coop-text);
+}
+
+.filter-chips {
+  display: flex;
+  gap: var(--coop-space-sm);
+}
+
+.chip {
+  min-height: 36px;
+  padding-inline: var(--coop-space-md);
+  border: 1px solid var(--coop-border);
+  border-radius: var(--coop-radius-full);
+  background: var(--coop-surface);
+  color: var(--coop-text-muted);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: var(--coop-bg);
+}
+
+.chip.active {
+  background: var(--coop-primary);
+  border-color: var(--coop-primary);
+  color: var(--coop-surface);
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--coop-space-md);
+  padding: var(--coop-space-md);
+  border-radius: var(--coop-radius-md);
+}
+
+.notification-row:not(:last-child) {
+  border-block-end: 1px solid var(--coop-border);
+}
+
+.notification-row.unread {
+  background: color-mix(in srgb, var(--coop-primary) 6%, transparent);
+}
+
+.notification-row.clickable {
+  cursor: pointer;
+}
+
+.notification-row:hover .delete-btn {
+  opacity: 1;
+}
+
+.unread-dot {
+  flex-shrink: 0;
+  margin-block-start: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--coop-radius-full);
+  background: var(--coop-primary);
+}
+
+.notification-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--coop-text);
+  font-size: 0.9375rem;
+}
+
+.notification-message {
+  margin: var(--coop-space-xs) 0 0;
+  color: var(--coop-text-muted);
+  font-size: 0.8125rem;
+}
+
+.notification-meta {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--coop-space-sm);
+}
+
+.notification-date {
+  font-size: 0.75rem;
+  color: var(--coop-text-muted);
+  white-space: nowrap;
+}
+
+.delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--coop-radius-full);
+  background: none;
+  color: var(--coop-text-muted);
+  font-size: 1.125rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.delete-btn:hover {
+  background: color-mix(in srgb, var(--coop-danger) 12%, transparent);
+  color: var(--coop-danger);
+}
+
+@media (hover: none) {
+  .delete-btn {
+    opacity: 1;
+  }
+}
