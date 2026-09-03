@@ -31,6 +31,7 @@ import {
   UiBadgeComponent,
   UiButtonComponent,
   UiCardComponent,
+  UiCodeModalComponent,
   UiConfirmModalComponent,
   UiEmptyStateComponent,
   UiFieldComponent,
@@ -45,7 +46,6 @@ type ModalStatus = 'loading' | 'error' | 'loaded';
 type OrderAction = 'details' | 'accept' | 'reject' | 'ready' | 'pickup-code';
 
 const POLL_MS = 30000;
-const COPY_LABEL_RESET_MS = 2000;
 
 function orderActionsForStatus(status: OrderStatus): OrderAction[] {
   switch (status) {
@@ -75,7 +75,8 @@ function orderActionsForStatus(status: OrderStatus): OrderAction[] {
     UiSpinnerComponent,
     UiEmptyStateComponent,
     UiModalComponent,
-    UiConfirmModalComponent
+    UiConfirmModalComponent,
+    UiCodeModalComponent
   ],
   templateUrl: './orders.html',
   styleUrl: './orders.scss',
@@ -140,8 +141,6 @@ export class OrdersComponent {
   readonly pickupCode = signal<string | null>(null);
   readonly pickupCodeExpiresAt = signal<string | null>(null);
   readonly pickupCodeIsReissue = signal(false);
-  readonly copied = signal(false);
-  private copiedTimeout: ReturnType<typeof setTimeout> | null = null;
 
   private readonly modalOpen = computed(
     () =>
@@ -376,7 +375,6 @@ export class OrdersComponent {
     this.pickupCode.set(code);
     this.pickupCodeExpiresAt.set(expiresAt);
     this.pickupCodeIsReissue.set(isReissue);
-    this.copied.set(false);
     this.pickupCodeModalOpen.set(true);
   }
 
@@ -386,26 +384,5 @@ export class OrdersComponent {
     this.pickupCodeExpiresAt.set(null);
     this.pickupCodeIsReissue.set(false);
     this.load();
-  }
-
-  copyCode(): void {
-    const code = this.pickupCode();
-
-    if (!code) {
-      return;
-    }
-
-    navigator.clipboard
-      .writeText(code)
-      .then(() => {
-        this.copied.set(true);
-
-        if (this.copiedTimeout) {
-          clearTimeout(this.copiedTimeout);
-        }
-
-        this.copiedTimeout = setTimeout(() => this.copied.set(false), COPY_LABEL_RESET_MS);
-      })
-      .catch(() => {});
   }
 }

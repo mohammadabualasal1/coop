@@ -245,28 +245,12 @@
   </form>
 </coop-confirm-modal>
 
-<coop-modal
+<coop-code-modal
   title="رمز الاستلام"
   [open]="pickupCodeModalOpen()"
-  size="sm"
+  [code]="pickupCode()"
+  [expiresAt]="pickupCodeExpiresAt()"
+  note="اقرأ هذا الرمز للسائق عند استلامه الطلب"
+  [warning]="pickupCodeIsReissue() ? 'إعادة إصدار الرمز تُلغي الرمز السابق.' : null"
   (closed)="closePickupCodeModal()"
->
-  @if (pickupCodeIsReissue()) {
-    <coop-alert tone="warning">إعادة إصدار الرمز تُلغي الرمز السابق.</coop-alert>
-  }
-
-  <p class="pickup-code">{{ pickupCode() }}</p>
-
-  <p class="pickup-instructions">اقرأ هذا الرمز للسائق عند استلامه الطلب</p>
-
-  @if (pickupCodeExpiresAt(); as expiresAt) {
-    <p class="pickup-expiry">ينتهي في {{ expiresAt | coopDate: 'datetime' }}</p>
-  }
-
-  <div modal-footer>
-    <coop-button variant="secondary" size="sm" (click)="closePickupCodeModal()">إغلاق</coop-button>
-    <coop-button size="sm" (click)="copyCode()">
-      {{ copied() ? 'تم النسخ' : 'نسخ' }}
-    </coop-button>
-  </div>
-</coop-modal>
+/>

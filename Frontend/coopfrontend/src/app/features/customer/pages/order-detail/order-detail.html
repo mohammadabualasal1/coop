@@ -1,0 +1,229 @@
+@switch (status()) {
+  @case ('loading') {
+    <div class="loading-state">
+      <coop-spinner [size]="32" />
+    </div>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="retry()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    @if (order(); as order) {
+      <div class="page-content">
+        <div class="order-header">
+          <span class="order-number">{{ order.orderNumber }}</span>
+          <coop-badge [tone]="statusTone(order.status)">{{ statusLabel(order.status) }}</coop-badge>
+        </div>
+
+        @if (actionErrorMessage(); as message) {
+          <coop-alert tone="danger">{{ message }}</coop-alert>
+        }
+
+        <div class="detail-grid">
+          <div class="main-col">
+            <coop-card title="حالة الطلب">
+              <div class="timeline">
+                @for (entry of historyEntries(); track $index; let last = $last) {
+                  <div class="timeline-row">
+                    <span class="timeline-dot" [class.current]="last"></span>
+                    <div class="timeline-content">
+                      <span class="timeline-label" [class.current]="last">{{ statusLabel(entry.status) }}</span>
+                      <span class="timeline-date">{{ entry.changedAt | coopDate: 'datetime' }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              @if (deliveryStatus() !== null) {
+                <p class="delivery-status-line">
+                  حالة التوصيل: {{ deliveryStatusLabel(deliveryStatus()!) }}
+                </p>
+              }
+            </coop-card>
+
+            @if (hasDriver()) {
+              <coop-card title="السائق">
+                <p class="driver-name">{{ driverName() }}</p>
+                @if (driverPhone()) {
+                  <a class="driver-phone" [href]="'tel:' + driverPhone()">{{ driverPhone() }}</a>
+                }
+                <p class="driver-vehicle">{{ vehicleType() }} — {{ vehiclePlateNumber() }}</p>
+              </coop-card>
+
+              <coop-card title="الموقع">
+                @if (driverLatitude() !== null && driverLongitude() !== null) {
+                  <p class="location-coords">{{ driverLatitude() }}, {{ driverLongitude() }}</p>
+                } @else {
+                  <p class="location-coords muted">لا يتوفر موقع السائق بعد</p>
+                }
+                <p class="map-note">الخريطة قيد الإضافة</p>
+              </coop-card>
+            }
+
+            <coop-card title="المنتجات">
+              <div class="items-table-wrap">
+                <table class="items-table">
+                  <thead>
+                    <tr>
+                      <th>المنتج</th>
+                      <th>الكمية</th>
+                      <th>سعر الوحدة</th>
+                      <th>الإجمالي</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of order.items; track item.id) {
+                      <tr>
+                        <td>{{ item.productName }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.unitPrice | jod }}</td>
+                        <td>{{ item.lineTotal | jod }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="totals-block">
+                <div class="totals-row">
+                  <span>المجموع الفرعي</span>
+                  <span>{{ order.subtotal | jod }}</span>
+                </div>
+                <div class="totals-row discount-row">
+                  <span>إجمالي الخصم</span>
+                  <span>−{{ order.totalDiscount | jod }}</span>
+                </div>
+                <div class="totals-row">
+                  <span>رسوم التوصيل</span>
+                  <span>{{ order.deliveryFee | jod }}</span>
+                </div>
+                <div class="totals-row grand-total-row">
+                  <span>الإجمالي</span>
+                  <span>{{ order.totalAmount | jod }}</span>
+                </div>
+              </div>
+            </coop-card>
+          </div>
+
+          <div class="side-col">
+            <coop-card title="ملخص الطلب">
+              <p class="order-meta">المتجر: {{ order.merchantName }}</p>
+              <p class="order-meta">الفرع: {{ order.branchName }}</p>
+              <p class="order-meta">{{ order.createdAt | coopDate: 'datetime' }}</p>
+
+              @if (order.customerNotes) {
+                <div class="customer-notes">
+                  <strong>ملاحظاتك:</strong>
+                  {{ order.customerNotes }}
+                </div>
+              }
+
+              <div class="order-actions">
+                @if (showCancelAction()) {
+                  <coop-button variant="danger" (click)="openCancelConfirm()">إلغاء الطلب</coop-button>
+                }
+                @if (showDeliveryCodeAction()) {
+                  <coop-button
+                    [loading]="deliveryCodeLoading()"
+                    [disabled]="deliveryCodeLoading()"
+                    (click)="showDeliveryCode()"
+                  >
+                    إظهار رمز التسليم
+                  </coop-button>
+                }
+                @if (showConfirmDeliveryAction()) {
+                  <coop-button
+                    [loading]="confirmingDelivery()"
+                    [disabled]="confirmingDelivery()"
+                    (click)="confirmReceipt()"
+                  >
+                    تأكيد الاستلام
+                  </coop-button>
+                }
+                @if (showRateAction()) {
+                  <coop-button variant="secondary" (click)="openReviewModal()">تقييم الطلب</coop-button>
+                } @else if (reviewSubmitted()) {
+                  <p class="review-submitted-note">تم إرسال تقييمك</p>
+                }
+              </div>
+            </coop-card>
+          </div>
+        </div>
+      </div>
+    }
+  }
+}
+
+<coop-confirm-modal
+  title="تأكيد إلغاء الطلب"
+  message="هل أنت متأكد من إلغاء هذا الطلب؟"
+  confirmLabel="إلغاء الطلب"
+  tone="danger"
+  [open]="confirmCancelOpen()"
+  [saving]="cancelSaving()"
+  [errorMessage]="cancelErrorMessage()"
+  (cancelled)="closeCancelConfirm()"
+  (confirmed)="confirmCancel()"
+>
+  <coop-field label="سبب الإلغاء (اختياري)">
+    <textarea rows="3" (input)="onCancelReasonInput($event)"></textarea>
+  </coop-field>
+</coop-confirm-modal>
+
+<coop-code-modal
+  title="رمز التسليم"
+  [open]="deliveryCodeModalOpen()"
+  [code]="deliveryCode()"
+  [expiresAt]="deliveryCodeExpiresAt()"
+  note="اقرأ هذا الرمز للسائق عند الاستلام"
+  (closed)="closeDeliveryCodeModal()"
+/>
+
+<coop-modal title="تقييم الطلب" [open]="reviewModalOpen()" size="sm" (closed)="closeReviewModal()">
+  @if (reviewErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <div class="review-field">
+    <span class="review-label">تقييم المتجر</span>
+    <coop-rating-stars
+      [value]="reviewMerchantRating()"
+      [size]="28"
+      [readonly]="false"
+      (starClicked)="setMerchantRating($event)"
+    />
+  </div>
+
+  @if (hasDriver()) {
+    <div class="review-field">
+      <span class="review-label">تقييم السائق (اختياري)</span>
+      <coop-rating-stars
+        [value]="reviewDriverRating()"
+        [size]="28"
+        [readonly]="false"
+        (starClicked)="setDriverRating($event)"
+      />
+    </div>
+  }
+
+  <coop-field label="تعليق (اختياري)">
+    <textarea rows="3" (input)="onReviewCommentInput($event)"></textarea>
+  </coop-field>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" (click)="closeReviewModal()">إلغاء</coop-button>
+    <coop-button
+      size="sm"
+      [loading]="reviewSaving()"
+      [disabled]="reviewSubmitDisabled()"
+      (click)="submitReview()"
+    >
+      إرسال التقييم
+    </coop-button>
+  </div>
+</coop-modal>

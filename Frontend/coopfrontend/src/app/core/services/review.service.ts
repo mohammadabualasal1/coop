@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { PagedReviews } from '../models/review.models';
+import { CreateReviewRequest, PagedReviews, Review } from '../models/review.models';
 
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
@@ -14,5 +14,9 @@ export class ReviewService {
     const params = new HttpParams().set('pageNumber', pageNumber).set('pageSize', pageSize);
 
     return this.http.get<PagedReviews>(`${this.baseUrl}/merchant/${merchantId}`, { params });
+  }
+
+  create(body: CreateReviewRequest): Observable<Review> {
+    return this.http.post<Review>(this.baseUrl, body);
   }
 }

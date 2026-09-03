@@ -13,3 +13,10 @@ export interface PagedReviews {
   pageNumber: number;
   pageSize: number;
 }
+
+export interface CreateReviewRequest {
+  orderId: string;
+  merchantRating: number;
+  driverRating?: number | null;
+  comment?: string | null;
+}

@@ -45,7 +45,13 @@ export const CUSTOMER_ROUTES: Routes = [
         loadComponent: () => import('./pages/checkout/checkout').then((m) => m.CheckoutComponent)
       },
       {
+        path: 'orders',
+        canActivate: [authGuard, roleGuard(UserRole.Customer)],
+        loadComponent: () => import('./pages/orders/orders').then((m) => m.OrdersComponent)
+      },
+      {
         path: 'orders/:id',
+        canActivate: [authGuard, roleGuard(UserRole.Customer)],
         loadComponent: () =>
           import('./pages/order-detail/order-detail').then((m) => m.OrderDetailComponent)
       },

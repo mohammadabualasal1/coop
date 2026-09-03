@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 
 type StarState = 'full' | 'half' | 'empty';
 
@@ -9,9 +9,15 @@ let nextId = 0;
 @Component({
   selector: 'coop-rating-stars',
   template: `
-    <span class="stars" [style.height.px]="size()">
+    <span class="stars" [class.interactive]="!readonly()" [style.height.px]="size()">
       @for (star of starStates(); track $index) {
-        <svg [attr.width]="size()" [attr.height]="size()" viewBox="0 0 24 24" class="star">
+        <svg
+          [attr.width]="size()"
+          [attr.height]="size()"
+          viewBox="0 0 24 24"
+          class="star"
+          (click)="onStarClick($index)"
+        >
           @if (star === 'full') {
             <path [attr.d]="starPath" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round" />
           } @else if (star === 'half') {
@@ -50,15 +56,30 @@ let nextId = 0;
     .star {
       flex-shrink: 0;
     }
+
+    .interactive .star {
+      cursor: pointer;
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UiRatingStarsComponent {
   readonly value = input.required<number>();
   readonly size = input(16);
+  readonly readonly = input(true);
+
+  readonly starClicked = output<number>();
 
   readonly starPath = STAR_PATH;
   readonly uid = `coop-rating-stars-${nextId++}`;
+
+  onStarClick(index: number): void {
+    if (this.readonly()) {
+      return;
+    }
+
+    this.starClicked.emit(index + 1);
+  }
 
   readonly starStates = computed<StarState[]>(() => {
     const rounded = Math.round(Math.min(5, Math.max(0, this.value())) * 2) / 2;

@@ -179,26 +179,3 @@
   color: var(--coop-text);
 }
 
-.pickup-code {
-  margin: var(--coop-space-md) 0 0;
-  font-size: 2.5rem;
-  font-weight: 700;
-  letter-spacing: 0.5em;
-  text-align: center;
-  color: var(--coop-primary);
-  user-select: all;
-}
-
-.pickup-instructions {
-  margin: var(--coop-space-md) 0 var(--coop-space-xs);
-  text-align: center;
-  font-size: 0.875rem;
-  color: var(--coop-text);
-}
-
-.pickup-expiry {
-  margin: 0 0 var(--coop-space-md);
-  text-align: center;
-  font-size: 0.8125rem;
-  color: var(--coop-text-muted);
-}
