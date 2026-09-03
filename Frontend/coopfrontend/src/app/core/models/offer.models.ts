@@ -42,3 +42,13 @@ export interface OfferRequest {
   endAt: string;
   maximumQuantityPerCustomer: number | null;
 }
+
+export interface AddBranchOfferRequest {
+  merchantBranchId: string;
+  totalStock: number;
+}
+
+export interface UpdateBranchOfferRequest {
+  totalStock: number;
+  isAvailable: boolean;
+}

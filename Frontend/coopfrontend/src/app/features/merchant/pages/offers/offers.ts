@@ -3,8 +3,10 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { forkJoin } from 'rxjs';
 
 import { OfferStatus, OfferStatusLabels, OfferStatusTones } from '../../../../core/enums';
-import { Offer, OfferRequest } from '../../../../core/models/offer.models';
+import { MerchantBranch } from '../../../../core/models/branch.models';
+import { BranchOffer, Offer, OfferRequest } from '../../../../core/models/offer.models';
 import { Product } from '../../../../core/models/product.models';
+import { BranchService } from '../../../../core/services/branch.service';
 import { OfferService } from '../../../../core/services/offer.service';
 import { ProductService } from '../../../../core/services/product.service';
 import { extractErrorMessage } from '../../../../core/utils/http-error';
@@ -103,6 +105,7 @@ export class OffersComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly offerService = inject(OfferService);
   private readonly productService = inject(ProductService);
+  private readonly branchService = inject(BranchService);
 
   readonly OfferStatus = OfferStatus;
 
@@ -143,6 +146,48 @@ export class OffersComponent implements OnInit {
   readonly offerToCancel = signal<Offer | null>(null);
   readonly cancelSaving = signal(false);
   readonly cancelErrorMessage = signal<string | null>(null);
+
+  readonly stockModalOpen = signal(false);
+  readonly stockModalOfferId = signal<string | null>(null);
+  readonly stockModalOffer = signal<Offer | null>(null);
+  readonly stockModalStatus = signal<PageStatus>('loading');
+  readonly stockModalErrorMessage = signal<string | null>(null);
+  readonly stockBranches = signal<BranchOffer[]>([]);
+  readonly merchantBranches = signal<MerchantBranch[]>([]);
+  readonly stockGuardWarningVisible = signal(false);
+
+  readonly stockModalTitle = computed(() => {
+    const offer = this.stockModalOffer();
+    return offer ? `الفروع والمخزون — ${offer.title}` : 'الفروع والمخزون';
+  });
+
+  readonly showStockGuardWarning = computed(
+    () => this.stockGuardWarningVisible() && this.stockBranches().length === 0
+  );
+
+  readonly availableBranchesToAdd = computed(() => {
+    const attachedIds = new Set(this.stockBranches().map((branchOffer) => branchOffer.merchantBranchId));
+    return this.merchantBranches().filter((branch) => !attachedIds.has(branch.id));
+  });
+
+  readonly editingBranchOfferId = signal<string | null>(null);
+  readonly editTotalStock = signal(0);
+  readonly editIsAvailable = signal(true);
+  readonly editStockSaving = signal(false);
+  readonly editStockErrorMessage = signal<string | null>(null);
+
+  readonly addBranchSaving = signal(false);
+  readonly addBranchErrorMessage = signal<string | null>(null);
+
+  readonly confirmRemoveBranchOpen = signal(false);
+  readonly branchToRemove = signal<BranchOffer | null>(null);
+  readonly removeBranchSaving = signal(false);
+  readonly removeBranchErrorMessage = signal<string | null>(null);
+
+  readonly addBranchForm = this.fb.nonNullable.group({
+    merchantBranchId: ['', [Validators.required]],
+    totalStock: [1, [Validators.required, Validators.min(1)]]
+  });
 
   readonly form = this.fb.group(
     {
@@ -209,7 +254,216 @@ export class OffersComponent implements OnInit {
     return Math.round(((original - discounted) / original) * 1000) / 10;
   }
 
-  openStockManagement(_offer: Offer): void {}
+  discountPercentageDisplay(offer: Offer): number {
+    return Math.round(offer.discountPercentage * 10) / 10;
+  }
+
+  openStockManagement(offer: Offer, showGuardWarning = false): void {
+    this.stockModalOfferId.set(offer.id);
+    this.stockModalOffer.set(offer);
+    this.stockGuardWarningVisible.set(showGuardWarning);
+    this.editingBranchOfferId.set(null);
+    this.resetAddBranchForm();
+    this.stockModalOpen.set(true);
+    this.loadStockModalData(offer.id);
+  }
+
+  private loadStockModalData(offerId: string): void {
+    this.stockModalStatus.set('loading');
+    this.stockModalErrorMessage.set(null);
+
+    forkJoin({
+      offer: this.offerService.getById(offerId),
+      branches: this.branchService.getAll()
+    }).subscribe({
+      next: ({ offer, branches }) => {
+        // stockModalOfferId is the source of truth for the id used in every
+        // branch API call — it is set synchronously from the card offer and
+        // must never be replaced by this async response.
+        this.stockModalOffer.set(offer);
+        this.stockBranches.set(offer.branches ?? []);
+        this.merchantBranches.set(branches);
+        this.stockModalStatus.set('loaded');
+      },
+      error: (err: unknown) => {
+        this.stockModalErrorMessage.set(extractErrorMessage(err));
+        this.stockModalStatus.set('error');
+      }
+    });
+  }
+
+  closeStockModal(): void {
+    if (this.addBranchSaving() || this.removeBranchSaving() || this.editStockSaving()) {
+      return;
+    }
+
+    this.stockModalOpen.set(false);
+    this.stockModalOfferId.set(null);
+    this.stockModalOffer.set(null);
+    this.stockBranches.set([]);
+    this.merchantBranches.set([]);
+    this.stockGuardWarningVisible.set(false);
+    this.editingBranchOfferId.set(null);
+    this.load();
+  }
+
+  availableStockFor(branchOffer: BranchOffer): number {
+    return branchOffer.totalStock - branchOffer.reservedStock - branchOffer.soldStock;
+  }
+
+  minTotalStockFor(branchOffer: BranchOffer): number {
+    return branchOffer.reservedStock + branchOffer.soldStock;
+  }
+
+  startEditBranch(branchOffer: BranchOffer): void {
+    this.editingBranchOfferId.set(branchOffer.id);
+    this.editTotalStock.set(branchOffer.totalStock);
+    this.editIsAvailable.set(branchOffer.isAvailable);
+    this.editStockErrorMessage.set(null);
+  }
+
+  cancelEditBranch(): void {
+    if (this.editStockSaving()) {
+      return;
+    }
+
+    this.editingBranchOfferId.set(null);
+  }
+
+  onEditTotalStockInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.editTotalStock.set(Number(target.value));
+  }
+
+  onEditIsAvailableChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.editIsAvailable.set(target.checked);
+  }
+
+  saveBranchStock(branchOffer: BranchOffer): void {
+    const offerId = this.stockModalOfferId();
+
+    if (!offerId || this.editStockSaving()) {
+      return;
+    }
+
+    if (this.editTotalStock() < this.minTotalStockFor(branchOffer)) {
+      this.editStockErrorMessage.set('لا يمكن أن يقل المخزون عن الكمية المحجوزة والمباعة');
+      return;
+    }
+
+    this.editStockSaving.set(true);
+    this.editStockErrorMessage.set(null);
+
+    this.offerService
+      .updateBranchStock(offerId, branchOffer.id, {
+        totalStock: this.editTotalStock(),
+        isAvailable: this.editIsAvailable()
+      })
+      .subscribe({
+        next: () => {
+          this.editStockSaving.set(false);
+          this.editingBranchOfferId.set(null);
+          this.loadStockModalData(offerId);
+        },
+        error: (err: unknown) => {
+          this.editStockSaving.set(false);
+          this.editStockErrorMessage.set(extractErrorMessage(err));
+        }
+      });
+  }
+
+  private resetAddBranchForm(): void {
+    this.addBranchForm.reset({ merchantBranchId: '', totalStock: 1 });
+    this.addBranchErrorMessage.set(null);
+  }
+
+  addBranchMerchantBranchIdErrorMessage(): string | null {
+    const control = this.addBranchForm.controls.merchantBranchId;
+    return control.invalid && control.touched ? 'الفرع مطلوب' : null;
+  }
+
+  addBranchTotalStockErrorMessage(): string | null {
+    const control = this.addBranchForm.controls.totalStock;
+
+    if (!control.invalid || !control.touched) {
+      return null;
+    }
+
+    if (control.hasError('required')) {
+      return 'المخزون مطلوب';
+    }
+
+    return 'المخزون يجب أن يكون 1 على الأقل';
+  }
+
+  submitAddBranch(): void {
+    const offerId = this.stockModalOfferId();
+
+    if (!offerId || this.addBranchForm.invalid || this.addBranchSaving()) {
+      this.addBranchForm.markAllAsTouched();
+      return;
+    }
+
+    const raw = this.addBranchForm.getRawValue();
+
+    this.addBranchSaving.set(true);
+    this.addBranchErrorMessage.set(null);
+
+    this.offerService
+      .addBranch(offerId, { merchantBranchId: raw.merchantBranchId, totalStock: raw.totalStock })
+      .subscribe({
+        next: () => {
+          this.addBranchSaving.set(false);
+          this.resetAddBranchForm();
+          this.loadStockModalData(offerId);
+        },
+        error: (err: unknown) => {
+          this.addBranchSaving.set(false);
+          this.addBranchErrorMessage.set(extractErrorMessage(err));
+        }
+      });
+  }
+
+  openRemoveBranchConfirm(branchOffer: BranchOffer): void {
+    this.branchToRemove.set(branchOffer);
+    this.removeBranchErrorMessage.set(null);
+    this.confirmRemoveBranchOpen.set(true);
+  }
+
+  closeRemoveBranchConfirm(): void {
+    if (this.removeBranchSaving()) {
+      return;
+    }
+
+    this.confirmRemoveBranchOpen.set(false);
+    this.branchToRemove.set(null);
+  }
+
+  confirmRemoveBranch(): void {
+    const offerId = this.stockModalOfferId();
+    const branchOffer = this.branchToRemove();
+
+    if (!offerId || !branchOffer || this.removeBranchSaving()) {
+      return;
+    }
+
+    this.removeBranchSaving.set(true);
+    this.removeBranchErrorMessage.set(null);
+
+    this.offerService.removeBranch(offerId, branchOffer.id).subscribe({
+      next: () => {
+        this.removeBranchSaving.set(false);
+        this.confirmRemoveBranchOpen.set(false);
+        this.branchToRemove.set(null);
+        this.loadStockModalData(offerId);
+      },
+      error: (err: unknown) => {
+        this.removeBranchSaving.set(false);
+        this.removeBranchErrorMessage.set(extractErrorMessage(err));
+      }
+    });
+  }
 
   openCreateModal(): void {
     this.editingOffer.set(null);
@@ -401,10 +655,27 @@ export class OffersComponent implements OnInit {
     this.actionErrorMessage.set(null);
     this.submittingId.set(offer.id);
 
-    this.offerService.submit(offer.id).subscribe({
-      next: () => {
+    this.offerService.getById(offer.id).subscribe({
+      next: (detail) => {
         this.submittingId.set(null);
-        this.load();
+
+        if (!detail.branches || detail.branches.length === 0) {
+          this.openStockManagement(offer, true);
+          return;
+        }
+
+        this.submittingId.set(offer.id);
+
+        this.offerService.submit(offer.id).subscribe({
+          next: () => {
+            this.submittingId.set(null);
+            this.load();
+          },
+          error: (err: unknown) => {
+            this.submittingId.set(null);
+            this.actionErrorMessage.set(extractErrorMessage(err));
+          }
+        });
       },
       error: (err: unknown) => {
         this.submittingId.set(null);

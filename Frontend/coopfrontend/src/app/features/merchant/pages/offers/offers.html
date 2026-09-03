@@ -75,7 +75,7 @@
               <div class="price-line">
                 <span class="discounted-price">{{ offer.discountedPrice | jod }}</span>
                 <span class="original-price">{{ offer.originalPrice | jod }}</span>
-                <span class="discount-pill">خصم {{ offer.discountPercentage }}%</span>
+                <span class="discount-pill">خصم {{ discountPercentageDisplay(offer) }}%</span>
               </div>
 
               <p class="offer-validity">من {{ formatDate(offer.startAt) }} إلى {{ formatDate(offer.endAt) }}</p>
@@ -280,6 +280,197 @@
       (click)="confirmCancel()"
     >
       إلغاء
+    </coop-button>
+  </div>
+</coop-modal>
+
+<coop-modal
+  [title]="stockModalTitle()"
+  [open]="stockModalOpen()"
+  size="lg"
+  (closed)="closeStockModal()"
+>
+  @switch (stockModalStatus()) {
+    @case ('loading') {
+      <div class="loading-state">
+        <coop-spinner [size]="28" />
+      </div>
+    }
+
+    @case ('error') {
+      <coop-alert tone="danger">{{ stockModalErrorMessage() }}</coop-alert>
+    }
+
+    @case ('loaded') {
+      @if (showStockGuardWarning()) {
+        <coop-alert tone="warning">أضف فرعاً ومخزوناً قبل إرسال العرض للمراجعة.</coop-alert>
+      }
+
+      @if (stockBranches().length === 0) {
+        <p class="no-branches">
+          لم تتم إضافة أي فرع بعد. أضف فرعاً ومخزوناً قبل إرسال العرض للمراجعة.
+        </p>
+      } @else {
+        <div class="branch-stock-table-wrap">
+          <table class="branch-stock-table">
+            <thead>
+              <tr>
+                <th>الفرع</th>
+                <th>المخزون الكلي</th>
+                <th>المحجوز</th>
+                <th>المُباع</th>
+                <th>المتاح</th>
+                <th>متاح للبيع</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (branchOffer of stockBranches(); track branchOffer.id) {
+                <tr>
+                  <td>{{ branchOffer.branchName }}</td>
+
+                  @if (editingBranchOfferId() === branchOffer.id) {
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        class="inline-input"
+                        [value]="editTotalStock()"
+                        (input)="onEditTotalStockInput($event)"
+                      />
+                      <span class="min-hint">الحد الأدنى: {{ minTotalStockFor(branchOffer) }}</span>
+                    </td>
+                    <td>{{ branchOffer.reservedStock }}</td>
+                    <td>{{ branchOffer.soldStock }}</td>
+                    <td>{{ editTotalStock() - branchOffer.reservedStock - branchOffer.soldStock }}</td>
+                    <td>
+                      <label class="available-checkbox">
+                        <input
+                          type="checkbox"
+                          [checked]="editIsAvailable()"
+                          (change)="onEditIsAvailableChange($event)"
+                        />
+                        متاح للبيع
+                      </label>
+                    </td>
+                    <td class="row-actions">
+                      @if (editStockErrorMessage(); as message) {
+                        <p class="row-error">{{ message }}</p>
+                      }
+                      <coop-button
+                        variant="secondary"
+                        size="sm"
+                        [disabled]="editStockSaving()"
+                        (click)="cancelEditBranch()"
+                      >
+                        إلغاء
+                      </coop-button>
+                      <coop-button
+                        size="sm"
+                        [loading]="editStockSaving()"
+                        [disabled]="editStockSaving()"
+                        (click)="saveBranchStock(branchOffer)"
+                      >
+                        حفظ
+                      </coop-button>
+                    </td>
+                  } @else {
+                    <td>{{ branchOffer.totalStock }}</td>
+                    <td>{{ branchOffer.reservedStock }}</td>
+                    <td>{{ branchOffer.soldStock }}</td>
+                    <td [class.zero-available]="availableStockFor(branchOffer) === 0">
+                      {{ availableStockFor(branchOffer) }}
+                    </td>
+                    <td>
+                      <coop-badge [tone]="branchOffer.isAvailable ? 'success' : 'neutral'">
+                        {{ branchOffer.isAvailable ? 'نعم' : 'لا' }}
+                      </coop-badge>
+                    </td>
+                    <td class="row-actions">
+                      <coop-button variant="secondary" size="sm" (click)="startEditBranch(branchOffer)">
+                        تعديل المخزون
+                      </coop-button>
+                      <coop-button variant="danger" size="sm" (click)="openRemoveBranchConfirm(branchOffer)">
+                        إزالة
+                      </coop-button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (addBranchErrorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+      }
+
+      @if (availableBranchesToAdd().length > 0) {
+        <form [formGroup]="addBranchForm" (ngSubmit)="submitAddBranch()" novalidate class="add-branch-form">
+          <coop-field
+            label="الفرع"
+            [error]="addBranchMerchantBranchIdErrorMessage()"
+            [touched]="addBranchForm.controls.merchantBranchId.touched"
+          >
+            <select formControlName="merchantBranchId">
+              <option value="" disabled>اختر فرعاً</option>
+              @for (branch of availableBranchesToAdd(); track branch.id) {
+                <option [value]="branch.id">{{ branch.name }}</option>
+              }
+            </select>
+          </coop-field>
+
+          <coop-field
+            label="المخزون"
+            [error]="addBranchTotalStockErrorMessage()"
+            [touched]="addBranchForm.controls.totalStock.touched"
+          >
+            <input formControlName="totalStock" type="number" min="1" />
+          </coop-field>
+
+          <coop-button
+            type="submit"
+            size="sm"
+            [loading]="addBranchSaving()"
+            [disabled]="addBranchSaving()"
+          >
+            إضافة
+          </coop-button>
+        </form>
+      } @else {
+        <p class="all-branches-added">كل الفروع مضافة لهذا العرض</p>
+      }
+    }
+  }
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" (click)="closeStockModal()">إغلاق</coop-button>
+  </div>
+</coop-modal>
+
+<coop-modal
+  title="تأكيد الإزالة"
+  [open]="confirmRemoveBranchOpen()"
+  size="sm"
+  (closed)="closeRemoveBranchConfirm()"
+>
+  @if (removeBranchErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <p>لا يمكن إزالة الفرع إذا كان يحتوي على مخزون محجوز.</p>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" (click)="closeRemoveBranchConfirm()">تراجع</coop-button>
+    <coop-button
+      variant="danger"
+      size="sm"
+      [loading]="removeBranchSaving()"
+      [disabled]="removeBranchSaving()"
+      (click)="confirmRemoveBranch()"
+    >
+      إزالة
     </coop-button>
   </div>
 </coop-modal>

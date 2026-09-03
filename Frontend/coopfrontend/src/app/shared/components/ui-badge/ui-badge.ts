@@ -26,27 +26,27 @@ import { BadgeTone } from '../../../core/enums';
     }
 
     .tone-neutral {
-      background: color-mix(in srgb, var(--coop-text-muted) 15%, var(--coop-surface));
+      background: rgba(107, 107, 107, 0.14);
       color: var(--coop-text-muted);
     }
 
     .tone-info {
-      background: color-mix(in srgb, var(--coop-primary) 12%, var(--coop-surface));
+      background: rgba(139, 30, 63, 0.12);
       color: var(--coop-primary-dark);
     }
 
     .tone-success {
-      background: color-mix(in srgb, var(--coop-success) 14%, var(--coop-surface));
+      background: rgba(30, 122, 70, 0.14);
       color: var(--coop-success);
     }
 
     .tone-warning {
-      background: color-mix(in srgb, var(--coop-warning) 14%, var(--coop-surface));
+      background: rgba(183, 121, 31, 0.14);
       color: var(--coop-warning);
     }
 
     .tone-danger {
-      background: color-mix(in srgb, var(--coop-danger) 14%, var(--coop-surface));
+      background: rgba(179, 38, 30, 0.14);
       color: var(--coop-danger);
     }
   `,
