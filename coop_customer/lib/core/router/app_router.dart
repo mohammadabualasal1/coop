@@ -9,6 +9,8 @@ import '../../features/auth/screens/onboarding_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/reset_password_screen.dart';
 import '../../features/auth/screens/splash_screen.dart';
+import '../../features/marketplace/screens/categories_screen.dart';
+import '../../features/marketplace/screens/search_screen.dart';
 import '../../features/shell/main_shell.dart';
 import '../../features/shell/placeholder_tab_screen.dart';
 import 'route_paths.dart';
@@ -82,8 +84,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: RoutePaths.home,
-                builder: (context, state) =>
-                    const PlaceholderTabScreen(title: 'الرئيسية', icon: Icons.home_rounded),
+                builder: (context, state) => PlaceholderTabScreen(
+                  title: 'الرئيسية',
+                  icon: Icons.home_rounded,
+                  // Temporary — home feed is blocked on the marketplace
+                  // offer JSON shape (see task #37). This gets the search
+                  // screen reachable in the meantime.
+                  action: OutlinedButton.icon(
+                    onPressed: () => context.push(RoutePaths.homeSearch),
+                    icon: const Icon(Icons.search_rounded, size: 18),
+                    label: const Text('بحث'),
+                  ),
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'search',
+                    builder: (context, state) => const SearchScreen(),
+                  ),
+                ],
               ),
             ],
           ),
@@ -91,8 +109,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: RoutePaths.categories,
-                builder: (context, state) =>
-                    const PlaceholderTabScreen(title: 'التصنيفات', icon: Icons.grid_view_rounded),
+                builder: (context, state) => const CategoriesScreen(),
               ),
             ],
           ),
