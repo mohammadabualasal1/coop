@@ -1,0 +1,96 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="page-title">الإشعارات</h2>
+        <coop-button variant="secondary" size="sm" [disabled]="unreadCount() === 0" (click)="markAllRead()">
+          تعليم الكل كمقروء
+        </coop-button>
+      </div>
+
+      <div class="filter-chips">
+        <button
+          type="button"
+          class="chip"
+          [class.active]="filter() === 'all'"
+          (click)="setFilter('all')"
+        >
+          الكل
+        </button>
+        <button
+          type="button"
+          class="chip"
+          [class.active]="filter() === 'unread'"
+          (click)="setFilter('unread')"
+        >
+          غير المقروءة
+        </button>
+      </div>
+
+      @if (visibleNotifications().length === 0) {
+        <coop-empty-state title="لا توجد إشعارات" message="ستظهر هنا تنبيهات الطلبات والعروض" />
+      } @else {
+        <coop-card>
+          <div class="notifications-list">
+            @for (notification of visibleNotifications(); track notification.id) {
+              <div
+                class="notification-row"
+                [class.unread]="!notification.isRead"
+                [class.clickable]="isClickable(notification)"
+                (click)="onRowClick(notification)"
+              >
+                @if (!notification.isRead) {
+                  <span class="unread-dot" aria-hidden="true"></span>
+                }
+
+                <div class="notification-body">
+                  <p class="notification-title">{{ notification.title }}</p>
+                  <p class="notification-message">{{ notification.message }}</p>
+                </div>
+
+                <div class="notification-meta">
+                  <span class="notification-date">{{ notification.createdAt | coopDate: 'datetime' }}</span>
+                  <button
+                    type="button"
+                    class="delete-btn"
+                    aria-label="حذف الإشعار"
+                    (click)="openDeleteConfirm($event, notification)"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </coop-card>
+      }
+    </div>
+  }
+}
+
+<coop-confirm-modal
+  title="حذف الإشعار"
+  message="هل أنت متأكد من حذف هذا الإشعار؟"
+  confirmLabel="حذف"
+  tone="danger"
+  [open]="confirmDeleteOpen()"
+  [saving]="deleteSaving()"
+  [errorMessage]="deleteErrorMessage()"
+  (cancelled)="closeDeleteConfirm()"
+  (confirmed)="confirmDelete()"
+/>

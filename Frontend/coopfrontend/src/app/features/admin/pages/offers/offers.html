@@ -1,0 +1,105 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="page-title">مراجعة العروض</h2>
+        <coop-badge tone="warning">{{ pendingCount() }} بانتظار المراجعة</coop-badge>
+      </div>
+
+      @if (successMessage(); as message) {
+        <coop-alert tone="success">{{ message }}</coop-alert>
+      }
+
+      @if (pendingOffers().length === 0) {
+        <coop-empty-state
+          title="لا توجد عروض بانتظار المراجعة"
+          message="كل العروض المرسلة تمت مراجعتها"
+        />
+      } @else {
+        <div class="table-wrap">
+          <table class="pending-offers-table">
+            <thead>
+              <tr>
+                <th>العرض</th>
+                <th>التاجر</th>
+                <th>نسبة الخصم</th>
+                <th>تاريخ الإرسال</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (offer of pendingOffers(); track offer.id) {
+                <tr>
+                  <td>{{ offer.title }}</td>
+                  <td>{{ offer.merchantName }}</td>
+                  <td>
+                    <span class="discount-pill">خصم {{ offer.discountPercentage | discountPercent }}%</span>
+                  </td>
+                  <td>{{ offer.submittedAt | coopDate: 'datetime' }}</td>
+                  <td class="row-actions">
+                    <coop-button size="sm" (click)="openApproveConfirm(offer)">موافقة</coop-button>
+                    <coop-button variant="danger" size="sm" (click)="openRejectConfirm(offer)">
+                      رفض
+                    </coop-button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+}
+
+<coop-confirm-modal
+  title="تأكيد الموافقة"
+  [message]="approveMessage()"
+  note="سيصبح العرض مجدولاً أو نشطاً حسب تاريخ بدايته."
+  confirmLabel="موافقة"
+  tone="primary"
+  [open]="confirmApproveOpen()"
+  [saving]="approveSaving()"
+  [errorMessage]="approveErrorMessage()"
+  (cancelled)="closeApproveConfirm()"
+  (confirmed)="confirmApprove()"
+/>
+
+<coop-confirm-modal
+  title="رفض العرض"
+  [message]="rejectMessage()"
+  confirmLabel="رفض"
+  tone="danger"
+  [open]="confirmRejectOpen()"
+  [saving]="rejectSaving()"
+  [errorMessage]="rejectErrorMessage()"
+  [confirmDisabled]="rejectForm.invalid"
+  (cancelled)="closeRejectConfirm()"
+  (confirmed)="confirmReject()"
+>
+  <form [formGroup]="rejectForm" novalidate>
+    <coop-field
+      label="سبب الرفض"
+      [error]="reasonErrorMessage()"
+      [touched]="rejectForm.controls.reason.touched"
+    >
+      <textarea formControlName="reason" rows="3"></textarea>
+    </coop-field>
+    <p class="hint">سيظهر هذا السبب للتاجر.</p>
+  </form>
+</coop-confirm-modal>

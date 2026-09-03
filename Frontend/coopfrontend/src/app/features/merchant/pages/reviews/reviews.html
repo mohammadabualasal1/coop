@@ -1,0 +1,83 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="page-title">التقييمات</h2>
+      </div>
+
+      <coop-card>
+        <div class="summary">
+          @if (totalCount() === 0) {
+            <p class="no-ratings">لا توجد تقييمات بعد</p>
+          } @else {
+            <div class="summary-main">
+              <span class="average-value">{{ averageRatingDisplay() }}</span>
+              <coop-rating-stars [value]="merchant()?.averageRating ?? 0" [size]="24" />
+            </div>
+            <p class="summary-sub">من {{ totalCount() }} تقييم</p>
+          }
+        </div>
+      </coop-card>
+
+      @if (reviews().length === 0) {
+        <coop-empty-state title="لا توجد تقييمات" message="ستظهر تقييمات الزبائن هنا بعد إتمام الطلبات" />
+      } @else {
+        <div class="reviews-list">
+          @for (review of reviews(); track review.id) {
+            <coop-card>
+              <div class="review-header">
+                <span class="review-customer">{{ review.customerName }}</span>
+                <coop-rating-stars [value]="review.merchantRating" [size]="16" />
+                <span class="review-date">{{ review.createdAt | coopDate }}</span>
+              </div>
+
+              @if (review.comment) {
+                <div class="review-comment">{{ review.comment }}</div>
+              }
+            </coop-card>
+          }
+        </div>
+
+        <div class="pagination">
+          <coop-button
+            variant="secondary"
+            size="sm"
+            [disabled]="pageNumber() <= 1"
+            (click)="goToPreviousPage()"
+          >
+            السابق
+          </coop-button>
+
+          <div class="pagination-info">
+            <span>صفحة {{ pageNumber() }} من {{ totalPages() }}</span>
+            <span>إجمالي {{ totalCount() }} تقييم</span>
+          </div>
+
+          <coop-button
+            variant="secondary"
+            size="sm"
+            [disabled]="pageNumber() >= totalPages()"
+            (click)="goToNextPage()"
+          >
+            التالي
+          </coop-button>
+        </div>
+      }
+    </div>
+  }
+}

@@ -1,0 +1,256 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="page-title">الطلبات</h2>
+      </div>
+
+      @if (actionErrorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+      }
+
+      <div class="status-filter">
+        <button
+          type="button"
+          class="status-chip"
+          [class.active]="selectedStatus() === 'all'"
+          (click)="selectStatus('all')"
+        >
+          الكل
+        </button>
+        @for (statusValue of allStatuses; track statusValue) {
+          <button
+            type="button"
+            class="status-chip"
+            [class.active]="selectedStatus() === statusValue"
+            (click)="selectStatus(statusValue)"
+          >
+            {{ statusLabel(statusValue) }}
+          </button>
+        }
+      </div>
+
+      @if (orders().length === 0) {
+        <coop-empty-state title="لا توجد طلبات" message="ستظهر الطلبات هنا فور وصولها" />
+      } @else {
+        <div class="orders-list">
+          @for (order of orders(); track order.id) {
+            <coop-card>
+              <div class="order-header">
+                <span class="order-number">{{ order.orderNumber }}</span>
+                <coop-badge [tone]="statusTone(order.status)">{{ statusLabel(order.status) }}</coop-badge>
+                <span class="order-date">{{ order.createdAt | coopDate: 'datetime' }}</span>
+              </div>
+
+              <p class="order-meta">الزبون: {{ order.customerName }} — {{ order.customerPhone }}</p>
+              <p class="order-meta">الفرع: {{ order.branchName }}</p>
+
+              <div class="payment-line">
+                <span>{{ paymentMethodLabel(order.paymentMethod) }}</span>
+                <coop-badge [tone]="paymentStatusTone(order.paymentStatus)">
+                  {{ paymentStatusLabel(order.paymentStatus) }}
+                </coop-badge>
+              </div>
+
+              <p class="order-total">{{ order.totalAmount | jod }}</p>
+
+              @if (order.customerNotes) {
+                <div class="customer-notes">
+                  <strong>ملاحظات الزبون:</strong>
+                  {{ order.customerNotes }}
+                </div>
+              }
+
+              <div class="order-actions">
+                @if (orderActions(order).includes('details')) {
+                  <coop-button variant="secondary" size="sm" (click)="openDetailsModal(order)">
+                    التفاصيل
+                  </coop-button>
+                }
+                @if (orderActions(order).includes('accept')) {
+                  <coop-button size="sm" (click)="openAcceptConfirm(order)">قبول</coop-button>
+                }
+                @if (orderActions(order).includes('reject')) {
+                  <coop-button variant="danger" size="sm" (click)="openRejectConfirm(order)">
+                    رفض
+                  </coop-button>
+                }
+                @if (orderActions(order).includes('ready')) {
+                  <coop-button
+                    size="sm"
+                    [loading]="markingReadyId() === order.id"
+                    [disabled]="markingReadyId() === order.id"
+                    (click)="markReady(order)"
+                  >
+                    جاهز للاستلام
+                  </coop-button>
+                }
+                @if (orderActions(order).includes('pickup-code')) {
+                  <coop-button
+                    size="sm"
+                    [loading]="reissuingId() === order.id"
+                    [disabled]="reissuingId() === order.id"
+                    (click)="reissuePickupCode(order)"
+                  >
+                    عرض رمز الاستلام
+                  </coop-button>
+                }
+              </div>
+            </coop-card>
+          }
+        </div>
+      }
+    </div>
+  }
+}
+
+<coop-modal title="تفاصيل الطلب" [open]="detailsModalOpen()" size="lg" (closed)="closeDetailsModal()">
+  @switch (detailsStatus()) {
+    @case ('loading') {
+      <div class="loading-state">
+        <coop-spinner [size]="28" />
+      </div>
+    }
+
+    @case ('error') {
+      <coop-alert tone="danger">{{ detailsErrorMessage() }}</coop-alert>
+    }
+
+    @case ('loaded') {
+      @if (detailsOrder(); as order) {
+        <div class="order-header">
+          <span class="order-number">{{ order.orderNumber }}</span>
+          <coop-badge [tone]="statusTone(order.status)">{{ statusLabel(order.status) }}</coop-badge>
+          <span class="order-date">{{ order.createdAt | coopDate: 'datetime' }}</span>
+        </div>
+
+        <p class="order-meta">الزبون: {{ order.customerName }} — {{ order.customerPhone }}</p>
+        <p class="order-meta">الفرع: {{ order.branchName }}</p>
+
+        <div class="payment-line">
+          <span>{{ paymentMethodLabel(order.paymentMethod) }}</span>
+          <coop-badge [tone]="paymentStatusTone(order.paymentStatus)">
+            {{ paymentStatusLabel(order.paymentStatus) }}
+          </coop-badge>
+        </div>
+
+        @if (order.customerNotes) {
+          <div class="customer-notes">
+            <strong>ملاحظات الزبون:</strong>
+            {{ order.customerNotes }}
+          </div>
+        }
+
+        @if (order.items && order.items.length > 0) {
+          <div class="items-table-wrap">
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>المنتج</th>
+                  <th>الكمية</th>
+                  <th>سعر الوحدة</th>
+                  <th>الإجمالي</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of order.items; track item.id) {
+                  <tr>
+                    <td>{{ item.productName }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unitPrice | jod }}</td>
+                    <td>{{ item.lineTotal | jod }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <div class="totals-block">
+          <div class="totals-row">
+            <span>المجموع الفرعي</span>
+            <span>{{ order.subtotal | jod }}</span>
+          </div>
+          <div class="totals-row discount-row">
+            <span>إجمالي الخصم</span>
+            <span>−{{ order.totalDiscount | jod }}</span>
+          </div>
+          <div class="totals-row">
+            <span>رسوم التوصيل</span>
+            <span>{{ order.deliveryFee | jod }}</span>
+          </div>
+          <div class="totals-row grand-total-row">
+            <span>الإجمالي</span>
+            <span>{{ order.totalAmount | jod }}</span>
+          </div>
+        </div>
+      }
+    }
+  }
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" (click)="closeDetailsModal()">إغلاق</coop-button>
+  </div>
+</coop-modal>
+
+<coop-confirm-modal
+  title="تأكيد القبول"
+  [message]="acceptMessage()"
+  note="سيتم البدء بالبحث عن سائق مباشرة بعد القبول."
+  confirmLabel="قبول"
+  tone="primary"
+  [open]="confirmAcceptOpen()"
+  [saving]="acceptSaving()"
+  [errorMessage]="acceptErrorMessage()"
+  (cancelled)="closeAcceptConfirm()"
+  (confirmed)="confirmAccept()"
+/>
+
+<coop-confirm-modal
+  title="تأكيد الرفض"
+  [message]="rejectMessage()"
+  note="سيتم إرجاع المخزون واسترجاع المبلغ إذا كان الطلب مدفوعاً."
+  confirmLabel="رفض"
+  tone="danger"
+  [open]="confirmRejectOpen()"
+  [saving]="rejectSaving()"
+  [errorMessage]="rejectErrorMessage()"
+  [confirmDisabled]="rejectForm.invalid"
+  (cancelled)="closeRejectConfirm()"
+  (confirmed)="confirmReject()"
+>
+  <form [formGroup]="rejectForm" novalidate>
+    <coop-field
+      label="سبب الرفض"
+      [error]="reasonErrorMessage()"
+      [touched]="rejectForm.controls.reason.touched"
+    >
+      <textarea formControlName="reason" rows="3"></textarea>
+    </coop-field>
+  </form>
+</coop-confirm-modal>
+
+<coop-code-modal
+  title="رمز الاستلام"
+  [open]="pickupCodeModalOpen()"
+  [code]="pickupCode()"
+  [expiresAt]="pickupCodeExpiresAt()"
+  note="اقرأ هذا الرمز للسائق عند استلامه الطلب"
+  [warning]="pickupCodeIsReissue() ? 'إعادة إصدار الرمز تُلغي الرمز السابق.' : null"
+  (closed)="closePickupCodeModal()"
+/>

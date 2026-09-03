@@ -1,0 +1,50 @@
+<section class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-title">خصومات حقيقية من متاجر قريبة منك</h1>
+    <p class="hero-subtitle">اطلب واستلم بسرعة</p>
+  </div>
+</section>
+
+<div class="page-content">
+  <section class="offer-section">
+    <div class="section-header">
+      <h2 class="section-title">ينتهي قريباً</h2>
+      <a class="see-all" routerLink="/shop/search">عرض الكل</a>
+    </div>
+    <div class="offer-row">
+      @for (offer of endingSoon(); track offer.id) {
+        <div class="offer-row-item">
+          <app-offer-card [offer]="offer" />
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="offer-section">
+    <div class="section-header">
+      <h2 class="section-title">أعلى الخصومات</h2>
+      <a class="see-all" routerLink="/shop/search">عرض الكل</a>
+    </div>
+    <div class="offer-row">
+      @for (offer of topDiscounts(); track offer.id) {
+        <div class="offer-row-item">
+          <app-offer-card [offer]="offer" />
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="offer-section">
+    <div class="section-header">
+      <h2 class="section-title">أحدث العروض</h2>
+      <a class="see-all" routerLink="/shop/search">عرض الكل</a>
+    </div>
+    <div class="offer-row">
+      @for (offer of latest(); track offer.id) {
+        <div class="offer-row-item">
+          <app-offer-card [offer]="offer" />
+        </div>
+      }
+    </div>
+  </section>
+</div>

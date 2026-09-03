@@ -1,0 +1,75 @@
+<header class="topbar">
+  <div class="topbar-inner">
+    <a routerLink="/shop" class="wordmark">COOP</a>
+
+    <form class="search-form" (ngSubmit)="submitSearch()" [formGroup]="searchForm">
+      <input
+        formControlName="q"
+        type="search"
+        class="search-input"
+        placeholder="ابحث عن عرض أو متجر"
+      />
+    </form>
+
+    <div class="actions">
+      @if (!isAuthenticated()) {
+        <coop-button variant="ghost" size="sm" routerLink="/login">تسجيل الدخول</coop-button>
+        <coop-button size="sm" routerLink="/register">إنشاء حساب</coop-button>
+      } @else if (isStaff()) {
+        <a [routerLink]="dashboardLink()" class="dashboard-link">لوحة التحكم</a>
+      } @else {
+        <a routerLink="/shop/cart" class="icon-button" aria-label="السلة">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 6h15l-1.5 9h-12z" />
+            <path d="M6 6 4.5 3H2" />
+            <circle cx="9.5" cy="19.5" r="1.5" />
+            <circle cx="17.5" cy="19.5" r="1.5" />
+          </svg>
+          @if (cartCount() > 0) {
+            <span class="badge">{{ cartCount() }}</span>
+          }
+        </a>
+
+        <a routerLink="/shop/notifications" class="icon-button" aria-label="الإشعارات">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 12 6 8z" />
+            <path d="M9.5 17a2.5 2.5 0 0 0 5 0" />
+          </svg>
+          @if (unreadCount() > 0) {
+            <span class="badge">{{ unreadCount() }}</span>
+          }
+        </a>
+
+        <div class="user-menu">
+          <button type="button" class="user-button" (click)="toggleMenu($event)">
+            <span>{{ userName() }}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+
+          @if (menuOpen()) {
+            <div class="dropdown">
+              <a routerLink="/shop/orders" class="dropdown-item">طلباتي</a>
+              <a routerLink="/shop/addresses" class="dropdown-item">عناويني</a>
+              <a routerLink="/shop/favorites" class="dropdown-item">المفضلة</a>
+              <button type="button" class="dropdown-item" (click)="logout()">تسجيل الخروج</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</header>
+
+<main class="content">
+  <router-outlet />
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span class="wordmark">COOP</span>
+    <p class="tagline">المزيد من العروض. مكان واحد.</p>
+    <p class="copyright">© 2026 COOP — جميع الحقوق محفوظة</p>
+  </div>
+</footer>

@@ -2,8 +2,8 @@
 
 Complete reference for the COOP backend. This is the single source of truth for building the frontends: Angular (merchant dashboard + admin panel) and Flutter (customer + driver apps).
 
-**Status:** 8 of 9 phases complete · 145 endpoints · 21 controllers · 3 background services · 1 SignalR hub
-**Last updated:** 30 August 2026
+**Status:** 8 of 9 phases complete · 141 endpoints · 21 controllers · 3 background services · 1 SignalR hub
+**Last updated:** 31 August 2026
 
 ---
 
@@ -94,7 +94,7 @@ The role is a claim inside the access token.
 | `2` | Driver | Flutter |
 | `3` | Admin | Angular |
 
-Admin accounts cannot be created through public registration — the endpoint rejects `role: 3`.
+**Public registration is Customer-only.** `POST /api/auth/register` rejects every role except Customer (`0`) with `'التسجيل العام متاح للزبائن فقط'`. Merchant and Driver accounts can no longer be self-registered — an Admin creates them through the admin panel (§24), with the initial password relayed to the account owner out of band.
 
 ---
 
@@ -235,7 +235,7 @@ Route prefix: `api/auth`
 
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| POST | `/register` | Public | Create an account. Rejects `role: 3`. Enforces unique email and phone. |
+| POST | `/register` | Public | Create a **Customer** account. Rejects any other role with `'التسجيل العام متاح للزبائن فقط'`. Enforces unique email and phone. |
 | POST | `/login` | Public | Sign in. Rejects non-active accounts. |
 | POST | `/refresh` | Public | Exchange a refresh token for a new pair, rotating the old one. |
 | POST | `/logout` | Authenticated | Revoke the supplied refresh token. |
@@ -249,7 +249,7 @@ Route prefix: `api/auth`
 
 ### Request bodies
 
-**`POST /register`** — `fullName`, `email`, `phoneNumber`, `password`, `role`
+**`POST /register`** — `fullName`, `email`, `phoneNumber`, `password`, `role` (must be `0`/Customer — any other value is rejected)
 
 **`POST /login`** — `email`, `password`
 
@@ -293,33 +293,19 @@ Route prefix: `api/auth`
 
 Route prefix: `api/merchants` · Role: **Merchant**
 
+> **The merchant profile is no longer self-created.** An Admin creates the User (role Merchant) and the Merchant profile together in one transaction via `POST /api/admin/users/merchant` (§24), with `VerificationStatus` set to `Approved` immediately. There is no merchant-facing create endpoint and no resubmission flow — `MerchantsController` never had a `submit-verification` endpoint; an earlier version of this reference documented one in error.
+
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/` | Create the merchant profile. One per account — a second attempt returns 409. Initial status is Pending. |
 | GET | `/my` | Current merchant profile. |
 | PUT | `/my` | Update general fields only. |
-| POST | `/my/submit-verification` | Resubmit after rejection. Requires at least one uploaded document. |
-| GET | `/my/verification-status` | Status, rejection reason, verified-at timestamp. |
+| GET | `/my/verification-status` | Status, rejection reason, verified-at timestamp. **Still exists, but every merchant is created Approved, so this will always return Approved.** Keep it only as a defensive check. |
 
 ### Fields
 
-**`POST /`** — `name`, `description` (nullable), `registrationNumber` (nullable), `contactEmail`, `contactPhone`, `logoUrl` (nullable), `coverImageUrl` (nullable)
+**`PUT /my`** — `name`, `description` (nullable), `contactEmail`, `contactPhone`, `logoUrl` (nullable), `coverImageUrl` (nullable)
 
-**`PUT /my`** — same, minus `registrationNumber`
-
-> `registrationNumber` and `verificationStatus` are deliberately not editable through the profile endpoint. Verification status changes only through admin action or resubmission.
-
-### Verification flow
-
-```
-Create profile  →  Pending
-                     ↓ admin reviews
-              Approved  or  Rejected / NeedsInformation
-                                ↓ merchant fixes documents
-                        submit-verification  →  Pending
-```
-
-`submit-verification` returns 400 if the current status is already Pending or Approved, and 400 if no verification document has been uploaded.
+> `registrationNumber` and `verificationStatus` are not editable through the profile endpoint.
 
 ---
 
@@ -330,7 +316,7 @@ Route prefix: `api/merchant-branches` · Role: **Merchant**
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/` | Active branches of the current merchant. |
-| POST | `/` | Add a branch. **Requires `verificationStatus == 1` (Approved)** — otherwise 403. The first branch is automatically the main branch. |
+| POST | `/` | Add a branch. **Requires `verificationStatus == 1` (Approved)** — otherwise 403. The first branch is automatically the main branch. Every merchant is now created Approved (§5), so this always passes in practice; the check remains as a guard for a suspended account. |
 | GET | `/{id}` | Branch details. |
 | PUT | `/{id}` | Update branch. |
 | DELETE | `/{id}` | Deactivate. The main branch cannot be deactivated — 400. |
@@ -363,7 +349,7 @@ Route prefix: `api/verification-documents` · Role: **Merchant** or **Driver**
 
 ### Decision
 
-Verification is reviewed **at the merchant/driver level, not per document**. The admin reads the uploaded documents and approves or rejects the whole account; there is no endpoint to approve an individual document.
+> **Nothing reviews these documents any more.** Merchant and driver accounts are created pre-Approved by an Admin (§24), so upload is optional record-keeping, not an approval gate. There is no endpoint to approve an individual document, and no queue that reads them.
 
 ---
 
@@ -393,7 +379,7 @@ Route prefix: `api/products` · Role: **Merchant**
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/` | Create a product. Requires an approved merchant and an existing active category. |
+| POST | `/` | Create a product. Requires an approved merchant and an existing active category. Every merchant is now created Approved (§5), so this always passes in practice; the check remains as a guard for a suspended account. |
 | GET | `/my` | Active products of the current merchant. |
 | GET | `/{id}` | Product details **including its images**, ordered by `displayOrder`. |
 | PUT | `/{id}` | Update product. Category is re-validated. |
@@ -732,13 +718,13 @@ There is no real payment gateway and no card data is collected anywhere in the s
 
 Route prefix: `api/drivers` · Role: **Driver**
 
+> **The driver profile is no longer self-created.** An Admin creates the User (role Driver) and the DriverProfile together in one transaction via `POST /api/admin/users/driver` (§24), with `VerificationStatus` set to `Approved` immediately, `isAvailable` false, and `CompletedDeliveries` 0.
+
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/` | Create the driver profile. One per account. |
 | GET | `/my` | Current driver profile. |
 | PUT | `/my` | Update vehicle details. |
-| POST | `/my/submit-verification` | Submit for review. Requires at least one uploaded document. |
-| GET | `/my/verification-status` | Verification status. |
+| GET | `/my/verification-status` | Verification status. **Still exists, but every driver is created Approved, so this will always return Approved.** Keep it only as a defensive check. |
 | POST | `/my/go-online` | Start a shift — sets `isAvailable = true`. |
 | POST | `/my/go-offline` | End a shift. |
 | PUT | `/my/location` | Update current position. |
@@ -750,7 +736,7 @@ Route prefix: `api/drivers` · Role: **Driver**
 
 ### Request bodies
 
-**`POST /`, `PUT /my`** — `vehicleType`, `vehiclePlateNumber`, `maximumCapacity`
+**`PUT /my`** — `vehicleType`, `vehiclePlateNumber`, `maximumCapacity`
 
 **`PUT /my/location`** — `latitude`, `longitude`
 
@@ -973,29 +959,33 @@ At least one of the four target ids must be non-null. If `orderId` is supplied, 
 
 Route prefix: `api/admin` · Role: **Admin**
 
-### Merchant verification
+> **The merchant/driver verification queue is gone.** There is no longer a review step between account creation and going live — an Admin creates Merchant and Driver accounts directly, pre-Approved. User management (below) replaces it.
+
+### User management
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/verifications` | Merchants awaiting review. |
-| POST | `/merchants/{id}/approve` | Approve — records the approving admin and timestamp. |
-| POST | `/merchants/{id}/reject` | Reject with a reason. |
+| POST | `/users/merchant` | Creates a User (role Merchant) + Merchant profile in one transaction. `VerificationStatus` is set to Approved immediately, with `VerifiedAt` and `VerifiedByUserId` recorded. Returns 201. |
+| POST | `/users/driver` | Creates a User (role Driver) + DriverProfile in one transaction. `VerificationStatus` Approved, `IsAvailable` false, `CompletedDeliveries` 0. Returns 201. |
+| GET | `/users` | Paginated user list. Query: `role`, `status`, `search`, `pageNumber` (default 1), `pageSize` (default 20, max 100). Returns `{ items, totalCount, pageNumber, pageSize }`. |
+| PUT | `/users/{id}/suspend` | Body `{ reason }` (required). Sets `UserStatus.Suspended`. Refuses self-suspension, refuses Admin accounts, refuses an already-suspended account. Returns 204. |
+| PUT | `/users/{id}/activate` | No body. Sets `UserStatus.Active`. Refuses an already-active account and refuses a Deleted account. Returns 204. |
+
+**`POST /users/merchant`** — `fullName`, `email`, `phoneNumber`, `password`, `merchantName`, `description` (nullable), `registrationNumber` (nullable), `contactEmail`, `contactPhone`, `logoUrl` (nullable), `coverImageUrl` (nullable)
+
+**`POST /users/driver`** — `fullName`, `email`, `phoneNumber`, `password`, `vehicleType`, `vehiclePlateNumber`, `maximumCapacity`
+
+For both: the admin sets the initial password and passes it to the account owner out of band. The new user receives an in-app notification of type `AccountCreated` telling them to change it. Password minimum length is 6. Email and phone uniqueness are enforced, returning 409.
 
 ### Offer moderation
+
+Unchanged — offers still require admin approval before going live.
 
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/offers/pending` | Offers awaiting approval. |
 | POST | `/offers/{id}/approve` | Approve — sets the offer to Scheduled or Active depending on its start time. |
 | POST | `/offers/{id}/reject` | Reject with a review note. |
-
-### Driver verification
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/drivers/pending` | Drivers awaiting verification. |
-| POST | `/drivers/{id}/approve` | Approve. |
-| POST | `/drivers/{id}/reject` | Reject with a reason — also forces the driver offline. |
 
 ### Complaints
 
@@ -1006,7 +996,9 @@ Route prefix: `api/admin` · Role: **Admin**
 
 ### Request bodies
 
-**All reject endpoints** — `reason`
+**`PUT /users/{id}/suspend`** — `reason`
+
+**Offer reject** — `reason`
 
 **`PUT /complaints/{id}/resolve`** — `status`, `adminResponse`
 

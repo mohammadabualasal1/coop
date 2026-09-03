@@ -1,0 +1,146 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    @if (merchant(); as m) {
+      <div class="page-content">
+        <coop-card title="حالة المتجر">
+          <h3 class="merchant-name">{{ m.name }}</h3>
+
+          <coop-badge [tone]="VerificationStatusTones[m.verificationStatus]">
+            {{ VerificationStatusLabels[m.verificationStatus] }}
+          </coop-badge>
+
+          <dl class="summary-list">
+            <div class="summary-row">
+              <dt>رقم السجل التجاري</dt>
+              <dd>{{ m.registrationNumber ?? 'غير مسجّل' }}</dd>
+            </div>
+            <div class="summary-row">
+              <dt>تاريخ الإنشاء</dt>
+              <dd>{{ m.createdAt | coopDate }}</dd>
+            </div>
+            <div class="summary-row">
+              <dt>التقييم</dt>
+              <dd>{{ averageRatingLabel() }}</dd>
+            </div>
+          </dl>
+
+          @if (m.rejectionReason) {
+            <coop-alert tone="danger">{{ m.rejectionReason }}</coop-alert>
+          }
+        </coop-card>
+
+        <coop-card title="بيانات المتجر">
+          @if (saveErrorMessage(); as message) {
+            <coop-alert tone="danger">{{ message }}</coop-alert>
+          }
+          @if (saveSuccess()) {
+            <coop-alert tone="success">تم حفظ التعديلات</coop-alert>
+          }
+
+          <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+            <coop-field
+              label="اسم المتجر"
+              [error]="nameErrorMessage()"
+              [touched]="form.controls.name.touched"
+            >
+              <input formControlName="name" type="text" />
+            </coop-field>
+
+            <coop-field label="الوصف">
+              <textarea formControlName="description" rows="4"></textarea>
+            </coop-field>
+
+            <coop-field
+              label="البريد الإلكتروني للتواصل"
+              [error]="contactEmailErrorMessage()"
+              [touched]="form.controls.contactEmail.touched"
+            >
+              <input formControlName="contactEmail" type="email" />
+            </coop-field>
+
+            <coop-field
+              label="رقم هاتف التواصل"
+              [error]="contactPhoneErrorMessage()"
+              [touched]="form.controls.contactPhone.touched"
+            >
+              <input formControlName="contactPhone" type="tel" />
+            </coop-field>
+
+            <div class="url-field-row">
+              <coop-field
+                label="رابط الشعار"
+                [error]="logoUrlErrorMessage()"
+                [touched]="form.controls.logoUrl.touched"
+              >
+                <input
+                  formControlName="logoUrl"
+                  type="url"
+                  (input)="logoPreviewFailed.set(false)"
+                />
+              </coop-field>
+              @if (logoUrlPreview(); as preview) {
+                <img
+                  class="url-preview"
+                  [src]="preview"
+                  alt=""
+                  width="60"
+                  height="60"
+                  [hidden]="logoPreviewFailed()"
+                  (error)="logoPreviewFailed.set(true)"
+                />
+              }
+            </div>
+
+            <div class="url-field-row">
+              <coop-field
+                label="رابط صورة الغلاف"
+                [error]="coverImageUrlErrorMessage()"
+                [touched]="form.controls.coverImageUrl.touched"
+              >
+                <input
+                  formControlName="coverImageUrl"
+                  type="url"
+                  (input)="coverPreviewFailed.set(false)"
+                />
+              </coop-field>
+              @if (coverImageUrlPreview(); as preview) {
+                <img
+                  class="url-preview"
+                  [src]="preview"
+                  alt=""
+                  width="60"
+                  height="60"
+                  [hidden]="coverPreviewFailed()"
+                  (error)="coverPreviewFailed.set(true)"
+                />
+              }
+            </div>
+
+            <coop-button
+              type="submit"
+              [loading]="saving()"
+              [disabled]="form.pristine || form.invalid || saving()"
+            >
+              حفظ التعديلات
+            </coop-button>
+          </form>
+        </coop-card>
+      </div>
+    }
+  }
+}

@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using NetTopologySuite.Geometries;
-
+using System.Text.Json.Serialization;
 namespace coop.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/merchant-branches")]
     [Authorize(Roles = "Merchant")]
     [ApiController]
     public class MerchantBranchesController : ControllerBase

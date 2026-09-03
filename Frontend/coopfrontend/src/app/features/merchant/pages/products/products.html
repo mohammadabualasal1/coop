@@ -1,0 +1,262 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="page-title">المنتجات</h2>
+        <coop-button (click)="openCreateModal()">إضافة منتج</coop-button>
+      </div>
+
+      @if (products().length > 0) {
+        <input
+          type="search"
+          class="search-box"
+          placeholder="ابحث بالاسم أو رمز المنتج أو العلامة التجارية"
+          (input)="onSearchInput($event)"
+        />
+      }
+
+      @if (products().length === 0) {
+        <coop-empty-state title="لا توجد منتجات" message="أضف منتجك الأول ثم أنشئ عرضاً عليه">
+          <button
+            coopEmptyStateAction
+            type="button"
+            class="empty-action"
+            (click)="openCreateModal()"
+          >
+            إضافة منتج
+          </button>
+        </coop-empty-state>
+      } @else {
+        <div class="products-grid">
+          @for (product of filteredProducts(); track product.id) {
+            <coop-card>
+              @if (product.mainImageUrl) {
+                <img class="product-image" [src]="product.mainImageUrl" [alt]="product.name" />
+              } @else {
+                <div class="product-image-placeholder">{{ firstLetter(product.name) }}</div>
+              }
+
+              <h3 class="product-name">{{ product.name }}</h3>
+              <p class="product-category">{{ categoryName(product.categoryId) }}</p>
+
+              @if (product.brand) {
+                <p class="product-detail">{{ product.brand }}</p>
+              }
+              @if (product.sku) {
+                <p class="product-detail">{{ product.sku }}</p>
+              }
+
+              <div class="product-actions">
+                <coop-button variant="secondary" size="sm" (click)="openEditModal(product)">
+                  تعديل
+                </coop-button>
+                <coop-button variant="secondary" size="sm" (click)="openImagesModal(product)">
+                  الصور
+                </coop-button>
+                <coop-button variant="danger" size="sm" (click)="openDeactivateConfirm(product)">
+                  إلغاء تفعيل
+                </coop-button>
+              </div>
+            </coop-card>
+          }
+        </div>
+      }
+    </div>
+  }
+}
+
+<coop-modal [title]="modalTitle()" [open]="formModalOpen()" size="lg" (closed)="closeFormModal()">
+  @if (formErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submitForm()" novalidate class="product-form">
+    <div class="span-2">
+      <coop-field
+        label="التصنيف"
+        [error]="categoryIdErrorMessage()"
+        [touched]="form.controls.categoryId.touched"
+      >
+        <select formControlName="categoryId">
+          <option value="" disabled>اختر تصنيفاً</option>
+          @for (option of categoryOptions(); track option.id) {
+            <option [value]="option.id">{{ option.label }}</option>
+          }
+        </select>
+      </coop-field>
+    </div>
+
+    <coop-field
+      label="اسم المنتج"
+      [error]="nameErrorMessage()"
+      [touched]="form.controls.name.touched"
+    >
+      <input formControlName="name" type="text" />
+    </coop-field>
+
+    <coop-field label="العلامة التجارية">
+      <input formControlName="brand" type="text" />
+    </coop-field>
+
+    <div class="span-2">
+      <coop-field
+        label="الوصف"
+        [error]="descriptionErrorMessage()"
+        [touched]="form.controls.description.touched"
+      >
+        <textarea formControlName="description" rows="4"></textarea>
+      </coop-field>
+    </div>
+
+    <coop-field label="رمز المنتج (SKU)">
+      <input formControlName="sku" type="text" />
+    </coop-field>
+
+    <div class="url-field-row">
+      <coop-field
+        label="رابط الصورة الرئيسية"
+        [error]="mainImageUrlErrorMessage()"
+        [touched]="form.controls.mainImageUrl.touched"
+      >
+        <input
+          formControlName="mainImageUrl"
+          type="url"
+          (input)="mainImagePreviewFailed.set(false)"
+        />
+      </coop-field>
+      @if (mainImageUrlPreview(); as preview) {
+        <img
+          class="url-preview"
+          [src]="preview"
+          alt=""
+          width="60"
+          height="60"
+          [hidden]="mainImagePreviewFailed()"
+          (error)="mainImagePreviewFailed.set(true)"
+        />
+      }
+    </div>
+
+    @if (editingProduct()) {
+      <label class="checkbox-field span-2">
+        <input formControlName="isActive" type="checkbox" />
+        <span>المنتج مفعّل</span>
+      </label>
+    }
+  </form>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" class="cancel-button" (click)="closeFormModal()">
+      إلغاء
+    </coop-button>
+    <coop-button
+      size="sm"
+      class="save-button"
+      [loading]="formSaving()"
+      [disabled]="formSaving()"
+      (click)="submitForm()"
+    >
+      حفظ
+    </coop-button>
+  </div>
+</coop-modal>
+
+<coop-confirm-modal
+  title="تأكيد إلغاء التفعيل"
+  [message]="deactivateMessage()"
+  confirmLabel="إلغاء التفعيل"
+  tone="danger"
+  [open]="confirmDeactivateOpen()"
+  [saving]="deactivateSaving()"
+  [errorMessage]="deactivateErrorMessage()"
+  (cancelled)="closeDeactivateConfirm()"
+  (confirmed)="confirmDeactivate()"
+/>
+
+<coop-modal
+  title="صور المنتج"
+  [open]="imagesModalOpen()"
+  size="md"
+  (closed)="closeImagesModal()"
+>
+  @switch (imagesModalStatus()) {
+    @case ('loading') {
+      <div class="loading-state">
+        <coop-spinner [size]="28" />
+      </div>
+    }
+
+    @case ('error') {
+      <coop-alert tone="danger">{{ imagesModalErrorMessage() }}</coop-alert>
+    }
+
+    @case ('loaded') {
+      @if (addImageErrorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+      }
+
+      @if (productImages().length === 0) {
+        <p class="no-images">لا توجد صور بعد</p>
+      } @else {
+        <div class="images-grid">
+          @for (image of productImages(); track image.id) {
+            <div class="image-tile">
+              <img [src]="image.fileUrl" alt="" />
+              <button
+                type="button"
+                class="remove-image-button"
+                [disabled]="removingImageId() === image.id"
+                (click)="removeImage(image)"
+                aria-label="حذف الصورة"
+              >
+                &times;
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <form [formGroup]="addImageForm" (ngSubmit)="submitAddImage()" novalidate class="add-image-form">
+        <coop-field
+          label="رابط الصورة"
+          [error]="fileUrlErrorMessage()"
+          [touched]="addImageForm.controls.fileUrl.touched"
+        >
+          <input formControlName="fileUrl" type="url" />
+        </coop-field>
+
+        <coop-field
+          label="ترتيب العرض"
+          [error]="displayOrderErrorMessage()"
+          [touched]="addImageForm.controls.displayOrder.touched"
+        >
+          <input formControlName="displayOrder" type="number" min="0" />
+        </coop-field>
+
+        <coop-button
+          type="submit"
+          size="sm"
+          [loading]="addImageSaving()"
+          [disabled]="addImageSaving()"
+        >
+          إضافة صورة
+        </coop-button>
+      </form>
+    }
+  }
+</coop-modal>

@@ -1,0 +1,168 @@
+@switch (status()) {
+  @case ('loading') {
+    <div class="loading-state">
+      <coop-spinner [size]="32" />
+    </div>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <h2 class="page-title">إتمام الطلب</h2>
+
+      @if (placeErrorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+      }
+
+      @if (addresses().length === 0) {
+        <coop-empty-state title="لا توجد عناوين" message="أضف عنواناً لتتمكن من إتمام الطلب">
+          <button
+            coopEmptyStateAction
+            type="button"
+            class="empty-action"
+            (click)="openAddAddressModal()"
+          >
+            إضافة عنوان
+          </button>
+        </coop-empty-state>
+      } @else {
+        <div class="checkout-grid">
+          <div class="steps">
+            <coop-card title="1. العنوان">
+              <div class="address-options">
+                @for (address of addresses(); track address.id) {
+                  <label class="radio-card" [class.selected]="selectedAddressId() === address.id">
+                    <input
+                      type="radio"
+                      name="address"
+                      [checked]="selectedAddressId() === address.id"
+                      (change)="selectAddress(address.id)"
+                    />
+                    <span class="radio-card-body">
+                      <span class="radio-card-title">{{ address.label }}</span>
+                      <span class="radio-card-detail">
+                        {{ address.city }} — {{ address.area }} — {{ address.street }}
+                      </span>
+                      <span class="radio-card-detail">{{ address.contactName }} — {{ address.contactPhone }}</span>
+                    </span>
+                  </label>
+                }
+              </div>
+
+              <button type="button" class="add-address-link" (click)="openAddAddressModal()">
+                + إضافة عنوان جديد
+              </button>
+            </coop-card>
+
+            <coop-card title="2. طريقة الدفع">
+              <div class="payment-options">
+                <label class="radio-card" [class.selected]="paymentMethod() === PaymentMethod.CashOnDelivery">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    [checked]="paymentMethod() === PaymentMethod.CashOnDelivery"
+                    (change)="selectPaymentMethod(PaymentMethod.CashOnDelivery)"
+                  />
+                  <span class="radio-card-body">
+                    <span class="radio-card-title">
+                      {{ paymentMethodLabels[PaymentMethod.CashOnDelivery] }}
+                      <span class="recommended-pill">موصى به</span>
+                    </span>
+                  </span>
+                </label>
+
+                <label class="radio-card" [class.selected]="paymentMethod() === PaymentMethod.MockOnlinePayment">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    [checked]="paymentMethod() === PaymentMethod.MockOnlinePayment"
+                    (change)="selectPaymentMethod(PaymentMethod.MockOnlinePayment)"
+                  />
+                  <span class="radio-card-body">
+                    <span class="radio-card-title">{{ paymentMethodLabels[PaymentMethod.MockOnlinePayment] }}</span>
+                    <span class="radio-card-detail">
+                      دفع وهمي لأغراض التجربة — لا يتم سحب أي مبلغ حقيقي.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </coop-card>
+
+            <coop-card title="3. ملاحظات">
+              <textarea
+                class="notes-input"
+                rows="3"
+                placeholder="ملاحظات للتاجر أو السائق"
+                (input)="onNotesInput($event)"
+              ></textarea>
+            </coop-card>
+          </div>
+
+          <coop-card title="ملخص الطلب" class="summary-card">
+            @if (calculateErrorMessage(); as message) {
+              <coop-alert tone="danger">{{ message }}</coop-alert>
+            }
+
+            @if (validationIssues().length > 0) {
+              <coop-alert tone="warning">
+                <ul class="issues-list">
+                  @for (issue of validationIssues(); track issue) {
+                    <li>{{ issue }}</li>
+                  }
+                </ul>
+              </coop-alert>
+            }
+
+            @if (calculation(); as calc) {
+              <div class="summary-row">
+                <span>المجموع الفرعي</span>
+                <span>{{ calc.subtotal | jod }}</span>
+              </div>
+              <div class="summary-row discount-row">
+                <span>إجمالي الخصم</span>
+                <span>−{{ calc.totalDiscount | jod }}</span>
+              </div>
+              <div class="summary-row">
+                <span>رسوم التوصيل</span>
+                @if (calculating()) {
+                  <coop-spinner [size]="16" />
+                } @else {
+                  <span>{{ calc.deliveryFee | jod }}</span>
+                }
+              </div>
+              <div class="summary-row total-row">
+                <span>الإجمالي</span>
+                <span>{{ calc.totalAmount | jod }}</span>
+              </div>
+            } @else {
+              <div class="summary-loading">
+                <coop-spinner [size]="24" />
+              </div>
+            }
+
+            <coop-button
+              [loading]="placingOrder()"
+              [disabled]="placingOrder() || calculating() || !calculation()"
+              (click)="placeOrder()"
+            >
+              تأكيد الطلب
+            </coop-button>
+          </coop-card>
+        </div>
+      }
+    </div>
+  }
+}
+
+<app-address-form-modal
+  [open]="addressModalOpen()"
+  [editingAddress]="null"
+  (closed)="closeAddressModal()"
+  (saved)="onAddressSaved($event)"
+/>

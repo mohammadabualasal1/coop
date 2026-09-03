@@ -1,0 +1,399 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="page-title">المستخدمون</h2>
+        <div class="header-actions">
+          <coop-button variant="secondary" (click)="openCreateMerchantModal()">إضافة تاجر</coop-button>
+          <coop-button variant="secondary" (click)="openCreateDriverModal()">إضافة سائق</coop-button>
+        </div>
+      </div>
+
+      @if (successMessage(); as message) {
+        <coop-alert tone="success">{{ message }}</coop-alert>
+      }
+
+      <div class="filter-bar">
+        <input
+          type="search"
+          class="search-box"
+          placeholder="ابحث بالاسم أو البريد أو الهاتف"
+          [value]="searchInputValue()"
+          (input)="onSearchInput($event)"
+        />
+
+        <select class="filter-select" [value]="roleFilterOptionValue()" (change)="onRoleFilterChange($event)">
+          <option value="">كل الأدوار</option>
+          <option [value]="UserRole.Customer">زبون</option>
+          <option [value]="UserRole.Merchant">تاجر</option>
+          <option [value]="UserRole.Driver">سائق</option>
+          <option [value]="UserRole.Admin">مشرف</option>
+        </select>
+
+        <select
+          class="filter-select"
+          [value]="statusFilterOptionValue()"
+          (change)="onStatusFilterChange($event)"
+        >
+          <option value="">كل الحالات</option>
+          <option [value]="UserStatus.Active">نشط</option>
+          <option [value]="UserStatus.Suspended">موقوف</option>
+          <option [value]="UserStatus.Deleted">محذوف</option>
+        </select>
+      </div>
+
+      @if (users().length === 0) {
+        <coop-empty-state title="لا يوجد مستخدمون مطابقون" message="جرّب تعديل الفلاتر" />
+      } @else {
+        <div class="table-wrap">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>الاسم</th>
+                <th>البريد</th>
+                <th>الهاتف</th>
+                <th>الدور</th>
+                <th>الحالة</th>
+                <th>تاريخ التسجيل</th>
+                <th>آخر دخول</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr>
+                  <td>{{ user.fullName }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.phoneNumber }}</td>
+                  <td>
+                    <coop-badge [tone]="roleTone(user.role)">{{ roleLabel(user.role) }}</coop-badge>
+                  </td>
+                  <td>
+                    <coop-badge [tone]="statusTone(user.status)">{{ statusLabel(user.status) }}</coop-badge>
+                  </td>
+                  <td>{{ user.createdAt | coopDate }}</td>
+                  <td>
+                    @if (user.lastLoginAt) {
+                      {{ user.lastLoginAt | coopDate }}
+                    } @else {
+                      لم يسجّل دخول بعد
+                    }
+                  </td>
+                  <td>
+                    <div class="row-actions">
+                      @if (canSuspend(user)) {
+                        <coop-button variant="danger" size="sm" (click)="openSuspendConfirm(user)">
+                          تعليق
+                        </coop-button>
+                      }
+                      @if (canActivate(user)) {
+                        <coop-button variant="secondary" size="sm" (click)="openActivateConfirm(user)">
+                          إعادة تفعيل
+                        </coop-button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <coop-button
+            variant="secondary"
+            size="sm"
+            [disabled]="pageNumber() <= 1"
+            (click)="goToPreviousPage()"
+          >
+            السابق
+          </coop-button>
+
+          <div class="pagination-info">
+            <span>صفحة {{ pageNumber() }} من {{ totalPages() }}</span>
+            <span>إجمالي {{ totalCount() }} مستخدم</span>
+          </div>
+
+          <coop-button
+            variant="secondary"
+            size="sm"
+            [disabled]="pageNumber() >= totalPages()"
+            (click)="goToNextPage()"
+          >
+            التالي
+          </coop-button>
+        </div>
+      }
+    </div>
+  }
+}
+
+<coop-modal
+  title="إضافة تاجر"
+  [open]="createMerchantModalOpen()"
+  size="lg"
+  (closed)="closeCreateMerchantModal()"
+>
+  @if (createMerchantErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <form [formGroup]="createMerchantForm" (ngSubmit)="submitCreateMerchant()" novalidate class="create-form">
+    <h3 class="section-heading span-2">بيانات الحساب</h3>
+
+    <coop-field
+      label="الاسم الكامل"
+      [error]="merchantFullNameErrorMessage()"
+      [touched]="createMerchantForm.controls.fullName.touched"
+    >
+      <input formControlName="fullName" type="text" placeholder="مثال: أحمد محمد" />
+    </coop-field>
+
+    <coop-field
+      label="البريد الإلكتروني"
+      [error]="merchantEmailErrorMessage()"
+      [touched]="createMerchantForm.controls.email.touched"
+    >
+      <input formControlName="email" type="email" placeholder="name@example.com" />
+    </coop-field>
+
+    <coop-field
+      label="رقم الهاتف"
+      [error]="merchantPhoneNumberErrorMessage()"
+      [touched]="createMerchantForm.controls.phoneNumber.touched"
+    >
+      <input formControlName="phoneNumber" type="tel" placeholder="07XXXXXXXX" />
+    </coop-field>
+
+    <coop-field
+      label="كلمة المرور"
+      [error]="merchantPasswordErrorMessage()"
+      [touched]="createMerchantForm.controls.password.touched"
+    >
+      <div class="input-with-toggle">
+        <input
+          [type]="showMerchantPassword() ? 'text' : 'password'"
+          formControlName="password"
+          autocomplete="new-password"
+          placeholder="6 أحرف على الأقل"
+        />
+        <coop-password-toggle
+          [visible]="showMerchantPassword()"
+          (toggled)="toggleMerchantPasswordVisibility()"
+        />
+      </div>
+    </coop-field>
+
+    <h3 class="section-heading span-2">بيانات المتجر</h3>
+
+    <coop-field
+      label="اسم المتجر"
+      [error]="merchantNameErrorMessage()"
+      [touched]="createMerchantForm.controls.merchantName.touched"
+    >
+      <input formControlName="merchantName" type="text" placeholder="مثال: متجر الأمانة" />
+    </coop-field>
+
+    <coop-field
+      label="بريد التواصل"
+      [error]="merchantContactEmailErrorMessage()"
+      [touched]="createMerchantForm.controls.contactEmail.touched"
+    >
+      <input formControlName="contactEmail" type="email" placeholder="name@example.com" />
+    </coop-field>
+
+    <coop-field
+      label="هاتف التواصل"
+      [error]="merchantContactPhoneErrorMessage()"
+      [touched]="createMerchantForm.controls.contactPhone.touched"
+    >
+      <input formControlName="contactPhone" type="tel" placeholder="07XXXXXXXX" />
+    </coop-field>
+
+    <coop-field label="الرقم التجاري">
+      <input formControlName="registrationNumber" type="text" placeholder="اختياري" />
+    </coop-field>
+
+    <div class="span-2">
+      <coop-field label="الوصف">
+        <textarea formControlName="description" rows="3"></textarea>
+      </coop-field>
+    </div>
+
+    <coop-field label="رابط الشعار" [error]="merchantLogoUrlErrorMessage()">
+      <input formControlName="logoUrl" type="url" placeholder="https://..." />
+    </coop-field>
+
+    <coop-field label="رابط صورة الغلاف" [error]="merchantCoverImageUrlErrorMessage()">
+      <input formControlName="coverImageUrl" type="url" placeholder="https://..." />
+    </coop-field>
+
+    <coop-alert tone="info" class="span-2">
+      سيتم إنشاء الحساب موثّقاً مباشرة. سلّم كلمة المرور للتاجر واطلب منه تغييرها.
+    </coop-alert>
+  </form>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" class="cancel-button" (click)="closeCreateMerchantModal()">
+      إلغاء
+    </coop-button>
+    <coop-button
+      size="sm"
+      class="save-button"
+      [loading]="createMerchantSaving()"
+      [disabled]="createMerchantSaving()"
+      (click)="submitCreateMerchant()"
+    >
+      حفظ
+    </coop-button>
+  </div>
+</coop-modal>
+
+<coop-modal
+  title="إضافة سائق"
+  [open]="createDriverModalOpen()"
+  size="md"
+  (closed)="closeCreateDriverModal()"
+>
+  @if (createDriverErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <form [formGroup]="createDriverForm" (ngSubmit)="submitCreateDriver()" novalidate class="create-form">
+    <coop-field
+      label="الاسم الكامل"
+      [error]="driverFullNameErrorMessage()"
+      [touched]="createDriverForm.controls.fullName.touched"
+    >
+      <input formControlName="fullName" type="text" placeholder="مثال: أحمد محمد" />
+    </coop-field>
+
+    <coop-field
+      label="البريد الإلكتروني"
+      [error]="driverEmailErrorMessage()"
+      [touched]="createDriverForm.controls.email.touched"
+    >
+      <input formControlName="email" type="email" placeholder="name@example.com" />
+    </coop-field>
+
+    <coop-field
+      label="رقم الهاتف"
+      [error]="driverPhoneNumberErrorMessage()"
+      [touched]="createDriverForm.controls.phoneNumber.touched"
+    >
+      <input formControlName="phoneNumber" type="tel" placeholder="07XXXXXXXX" />
+    </coop-field>
+
+    <coop-field
+      label="كلمة المرور"
+      [error]="driverPasswordErrorMessage()"
+      [touched]="createDriverForm.controls.password.touched"
+    >
+      <div class="input-with-toggle">
+        <input
+          [type]="showDriverPassword() ? 'text' : 'password'"
+          formControlName="password"
+          autocomplete="new-password"
+          placeholder="6 أحرف على الأقل"
+        />
+        <coop-password-toggle
+          [visible]="showDriverPassword()"
+          (toggled)="toggleDriverPasswordVisibility()"
+        />
+      </div>
+    </coop-field>
+
+    <coop-field
+      label="نوع المركبة"
+      [error]="driverVehicleTypeErrorMessage()"
+      [touched]="createDriverForm.controls.vehicleType.touched"
+    >
+      <input formControlName="vehicleType" type="text" placeholder="مثال: دراجة نارية" />
+    </coop-field>
+
+    <coop-field
+      label="رقم اللوحة"
+      [error]="driverVehiclePlateNumberErrorMessage()"
+      [touched]="createDriverForm.controls.vehiclePlateNumber.touched"
+    >
+      <input formControlName="vehiclePlateNumber" type="text" placeholder="مثال: 12-34567" />
+    </coop-field>
+
+    <coop-field
+      label="السعة القصوى"
+      [error]="driverMaximumCapacityErrorMessage()"
+      [touched]="createDriverForm.controls.maximumCapacity.touched"
+    >
+      <input formControlName="maximumCapacity" type="number" min="1" />
+    </coop-field>
+
+    <coop-alert tone="info" class="span-2">
+      سيتم إنشاء الحساب موثّقاً مباشرة. سلّم كلمة المرور للسائق واطلب منه تغييرها.
+    </coop-alert>
+  </form>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" class="cancel-button" (click)="closeCreateDriverModal()">
+      إلغاء
+    </coop-button>
+    <coop-button
+      size="sm"
+      class="save-button"
+      [loading]="createDriverSaving()"
+      [disabled]="createDriverSaving()"
+      (click)="submitCreateDriver()"
+    >
+      حفظ
+    </coop-button>
+  </div>
+</coop-modal>
+
+<coop-confirm-modal
+  title="تأكيد التعليق"
+  [message]="suspendMessage()"
+  confirmLabel="تعليق"
+  tone="danger"
+  [open]="confirmSuspendOpen()"
+  [saving]="suspendSaving()"
+  [errorMessage]="suspendErrorMessage()"
+  [confirmDisabled]="suspendForm.invalid"
+  (cancelled)="closeSuspendConfirm()"
+  (confirmed)="confirmSuspend()"
+>
+  <form [formGroup]="suspendForm" novalidate>
+    <coop-field
+      label="سبب التعليق"
+      [error]="suspendReasonErrorMessage()"
+      [touched]="suspendForm.controls.reason.touched"
+    >
+      <textarea formControlName="reason" rows="3"></textarea>
+    </coop-field>
+  </form>
+</coop-confirm-modal>
+
+<coop-confirm-modal
+  title="تأكيد إعادة التفعيل"
+  [message]="activateMessage()"
+  confirmLabel="إعادة تفعيل"
+  tone="primary"
+  [open]="confirmActivateOpen()"
+  [saving]="activateSaving()"
+  [errorMessage]="activateErrorMessage()"
+  (cancelled)="closeActivateConfirm()"
+  (confirmed)="confirmActivate()"
+/>

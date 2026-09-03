@@ -11,6 +11,13 @@ import { Router, RouterLink } from '@angular/router';
 import { UserRole } from '../../../core/enums';
 import { AuthService } from '../../../core/services/auth.service';
 import { extractErrorMessage } from '../../../core/utils/http-error';
+import {
+  UiAlertComponent,
+  UiButtonComponent,
+  UiCardComponent,
+  UiFieldComponent,
+  UiPasswordToggleComponent
+} from '../../../shared/components';
 
 const PHONE_PATTERN = /^07[789][0-9]{7}$/;
 
@@ -37,7 +44,15 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    UiCardComponent,
+    UiFieldComponent,
+    UiButtonComponent,
+    UiAlertComponent,
+    UiPasswordToggleComponent
+  ],
   templateUrl: './register.html',
   styleUrl: './register.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -69,6 +84,96 @@ export class RegisterComponent {
 
   toggleConfirmPasswordVisibility(): void {
     this.showConfirmPassword.update((value) => !value);
+  }
+
+  fullNameErrorMessage(): string | null {
+    const control = this.form.controls.fullName;
+
+    if (!control.invalid) {
+      return null;
+    }
+
+    if (control.hasError('required')) {
+      return 'الاسم مطلوب';
+    }
+
+    if (control.hasError('minlength')) {
+      return 'الاسم قصير جداً';
+    }
+
+    return null;
+  }
+
+  emailErrorMessage(): string | null {
+    const control = this.form.controls.email;
+
+    if (!control.invalid) {
+      return null;
+    }
+
+    if (control.hasError('required')) {
+      return 'البريد الإلكتروني مطلوب';
+    }
+
+    if (control.hasError('email')) {
+      return 'صيغة البريد الإلكتروني غير صحيحة';
+    }
+
+    return null;
+  }
+
+  phoneNumberErrorMessage(): string | null {
+    const control = this.form.controls.phoneNumber;
+
+    if (!control.invalid) {
+      return null;
+    }
+
+    if (control.hasError('required')) {
+      return 'رقم الهاتف مطلوب';
+    }
+
+    if (control.hasError('pattern')) {
+      return 'رقم الهاتف يجب أن يبدأ بـ 077 أو 078 أو 079 ويتكون من 10 أرقام';
+    }
+
+    return null;
+  }
+
+  passwordErrorMessage(): string | null {
+    const control = this.form.controls.password;
+
+    if (!control.invalid) {
+      return null;
+    }
+
+    if (control.hasError('required')) {
+      return 'كلمة المرور مطلوبة';
+    }
+
+    if (control.hasError('minlength')) {
+      return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+    }
+
+    return null;
+  }
+
+  confirmPasswordErrorMessage(): string | null {
+    const control = this.form.controls.confirmPassword;
+
+    if (!control.invalid) {
+      return null;
+    }
+
+    if (control.hasError('required')) {
+      return 'تأكيد كلمة المرور مطلوب';
+    }
+
+    if (control.hasError('mismatch')) {
+      return 'كلمتا المرور غير متطابقتين';
+    }
+
+    return null;
   }
 
   submit(): void {

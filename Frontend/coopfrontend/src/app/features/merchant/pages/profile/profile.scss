@@ -1,0 +1,73 @@
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--coop-space-2xl) 0;
+  color: var(--coop-primary);
+}
+
+.page-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--coop-space-lg);
+  max-width: 720px;
+}
+
+.merchant-name {
+  margin: 0 0 var(--coop-space-sm);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--coop-text);
+}
+
+.summary-list {
+  margin: var(--coop-space-md) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--coop-space-sm);
+}
+
+.summary-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--coop-space-md);
+  font-size: 0.875rem;
+}
+
+.summary-row dt {
+  color: var(--coop-text-muted);
+}
+
+.summary-row dd {
+  margin: 0;
+  color: var(--coop-text);
+  font-weight: 500;
+}
+
+coop-alert {
+  display: block;
+  margin-block-end: var(--coop-space-md);
+}
+
+.url-field-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--coop-space-md);
+}
+
+.url-field-row coop-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.url-preview {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  margin-block-start: 22px;
+  object-fit: cover;
+  border: 1px solid var(--coop-border);
+  border-radius: var(--coop-radius-md);
+  background: var(--coop-bg);
+}

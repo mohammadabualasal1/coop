@@ -1,0 +1,204 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="page-title">التصنيفات</h2>
+        <coop-button (click)="openCreateRootModal()">إضافة تصنيف رئيسي</coop-button>
+      </div>
+
+      @if (tree().length === 0) {
+        <coop-empty-state
+          title="لا توجد تصنيفات"
+          message="أضف تصنيفاً رئيسياً ليتمكن التجار من ربط منتجاتهم به"
+        >
+          <button
+            coopEmptyStateAction
+            type="button"
+            class="empty-action"
+            (click)="openCreateRootModal()"
+          >
+            إضافة تصنيف رئيسي
+          </button>
+        </coop-empty-state>
+      } @else {
+        <div class="category-list">
+          @for (node of tree(); track node.root.id) {
+            <coop-card>
+              <div class="category-row">
+                @if (node.root.imageUrl) {
+                  <img class="thumb" [src]="node.root.imageUrl" [alt]="node.root.nameAr" />
+                } @else {
+                  <div class="thumb-placeholder">{{ firstLetter(node.root.nameAr) }}</div>
+                }
+
+                <div class="category-info">
+                  <h3 class="category-name">{{ node.root.nameAr }}</h3>
+                  <p class="category-name-en">{{ node.root.nameEn }}</p>
+                </div>
+
+                <span class="order-chip">{{ node.root.displayOrder }}</span>
+
+                @if (node.root.isActive === false) {
+                  <coop-badge tone="neutral">غير مفعّل</coop-badge>
+                }
+
+                <div class="category-actions">
+                  <coop-button variant="secondary" size="sm" (click)="openEditModal(node.root)">
+                    تعديل
+                  </coop-button>
+                  <coop-button variant="secondary" size="sm" (click)="openCreateSubModal(node.root)">
+                    إضافة تصنيف فرعي
+                  </coop-button>
+                  <coop-button variant="danger" size="sm" (click)="openDeactivateConfirm(node.root)">
+                    إلغاء تفعيل
+                  </coop-button>
+                </div>
+              </div>
+
+              @if (node.children.length > 0) {
+                <div class="children-list">
+                  @for (child of node.children; track child.id) {
+                    <div class="category-row child-row">
+                      @if (child.imageUrl) {
+                        <img class="thumb" [src]="child.imageUrl" [alt]="child.nameAr" />
+                      } @else {
+                        <div class="thumb-placeholder">{{ firstLetter(child.nameAr) }}</div>
+                      }
+
+                      <div class="category-info">
+                        <h3 class="category-name">{{ child.nameAr }}</h3>
+                        <p class="category-name-en">{{ child.nameEn }}</p>
+                      </div>
+
+                      <span class="order-chip">{{ child.displayOrder }}</span>
+
+                      @if (child.isActive === false) {
+                        <coop-badge tone="neutral">غير مفعّل</coop-badge>
+                      }
+
+                      <div class="category-actions">
+                        <coop-button variant="secondary" size="sm" (click)="openEditModal(child)">
+                          تعديل
+                        </coop-button>
+                        <coop-button variant="danger" size="sm" (click)="openDeactivateConfirm(child)">
+                          إلغاء تفعيل
+                        </coop-button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </coop-card>
+          }
+        </div>
+      }
+    </div>
+  }
+}
+
+<coop-modal [title]="modalTitle()" [open]="formModalOpen()" size="md" (closed)="closeFormModal()">
+  @if (formErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submitForm()" novalidate class="category-form">
+    <coop-field
+      label="الاسم بالعربية"
+      [error]="nameArErrorMessage()"
+      [touched]="form.controls.nameAr.touched"
+    >
+      <input formControlName="nameAr" type="text" />
+    </coop-field>
+
+    <coop-field
+      label="الاسم بالإنجليزية"
+      [error]="nameEnErrorMessage()"
+      [touched]="form.controls.nameEn.touched"
+    >
+      <input formControlName="nameEn" type="text" />
+    </coop-field>
+
+    <coop-field label="الوصف">
+      <textarea formControlName="description" rows="3"></textarea>
+    </coop-field>
+
+    <div class="url-field-row">
+      <coop-field
+        label="رابط الصورة"
+        [error]="imageUrlErrorMessage()"
+        [touched]="form.controls.imageUrl.touched"
+      >
+        <input formControlName="imageUrl" type="url" (input)="imagePreviewFailed.set(false)" />
+      </coop-field>
+      @if (imageUrlPreview(); as preview) {
+        <img
+          class="url-preview"
+          [src]="preview"
+          alt=""
+          width="60"
+          height="60"
+          [hidden]="imagePreviewFailed()"
+          (error)="imagePreviewFailed.set(true)"
+        />
+      }
+    </div>
+
+    <coop-field
+      label="ترتيب العرض"
+      [error]="displayOrderErrorMessage()"
+      [touched]="form.controls.displayOrder.touched"
+    >
+      <input formControlName="displayOrder" type="number" min="0" />
+    </coop-field>
+    <p class="field-hint">الأصغر يظهر أولاً</p>
+
+    @if (editingCategory()) {
+      <label class="checkbox-field">
+        <input formControlName="isActive" type="checkbox" />
+        <span>التصنيف مفعّل</span>
+      </label>
+    }
+  </form>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" class="cancel-button" (click)="closeFormModal()">
+      إلغاء
+    </coop-button>
+    <coop-button
+      size="sm"
+      class="save-button"
+      [loading]="formSaving()"
+      [disabled]="formSaving()"
+      (click)="submitForm()"
+    >
+      حفظ
+    </coop-button>
+  </div>
+</coop-modal>
+
+<coop-confirm-modal
+  title="تأكيد إلغاء التفعيل"
+  [message]="deactivateMessage()"
+  confirmLabel="إلغاء التفعيل"
+  tone="danger"
+  [open]="confirmDeactivateOpen()"
+  [saving]="deactivateSaving()"
+  [errorMessage]="deactivateErrorMessage()"
+  (cancelled)="closeDeactivateConfirm()"
+  (confirmed)="confirmDeactivate()"
+/>

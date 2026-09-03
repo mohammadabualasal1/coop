@@ -1,0 +1,214 @@
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--coop-space-2xl) 0;
+  color: var(--coop-primary);
+}
+
+.page-content {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding: var(--coop-space-xl) var(--coop-space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--coop-space-lg);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--coop-text);
+}
+
+.empty-action {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--coop-space-lg);
+  border: none;
+  border-radius: var(--coop-radius-md);
+  background: var(--coop-primary);
+  color: var(--coop-surface);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.empty-action:hover {
+  background: var(--coop-primary-dark);
+}
+
+.branch-note {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--coop-space-md);
+  padding: var(--coop-space-sm) var(--coop-space-md);
+  border-radius: var(--coop-radius-md);
+  background: var(--coop-bg);
+  font-size: 0.8125rem;
+  color: var(--coop-text-muted);
+}
+
+.branch-note coop-button {
+  flex-shrink: 0;
+  width: auto;
+}
+
+.cart-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--coop-space-lg);
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .cart-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .summary-card {
+    position: sticky;
+    inset-block-start: calc(64px + var(--coop-space-lg));
+  }
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: var(--coop-space-md);
+  padding: var(--coop-space-md) 0;
+}
+
+.item-row:not(:last-child) {
+  border-block-end: 1px solid var(--coop-border);
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--coop-text);
+}
+
+.item-unit-price {
+  font-size: 0.8125rem;
+  color: var(--coop-text-muted);
+}
+
+.stepper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--coop-space-sm);
+}
+
+.stepper-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--coop-border);
+  border-radius: var(--coop-radius-md);
+  background: var(--coop-surface);
+  color: var(--coop-text);
+  font-size: 1.0625rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.stepper-btn:hover:not(:disabled) {
+  background: var(--coop-bg);
+}
+
+.stepper-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stepper-value {
+  min-width: 20px;
+  text-align: center;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--coop-text);
+}
+
+.item-line-total {
+  flex-shrink: 0;
+  min-width: 80px;
+  text-align: end;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--coop-text);
+}
+
+.remove-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--coop-radius-full);
+  background: none;
+  color: var(--coop-text-muted);
+  cursor: pointer;
+}
+
+.remove-btn:hover {
+  background: color-mix(in srgb, var(--coop-danger) 12%, transparent);
+  color: var(--coop-danger);
+}
+
+.issues-list {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--coop-space-md);
+  padding-block: var(--coop-space-xs);
+  font-size: 0.9375rem;
+  color: var(--coop-text);
+}
+
+.discount-row {
+  color: var(--coop-success);
+}
+
+.total-row {
+  margin-block-start: var(--coop-space-xs);
+  padding-block-start: var(--coop-space-sm);
+  border-block-start: 1px solid var(--coop-border);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.delivery-note {
+  margin: var(--coop-space-sm) 0 var(--coop-space-md);
+  font-size: 0.75rem;
+  color: var(--coop-text-muted);
+}

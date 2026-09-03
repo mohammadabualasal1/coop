@@ -1,0 +1,142 @@
+@switch (status()) {
+  @case ('loading') {
+    <div class="loading-state">
+      <coop-spinner [size]="32" />
+    </div>
+  }
+
+  @case ('notfound') {
+    <coop-empty-state title="العرض غير موجود" message="قد يكون انتهى أو تم حذفه">
+      <a coopEmptyStateAction routerLink="/shop" class="empty-action">العودة إلى المتجر</a>
+    </coop-empty-state>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="retry()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    @if (offer(); as offer) {
+      <div class="page-content">
+        <div class="detail-grid">
+          <div class="image-side">
+            @if (offer.mainImageUrl) {
+              <img class="cover-image" [src]="offer.mainImageUrl" [alt]="offer.title" />
+            } @else {
+              <div class="cover-placeholder"></div>
+            }
+          </div>
+
+          <div class="info-side">
+            <h1 class="offer-title">{{ offer.title }}</h1>
+            <a class="merchant-link" [routerLink]="['/shop/merchants', offer.merchantId]">
+              {{ offer.merchantName }}
+            </a>
+
+            <div class="price-block">
+              <span class="discounted-price">{{ offer.discountedPrice | jod }}</span>
+              <span class="original-price">{{ offer.originalPrice | jod }}</span>
+              <span class="discount-pill">خصم {{ offer.discountPercentage | discountPercent }}%</span>
+            </div>
+
+            <p class="end-line" [class.ending-soon]="isEndingSoon()">
+              @if (isEndingSoon()) {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3.5 2" />
+                </svg>
+              }
+              ينتهي في {{ offer.endAt | coopDate: 'datetime' }}
+            </p>
+
+            <p class="description">{{ offer.description || 'لا يوجد وصف' }}</p>
+
+            @if (offer.maximumQuantityPerCustomer) {
+              <p class="max-qty">الحد الأقصى للطلب: {{ offer.maximumQuantityPerCustomer }} قطعة</p>
+            }
+
+            <div class="availability">
+              <h2 class="availability-title">التوفر حسب الفرع</h2>
+              <div class="branch-list">
+                @for (branch of offer.branches; track branch.merchantBranchId) {
+                  <div class="branch-row">
+                    <div class="branch-info">
+                      <span class="branch-name">{{ branch.branchName }}</span>
+                      <span class="branch-location">{{ branch.city }} - {{ branch.area }}</span>
+                    </div>
+                    @if (branch.availableStock > 0) {
+                      <span class="branch-stock">متوفر: {{ branch.availableStock }}</span>
+                    } @else {
+                      <span class="branch-stock out-of-stock">غير متوفر</span>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="add-to-cart-block">
+          @if (addSuccess()) {
+            <coop-alert tone="success" class="add-success">
+              تمت الإضافة إلى السلة
+              <a routerLink="/shop/cart" class="view-cart-link">عرض السلة</a>
+            </coop-alert>
+          }
+
+          @if (addErrorMessage(); as message) {
+            <coop-alert tone="danger">{{ message }}</coop-alert>
+          }
+
+          @if (isGuest()) {
+            <p class="hint-line">سجّل الدخول لإضافة العرض إلى سلتك.</p>
+          } @else if (isStaff()) {
+            <p class="hint-line">السلة متاحة لحسابات الزبائن فقط.</p>
+          }
+
+          <div class="quantity-row">
+            <span class="quantity-label">الكمية</span>
+            <div class="stepper">
+              <button
+                type="button"
+                class="stepper-btn"
+                [disabled]="quantity() <= 1"
+                (click)="decrement()"
+              >
+                −
+              </button>
+              <span class="stepper-value">{{ quantity() }}</span>
+              <button
+                type="button"
+                class="stepper-btn"
+                [disabled]="quantity() >= maxQuantity()"
+                (click)="increment()"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <coop-button [loading]="addingToCart()" [disabled]="addButtonDisabled()" (click)="onAddToCart()">
+            {{ addButtonLabel() }}
+          </coop-button>
+        </div>
+      </div>
+    }
+  }
+}
+
+<coop-confirm-modal
+  title="سلتك تحتوي على منتجات من متجر آخر"
+  [message]="conflictMessage() ?? ''"
+  confirmLabel="إفراغ السلة والمتابعة"
+  cancelLabel="إلغاء"
+  tone="danger"
+  [open]="conflictModalOpen()"
+  [saving]="conflictSaving()"
+  (cancelled)="closeConflictModal()"
+  (confirmed)="confirmConflict()"
+/>

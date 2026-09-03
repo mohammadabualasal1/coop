@@ -1,0 +1,449 @@
+@switch (status()) {
+  @case ('loading') {
+    <coop-card>
+      <div class="loading-state">
+        <coop-spinner [size]="32" />
+      </div>
+    </coop-card>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="page-title">العروض</h2>
+        <coop-button (click)="openCreateModal()">إضافة عرض</coop-button>
+      </div>
+
+      @if (actionErrorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+      }
+
+      @if (offers().length > 0) {
+        <div class="status-filter">
+          <button
+            type="button"
+            class="status-chip"
+            [class.active]="selectedStatus() === 'all'"
+            (click)="selectedStatus.set('all')"
+          >
+            الكل
+          </button>
+          @for (statusValue of presentStatuses(); track statusValue) {
+            <button
+              type="button"
+              class="status-chip"
+              [class.active]="selectedStatus() === statusValue"
+              (click)="selectedStatus.set(statusValue)"
+            >
+              {{ statusLabel(statusValue) }}
+            </button>
+          }
+        </div>
+      }
+
+      @if (offers().length === 0) {
+        <coop-empty-state title="لا توجد عروض" message="أنشئ عرضاً على أحد منتجاتك ليظهر للزبائن">
+          <button
+            coopEmptyStateAction
+            type="button"
+            class="empty-action"
+            (click)="openCreateModal()"
+          >
+            إضافة عرض
+          </button>
+        </coop-empty-state>
+      } @else {
+        <div class="offers-grid">
+          @for (offer of filteredOffers(); track offer.id) {
+            <coop-card>
+              <div class="offer-header">
+                <h3 class="offer-title">{{ offer.title }}</h3>
+                <coop-badge [tone]="statusTone(offer.status)">{{ statusLabel(offer.status) }}</coop-badge>
+              </div>
+
+              @if (offer.productName) {
+                <p class="offer-product">{{ offer.productName }}</p>
+              }
+
+              <div class="price-line">
+                <span class="discounted-price">{{ offer.discountedPrice | jod }}</span>
+                <span class="original-price">{{ offer.originalPrice | jod }}</span>
+                <span class="discount-pill">خصم {{ offer.discountPercentage | discountPercent }}%</span>
+              </div>
+
+              <p class="offer-validity">
+                من {{ offer.startAt | coopDate }} إلى {{ offer.endAt | coopDate }}
+              </p>
+
+              @if (offer.status === OfferStatus.Rejected && offer.adminReviewNote) {
+                <coop-alert tone="danger">{{ offer.adminReviewNote }}</coop-alert>
+              }
+
+              <div class="offer-actions">
+                @if (offerActions(offer).includes('edit')) {
+                  <coop-button variant="secondary" size="sm" (click)="openEditModal(offer)">
+                    تعديل
+                  </coop-button>
+                }
+                @if (offerActions(offer).includes('stock')) {
+                  <coop-button variant="secondary" size="sm" (click)="openStockManagement(offer)">
+                    الفروع والمخزون
+                  </coop-button>
+                }
+                @if (offerActions(offer).includes('submit')) {
+                  <coop-button
+                    variant="secondary"
+                    size="sm"
+                    [loading]="submittingId() === offer.id"
+                    [disabled]="submittingId() === offer.id"
+                    (click)="submitForReview(offer)"
+                  >
+                    إرسال للمراجعة
+                  </coop-button>
+                }
+                @if (offerActions(offer).includes('pause')) {
+                  <coop-button
+                    variant="secondary"
+                    size="sm"
+                    [loading]="pausingId() === offer.id"
+                    [disabled]="pausingId() === offer.id"
+                    (click)="pauseOffer(offer)"
+                  >
+                    إيقاف مؤقت
+                  </coop-button>
+                }
+                @if (offerActions(offer).includes('resume')) {
+                  <coop-button
+                    variant="secondary"
+                    size="sm"
+                    [loading]="resumingId() === offer.id"
+                    [disabled]="resumingId() === offer.id"
+                    (click)="resumeOffer(offer)"
+                  >
+                    استئناف
+                  </coop-button>
+                }
+                @if (offerActions(offer).includes('cancel')) {
+                  <coop-button variant="danger" size="sm" (click)="openCancelConfirm(offer)">
+                    إلغاء
+                  </coop-button>
+                }
+                @if (offerActions(offer).includes('delete')) {
+                  <coop-button variant="danger" size="sm" (click)="openDeleteConfirm(offer)">
+                    حذف
+                  </coop-button>
+                }
+              </div>
+            </coop-card>
+          }
+        </div>
+      }
+    </div>
+  }
+}
+
+<coop-modal [title]="modalTitle()" [open]="formModalOpen()" size="lg" (closed)="closeFormModal()">
+  @if (formErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submitForm()" novalidate class="offer-form">
+    <div class="span-2">
+      <coop-field
+        label="المنتج"
+        [error]="productIdErrorMessage()"
+        [touched]="form.controls.productId.touched"
+      >
+        <select formControlName="productId">
+          <option value="" disabled>اختر منتجاً</option>
+          @for (product of products(); track product.id) {
+            <option [value]="product.id">{{ product.name }}</option>
+          }
+        </select>
+      </coop-field>
+    </div>
+
+    <div class="span-2">
+      <coop-field
+        label="عنوان العرض"
+        [error]="titleErrorMessage()"
+        [touched]="form.controls.title.touched"
+      >
+        <input formControlName="title" type="text" />
+      </coop-field>
+    </div>
+
+    <div class="span-2">
+      <coop-field label="الوصف">
+        <textarea formControlName="description" rows="3"></textarea>
+      </coop-field>
+    </div>
+
+    <coop-field
+      label="السعر الأصلي"
+      [error]="originalPriceErrorMessage()"
+      [touched]="form.controls.originalPrice.touched"
+    >
+      <input formControlName="originalPrice" type="number" step="0.01" min="0.01" />
+    </coop-field>
+
+    <coop-field
+      label="السعر بعد الخصم"
+      [error]="discountedPriceErrorMessage()"
+      [touched]="form.controls.discountedPrice.touched"
+    >
+      <input formControlName="discountedPrice" type="number" step="0.01" min="0.01" />
+    </coop-field>
+
+    @if (discountPercentagePreview(); as preview) {
+      <p class="discount-preview span-2">نسبة الخصم: {{ preview }}%</p>
+    }
+
+    <coop-field
+      label="تاريخ البداية"
+      [error]="startAtErrorMessage()"
+      [touched]="form.controls.startAt.touched"
+    >
+      <input formControlName="startAt" type="datetime-local" />
+    </coop-field>
+
+    <coop-field
+      label="تاريخ النهاية"
+      [error]="endAtErrorMessage()"
+      [touched]="form.controls.endAt.touched"
+    >
+      <input formControlName="endAt" type="datetime-local" />
+    </coop-field>
+
+    <coop-field
+      label="الحد الأقصى للكمية لكل زبون"
+      [error]="maximumQuantityPerCustomerErrorMessage()"
+      [touched]="form.controls.maximumQuantityPerCustomer.touched"
+    >
+      <input formControlName="maximumQuantityPerCustomer" type="number" min="1" />
+    </coop-field>
+  </form>
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" class="cancel-button" (click)="closeFormModal()">
+      إلغاء
+    </coop-button>
+    <coop-button
+      size="sm"
+      class="save-button"
+      [loading]="formSaving()"
+      [disabled]="formSaving()"
+      (click)="submitForm()"
+    >
+      حفظ
+    </coop-button>
+  </div>
+</coop-modal>
+
+<coop-confirm-modal
+  title="تأكيد الحذف"
+  message="سيتم حذف العرض نهائياً."
+  confirmLabel="حذف"
+  tone="danger"
+  [open]="confirmDeleteOpen()"
+  [saving]="deleteSaving()"
+  [errorMessage]="deleteErrorMessage()"
+  (cancelled)="closeDeleteConfirm()"
+  (confirmed)="confirmDelete()"
+/>
+
+<coop-confirm-modal
+  title="تأكيد الإلغاء"
+  message="سيتم إلغاء العرض ولا يمكن التراجع."
+  confirmLabel="إلغاء"
+  tone="danger"
+  [open]="confirmCancelOpen()"
+  [saving]="cancelSaving()"
+  [errorMessage]="cancelErrorMessage()"
+  (cancelled)="closeCancelConfirm()"
+  (confirmed)="confirmCancel()"
+/>
+
+<coop-modal
+  [title]="stockModalTitle()"
+  [open]="stockModalOpen()"
+  size="lg"
+  (closed)="closeStockModal()"
+>
+  @switch (stockModalStatus()) {
+    @case ('loading') {
+      <div class="loading-state">
+        <coop-spinner [size]="28" />
+      </div>
+    }
+
+    @case ('error') {
+      <coop-alert tone="danger">{{ stockModalErrorMessage() }}</coop-alert>
+    }
+
+    @case ('loaded') {
+      @if (showStockGuardWarning()) {
+        <coop-alert tone="warning">أضف فرعاً ومخزوناً قبل إرسال العرض للمراجعة.</coop-alert>
+      }
+
+      @if (stockBranches().length === 0) {
+        <p class="no-branches">
+          لم تتم إضافة أي فرع بعد. أضف فرعاً ومخزوناً قبل إرسال العرض للمراجعة.
+        </p>
+      } @else {
+        <div class="branch-stock-table-wrap">
+          <table class="branch-stock-table">
+            <thead>
+              <tr>
+                <th>الفرع</th>
+                <th>المخزون الكلي</th>
+                <th>المحجوز</th>
+                <th>المُباع</th>
+                <th>المتاح</th>
+                <th>متاح للبيع</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (branchOffer of stockBranches(); track branchOffer.id) {
+                <tr>
+                  <td>{{ branchOffer.branchName }}</td>
+
+                  @if (editingBranchOfferId() === branchOffer.id) {
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        class="inline-input"
+                        [value]="editTotalStock()"
+                        (input)="onEditTotalStockInput($event)"
+                      />
+                      <span class="min-hint">الحد الأدنى: {{ minTotalStockFor(branchOffer) }}</span>
+                    </td>
+                    <td>{{ branchOffer.reservedStock }}</td>
+                    <td>{{ branchOffer.soldStock }}</td>
+                    <td>{{ editTotalStock() - branchOffer.reservedStock - branchOffer.soldStock }}</td>
+                    <td>
+                      <label class="available-checkbox">
+                        <input
+                          type="checkbox"
+                          [checked]="editIsAvailable()"
+                          (change)="onEditIsAvailableChange($event)"
+                        />
+                        متاح للبيع
+                      </label>
+                    </td>
+                    <td class="row-actions">
+                      @if (editStockErrorMessage(); as message) {
+                        <p class="row-error">{{ message }}</p>
+                      }
+                      <coop-button
+                        variant="secondary"
+                        size="sm"
+                        [disabled]="editStockSaving()"
+                        (click)="cancelEditBranch()"
+                      >
+                        إلغاء
+                      </coop-button>
+                      <coop-button
+                        size="sm"
+                        [loading]="editStockSaving()"
+                        [disabled]="editStockSaving()"
+                        (click)="saveBranchStock(branchOffer)"
+                      >
+                        حفظ
+                      </coop-button>
+                    </td>
+                  } @else {
+                    <td>{{ branchOffer.totalStock }}</td>
+                    <td>{{ branchOffer.reservedStock }}</td>
+                    <td>{{ branchOffer.soldStock }}</td>
+                    <td [class.zero-available]="availableStockFor(branchOffer) === 0">
+                      {{ availableStockFor(branchOffer) }}
+                    </td>
+                    <td>
+                      <coop-badge [tone]="branchOffer.isAvailable ? 'success' : 'neutral'">
+                        {{ branchOffer.isAvailable ? 'نعم' : 'لا' }}
+                      </coop-badge>
+                    </td>
+                    <td class="row-actions">
+                      <coop-button variant="secondary" size="sm" (click)="startEditBranch(branchOffer)">
+                        تعديل المخزون
+                      </coop-button>
+                      <coop-button variant="danger" size="sm" (click)="openRemoveBranchConfirm(branchOffer)">
+                        إزالة
+                      </coop-button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (addBranchErrorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+      }
+
+      @if (availableBranchesToAdd().length > 0) {
+        <form [formGroup]="addBranchForm" (ngSubmit)="submitAddBranch()" novalidate class="add-branch-form">
+          <coop-field
+            label="الفرع"
+            [error]="addBranchMerchantBranchIdErrorMessage()"
+            [touched]="addBranchForm.controls.merchantBranchId.touched"
+          >
+            <select formControlName="merchantBranchId">
+              <option value="" disabled>اختر فرعاً</option>
+              @for (branch of availableBranchesToAdd(); track branch.id) {
+                <option [value]="branch.id">{{ branch.name }}</option>
+              }
+            </select>
+          </coop-field>
+
+          <coop-field
+            label="المخزون"
+            [error]="addBranchTotalStockErrorMessage()"
+            [touched]="addBranchForm.controls.totalStock.touched"
+          >
+            <input formControlName="totalStock" type="number" min="1" />
+          </coop-field>
+
+          <coop-button
+            type="submit"
+            size="sm"
+            [loading]="addBranchSaving()"
+            [disabled]="addBranchSaving()"
+          >
+            إضافة
+          </coop-button>
+        </form>
+      } @else {
+        <p class="all-branches-added">كل الفروع مضافة لهذا العرض</p>
+      }
+    }
+  }
+
+  <div modal-footer>
+    <coop-button variant="secondary" size="sm" (click)="closeStockModal()">إغلاق</coop-button>
+  </div>
+</coop-modal>
+
+<coop-confirm-modal
+  title="تأكيد الإزالة"
+  message="لا يمكن إزالة الفرع إذا كان يحتوي على مخزون محجوز."
+  confirmLabel="إزالة"
+  tone="danger"
+  [open]="confirmRemoveBranchOpen()"
+  [saving]="removeBranchSaving()"
+  [errorMessage]="removeBranchErrorMessage()"
+  (cancelled)="closeRemoveBranchConfirm()"
+  (confirmed)="confirmRemoveBranch()"
+/>
