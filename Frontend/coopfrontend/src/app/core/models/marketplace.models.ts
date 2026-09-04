@@ -66,3 +66,21 @@ export interface SearchMerchantsParams {
   pageNumber?: number;
   pageSize?: number;
 }
+
+// Shape of a row from GET /api/favorites — a favorite record, not an OfferSummary.
+export interface FavoriteOffer {
+  id: string;
+  offerId: string;
+  title: string;
+  discountedPrice: number;
+  createdAt: string;
+}
+
+// Shape of a row from GET /api/follows — a follow record, not a MerchantSummary.
+export interface FollowedMerchant {
+  id: string;
+  merchantId: string;
+  name: string;
+  logoUrl: string | null;
+  createdAt: string;
+}

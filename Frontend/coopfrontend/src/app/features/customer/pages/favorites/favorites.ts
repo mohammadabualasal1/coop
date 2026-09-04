@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
-import { OfferSummary } from '../../../../core/models/marketplace.models';
+import { FavoriteOffer } from '../../../../core/models/marketplace.models';
 import { FavoriteService } from '../../../../core/services/favorite.service';
 import { extractErrorMessage } from '../../../../core/utils/http-error';
 import {
@@ -9,13 +10,13 @@ import {
   UiEmptyStateComponent,
   UiSpinnerComponent
 } from '../../../../shared/components';
-import { OfferCardComponent } from '../../components/offer-card/offer-card';
+import { JodPipe } from '../../../../shared/pipes/jod.pipe';
 
 type PageStatus = 'loading' | 'error' | 'loaded';
 
 @Component({
   selector: 'app-customer-favorites',
-  imports: [UiAlertComponent, UiButtonComponent, UiEmptyStateComponent, UiSpinnerComponent, OfferCardComponent],
+  imports: [RouterLink, JodPipe, UiAlertComponent, UiButtonComponent, UiEmptyStateComponent, UiSpinnerComponent],
   templateUrl: './favorites.html',
   styleUrl: './favorites.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -25,11 +26,10 @@ export class FavoritesComponent implements OnInit {
 
   readonly status = signal<PageStatus>('loading');
   readonly loadErrorMessage = signal<string | null>(null);
-  private readonly loadedOffers = signal<OfferSummary[]>([]);
+  readonly favorites = signal<FavoriteOffer[]>([]);
 
-  readonly offers = computed(() =>
-    this.loadedOffers().filter((offer) => this.favoriteService.isFavorite(offer.id))
-  );
+  readonly removingOfferId = signal<string | null>(null);
+  readonly removeErrorMessage = signal<string | null>(null);
 
   ngOnInit(): void {
     this.load();
@@ -40,13 +40,33 @@ export class FavoritesComponent implements OnInit {
     this.loadErrorMessage.set(null);
 
     this.favoriteService.getAll().subscribe({
-      next: (offers) => {
-        this.loadedOffers.set(offers);
+      next: (favorites) => {
+        this.favorites.set(favorites);
         this.status.set('loaded');
       },
       error: (err: unknown) => {
         this.loadErrorMessage.set(extractErrorMessage(err));
         this.status.set('error');
+      }
+    });
+  }
+
+  remove(offerId: string): void {
+    if (this.removingOfferId()) {
+      return;
+    }
+
+    this.removingOfferId.set(offerId);
+    this.removeErrorMessage.set(null);
+
+    this.favoriteService.remove(offerId).subscribe({
+      next: () => {
+        this.favorites.update((list) => list.filter((favorite) => favorite.offerId !== offerId));
+        this.removingOfferId.set(null);
+      },
+      error: (err: unknown) => {
+        this.removeErrorMessage.set(extractErrorMessage(err));
+        this.removingOfferId.set(null);
       }
     });
   }

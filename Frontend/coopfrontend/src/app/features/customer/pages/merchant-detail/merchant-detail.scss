@@ -103,6 +103,11 @@
   color: var(--coop-text-muted);
 }
 
+.no-rating {
+  font-size: 0.8125rem;
+  color: var(--coop-text-muted);
+}
+
 .section-title {
   margin: 0;
   font-size: 1.125rem;
@@ -126,4 +131,88 @@
   .offers-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+.rate-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--coop-text-muted);
+}
+
+.reviews-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--coop-space-lg) 0;
+  color: var(--coop-primary);
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--coop-space-md);
+}
+
+.review-row {
+  padding: var(--coop-space-md);
+  background: var(--coop-surface);
+  border: 1px solid var(--coop-border);
+  border-radius: var(--coop-radius-md);
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--coop-space-sm);
+}
+
+.review-customer {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--coop-text);
+}
+
+.review-date {
+  margin-inline-start: auto;
+  font-size: 0.75rem;
+  color: var(--coop-text-muted);
+}
+
+.review-comment {
+  margin-block-start: var(--coop-space-sm);
+  padding: var(--coop-space-sm) var(--coop-space-md);
+  border-radius: var(--coop-radius-md);
+  background: var(--coop-bg);
+  color: var(--coop-text);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.show-all-reviews {
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--coop-primary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.show-all-reviews:hover {
+  text-decoration: underline;
+}
+
+.reviews-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--coop-space-md);
+}
+
+.reviews-pagination-info {
+  font-size: 0.8125rem;
+  color: var(--coop-text-muted);
 }

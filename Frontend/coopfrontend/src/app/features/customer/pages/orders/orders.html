@@ -50,7 +50,7 @@
 
               <p class="order-meta">{{ order.merchantName }}</p>
               <p class="order-total">{{ order.totalAmount | jod }}</p>
-              <p class="order-date">{{ order.createdAt | coopDate: 'datetime' }}</p>
+              <p class="order-date">{{ order.placedAt | coopDate: 'datetime' }}</p>
 
               <div class="order-actions">
                 <coop-button variant="secondary" size="sm" [routerLink]="['/shop/orders', order.id]">

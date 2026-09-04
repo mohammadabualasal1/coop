@@ -40,8 +40,17 @@ export class FollowingComponent implements OnInit {
     this.loadErrorMessage.set(null);
 
     this.followService.getAll().subscribe({
-      next: (merchants) => {
-        this.loadedMerchants.set(merchants);
+      next: (follows) => {
+        this.loadedMerchants.set(
+          follows.map((follow) => ({
+            id: follow.merchantId,
+            name: follow.name,
+            description: null,
+            logoUrl: follow.logoUrl,
+            coverImageUrl: null,
+            averageRating: null
+          }))
+        );
         this.status.set('loaded');
       },
       error: (err: unknown) => {

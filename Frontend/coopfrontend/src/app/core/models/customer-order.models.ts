@@ -1,4 +1,4 @@
-import { DeliveryStatus, OrderStatus, PaymentMethod, PaymentStatus } from '../enums';
+import { DeliveryStatus, OrderStatus, PaymentMethod } from '../enums';
 
 export interface CustomerOrderSummary {
   id: string;
@@ -6,16 +6,15 @@ export interface CustomerOrderSummary {
   status: OrderStatus;
   merchantName: string;
   totalAmount: number;
-  createdAt: string;
+  placedAt: string;
 }
 
 export interface CustomerOrderItem {
   id: string;
-  offerId: string;
-  productName: string;
+  productNameSnapshot: string;
+  originalUnitPrice: number;
+  discountedUnitPrice: number;
   quantity: number;
-  unitPrice: number;
-  originalPrice: number;
   lineTotal: number;
 }
 
@@ -26,33 +25,45 @@ export interface CustomerOrderDetail {
   merchantName: string;
   branchName: string;
   paymentMethod: PaymentMethod;
-  paymentStatus: PaymentStatus;
   subtotal: number;
   totalDiscount: number;
   deliveryFee: number;
   totalAmount: number;
   customerNotes: string | null;
-  createdAt: string;
+  placedAt: string;
+  acceptedAt: string | null;
+  readyAt: string | null;
+  deliveredAt: string | null;
+  completedAt: string | null;
   items: CustomerOrderItem[];
 }
 
 export interface OrderStatusHistoryEntry {
-  status: OrderStatus;
-  changedAt: string;
-  note?: string | null;
+  oldStatus: OrderStatus;
+  newStatus: OrderStatus;
+  note: string | null;
+  createdAt: string;
+}
+
+export interface OrderDeliveryInfo {
+  status: DeliveryStatus;
+  driverName: string | null;
+  driverLatitude: number | null;
+  driverLongitude: number | null;
+  lastUpdatedAt: string | null;
 }
 
 export interface OrderTracking {
-  orderId: string;
+  id: string;
   orderNumber: string;
   status: OrderStatus;
-  deliveryStatus?: DeliveryStatus | null;
-  driverName?: string | null;
-  driverPhone?: string | null;
-  vehicleType?: string | null;
-  vehiclePlateNumber?: string | null;
-  driverLatitude?: number | null;
-  driverLongitude?: number | null;
+  placedAt: string;
+  acceptedAt: string | null;
+  readyAt: string | null;
+  deliveredAt: string | null;
+  completedAt: string | null;
+  delivery: OrderDeliveryInfo | null;
+  driverPhone: string | null;
   history: OrderStatusHistoryEntry[];
 }
 

@@ -4,7 +4,7 @@ import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { UserRole } from '../enums';
-import { OfferSummary } from '../models/marketplace.models';
+import { FavoriteOffer } from '../models/marketplace.models';
 import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
@@ -23,7 +23,7 @@ export class FavoriteService {
       if (isCustomer && !this.loaded) {
         this.loaded = true;
         this.getAll().subscribe({
-          next: (offers) => this._favoriteIds.set(new Set(offers.map((offer) => offer.id))),
+          next: (favorites) => this._favoriteIds.set(new Set(favorites.map((favorite) => favorite.offerId))),
           error: () => this._favoriteIds.set(new Set())
         });
       }
@@ -39,13 +39,13 @@ export class FavoriteService {
     return this._favoriteIds().has(offerId);
   }
 
-  getAll(): Observable<OfferSummary[]> {
-    return this.http.get<OfferSummary[]>(this.baseUrl);
+  getAll(): Observable<FavoriteOffer[]> {
+    return this.http.get<FavoriteOffer[]>(this.baseUrl);
   }
 
-  add(offerId: string): Observable<void> {
+  add(offerId: string): Observable<FavoriteOffer> {
     return this.http
-      .post<void>(`${this.baseUrl}/${offerId}`, null)
+      .post<FavoriteOffer>(`${this.baseUrl}/${offerId}`, null)
       .pipe(tap(() => this._favoriteIds.update((ids) => new Set(ids).add(offerId))));
   }
 

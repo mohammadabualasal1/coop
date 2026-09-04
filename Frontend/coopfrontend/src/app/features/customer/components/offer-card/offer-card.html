@@ -44,5 +44,9 @@
     @if (hoursRemaining(); as hours) {
       <p class="ending-soon">ينتهي خلال {{ hours }} ساعة</p>
     }
+
+    @if (favoriteErrorMessage(); as message) {
+      <coop-alert tone="danger" class="card-alert">{{ message }}</coop-alert>
+    }
   </div>
 </a>

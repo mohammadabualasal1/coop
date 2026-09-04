@@ -9,7 +9,11 @@
 
   <h3 class="merchant-name">{{ merchant().name }}</h3>
 
-  <coop-rating-stars [value]="merchant().averageRating ?? 0" [size]="16" />
+  @if (merchant().averageRating) {
+    <coop-rating-stars [value]="merchant().averageRating!" [size]="16" />
+  } @else {
+    <span class="no-rating">لا توجد تقييمات بعد</span>
+  }
 
   @if (showUnfollowButton()) {
     <button
@@ -20,5 +24,9 @@
     >
       إلغاء المتابعة
     </button>
+  }
+
+  @if (unfollowErrorMessage(); as message) {
+    <coop-alert tone="danger" class="card-alert">{{ message }}</coop-alert>
   }
 </a>

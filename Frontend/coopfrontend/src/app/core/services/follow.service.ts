@@ -4,7 +4,7 @@ import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { UserRole } from '../enums';
-import { MerchantSummary } from '../models/marketplace.models';
+import { FollowedMerchant } from '../models/marketplace.models';
 import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
@@ -23,7 +23,7 @@ export class FollowService {
       if (isCustomer && !this.loaded) {
         this.loaded = true;
         this.getAll().subscribe({
-          next: (merchants) => this._followedIds.set(new Set(merchants.map((merchant) => merchant.id))),
+          next: (follows) => this._followedIds.set(new Set(follows.map((follow) => follow.merchantId))),
           error: () => this._followedIds.set(new Set())
         });
       }
@@ -39,13 +39,13 @@ export class FollowService {
     return this._followedIds().has(merchantId);
   }
 
-  getAll(): Observable<MerchantSummary[]> {
-    return this.http.get<MerchantSummary[]>(this.baseUrl);
+  getAll(): Observable<FollowedMerchant[]> {
+    return this.http.get<FollowedMerchant[]>(this.baseUrl);
   }
 
-  follow(merchantId: string): Observable<void> {
+  follow(merchantId: string): Observable<FollowedMerchant> {
     return this.http
-      .post<void>(`${this.baseUrl}/${merchantId}`, null)
+      .post<FollowedMerchant>(`${this.baseUrl}/${merchantId}`, null)
       .pipe(tap(() => this._followedIds.update((ids) => new Set(ids).add(merchantId))));
   }
 

@@ -219,6 +219,8 @@ namespace coop.Controllers
             var userId = GetCurrentUserId();
 
             var order = await _dbcontext.Orders
+                .Include(o => o.Merchant)
+                .Include(o => o.MerchantBranch)
                 .FirstOrDefaultAsync(o => o.Id == id && o.CustomerUserId == userId);
 
             if (order == null)
@@ -242,6 +244,8 @@ namespace coop.Controllers
                 Id = order.Id,
                 OrderNumber = order.OrderNumber,
                 Status = order.Status,
+                MerchantName = order.Merchant.Name,
+                BranchName = order.MerchantBranch.Name,
                 PaymentMethod = order.PaymentMethod,
                 Subtotal = order.Subtotal,
                 TotalDiscount = order.TotalDiscount,

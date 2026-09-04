@@ -139,7 +139,10 @@ export class OrderDetailComponent implements OnDestroy {
       }
 
       this.currentStatus.set(event.status);
-      this.historyEntries.update((list) => [...list, { status: event.status, changedAt: event.changedAt }]);
+      this.historyEntries.update((list) => [
+        ...list,
+        { oldStatus: event.status, newStatus: event.status, note: null, createdAt: event.changedAt }
+      ]);
       this.order.update((order) => (order ? { ...order, status: event.status } : order));
     });
 
@@ -192,13 +195,13 @@ export class OrderDetailComponent implements OnDestroy {
         this.order.set(order);
         this.currentStatus.set(tracking.status);
         this.historyEntries.set(tracking.history);
-        this.deliveryStatus.set(tracking.deliveryStatus ?? null);
-        this.driverName.set(tracking.driverName ?? null);
+        this.deliveryStatus.set(tracking.delivery?.status ?? null);
+        this.driverName.set(tracking.delivery?.driverName ?? null);
         this.driverPhone.set(tracking.driverPhone ?? null);
-        this.vehicleType.set(tracking.vehicleType ?? null);
-        this.vehiclePlateNumber.set(tracking.vehiclePlateNumber ?? null);
-        this.driverLatitude.set(tracking.driverLatitude ?? null);
-        this.driverLongitude.set(tracking.driverLongitude ?? null);
+        this.vehicleType.set(null);
+        this.vehiclePlateNumber.set(null);
+        this.driverLatitude.set(tracking.delivery?.driverLatitude ?? null);
+        this.driverLongitude.set(tracking.delivery?.driverLongitude ?? null);
         this.status.set('loaded');
 
         this.trackingHub.connect().then(() => this.trackingHub.joinOrder(id));

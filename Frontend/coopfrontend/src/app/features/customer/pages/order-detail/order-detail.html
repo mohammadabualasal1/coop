@@ -32,8 +32,8 @@
                   <div class="timeline-row">
                     <span class="timeline-dot" [class.current]="last"></span>
                     <div class="timeline-content">
-                      <span class="timeline-label" [class.current]="last">{{ statusLabel(entry.status) }}</span>
-                      <span class="timeline-date">{{ entry.changedAt | coopDate: 'datetime' }}</span>
+                      <span class="timeline-label" [class.current]="last">{{ statusLabel(entry.newStatus) }}</span>
+                      <span class="timeline-date">{{ entry.createdAt | coopDate: 'datetime' }}</span>
                     </div>
                   </div>
                 }
@@ -83,9 +83,9 @@
                   <tbody>
                     @for (item of order.items; track item.id) {
                       <tr>
-                        <td>{{ item.productName }}</td>
+                        <td>{{ item.productNameSnapshot }}</td>
                         <td>{{ item.quantity }}</td>
-                        <td>{{ item.unitPrice | jod }}</td>
+                        <td>{{ item.discountedUnitPrice | jod }}</td>
                         <td>{{ item.lineTotal | jod }}</td>
                       </tr>
                     }
@@ -118,7 +118,7 @@
             <coop-card title="ملخص الطلب">
               <p class="order-meta">المتجر: {{ order.merchantName }}</p>
               <p class="order-meta">الفرع: {{ order.branchName }}</p>
-              <p class="order-meta">{{ order.createdAt | coopDate: 'datetime' }}</p>
+              <p class="order-meta">{{ order.placedAt | coopDate: 'datetime' }}</p>
 
               @if (order.customerNotes) {
                 <div class="customer-notes">

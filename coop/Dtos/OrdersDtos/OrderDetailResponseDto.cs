@@ -7,6 +7,8 @@ namespace coop.Dtos.OrdersDtos
         public Guid Id { get; set; }
         public string OrderNumber { get; set; }
         public OrderStatus Status { get; set; }
+        public string MerchantName { get; set; }
+        public string BranchName { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
         public decimal Subtotal { get; set; }
         public decimal TotalDiscount { get; set; }

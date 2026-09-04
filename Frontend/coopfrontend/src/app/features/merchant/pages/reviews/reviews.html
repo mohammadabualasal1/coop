@@ -22,14 +22,13 @@
 
       <coop-card>
         <div class="summary">
-          @if (totalCount() === 0) {
-            <p class="no-ratings">لا توجد تقييمات بعد</p>
-          } @else {
+          @if (merchant()?.averageRating) {
             <div class="summary-main">
               <span class="average-value">{{ averageRatingDisplay() }}</span>
-              <coop-rating-stars [value]="merchant()?.averageRating ?? 0" [size]="24" />
+              <coop-rating-stars [value]="merchant()!.averageRating!" [size]="24" />
             </div>
-            <p class="summary-sub">من {{ totalCount() }} تقييم</p>
+          } @else {
+            <p class="no-ratings">لا توجد تقييمات بعد</p>
           }
         </div>
       </coop-card>
@@ -64,14 +63,13 @@
           </coop-button>
 
           <div class="pagination-info">
-            <span>صفحة {{ pageNumber() }} من {{ totalPages() }}</span>
-            <span>إجمالي {{ totalCount() }} تقييم</span>
+            <span>صفحة {{ pageNumber() }}</span>
           </div>
 
           <coop-button
             variant="secondary"
             size="sm"
-            [disabled]="pageNumber() >= totalPages()"
+            [disabled]="!hasNextPage()"
             (click)="goToNextPage()"
           >
             التالي

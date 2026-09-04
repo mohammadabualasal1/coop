@@ -47,6 +47,17 @@
   color: var(--coop-text);
 }
 
+.no-rating {
+  font-size: 0.8125rem;
+  color: var(--coop-text-muted);
+}
+
+.card-alert {
+  width: 100%;
+  text-align: start;
+  font-size: 0.8125rem;
+}
+
 .unfollow-button {
   margin-block-start: var(--coop-space-xs);
   min-height: 36px;

@@ -43,9 +43,8 @@ export class ReviewsComponent implements OnInit {
   readonly loadErrorMessage = signal<string | null>(null);
   readonly merchant = signal<Merchant | null>(null);
   readonly reviews = signal<Review[]>([]);
-  readonly totalCount = signal(0);
   readonly pageNumber = signal(1);
-  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalCount() / PAGE_SIZE)));
+  readonly hasNextPage = computed(() => this.reviews().length === PAGE_SIZE);
 
   ngOnInit(): void {
     this.load();
@@ -68,9 +67,8 @@ export class ReviewsComponent implements OnInit {
         })
       )
       .subscribe({
-        next: (result) => {
-          this.reviews.set(result.items);
-          this.totalCount.set(result.totalCount);
+        next: (reviews) => {
+          this.reviews.set(reviews);
           this.status.set('loaded');
         },
         error: (err: unknown) => {
@@ -95,7 +93,7 @@ export class ReviewsComponent implements OnInit {
   }
 
   goToNextPage(): void {
-    if (this.pageNumber() >= this.totalPages()) {
+    if (!this.hasNextPage()) {
       return;
     }
 

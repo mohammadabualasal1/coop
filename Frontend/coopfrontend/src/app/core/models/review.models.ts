@@ -7,13 +7,6 @@ export interface Review {
   createdAt: string;
 }
 
-export interface PagedReviews {
-  items: Review[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-}
-
 export interface CreateReviewRequest {
   orderId: string;
   merchantRating: number;

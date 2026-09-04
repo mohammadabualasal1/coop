@@ -51,7 +51,7 @@ export class OrdersComponent implements OnInit {
   readonly filteredOrders = computed(() => {
     const selected = this.selectedStatus();
     const sorted = [...this.orders()].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime()
     );
 
     return selected === 'all' ? sorted : sorted.filter((order) => order.status === selected);

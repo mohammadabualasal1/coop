@@ -39,7 +39,11 @@
 
             <div class="header-text">
               <h1 class="merchant-name">{{ merchant.name }}</h1>
-              <coop-rating-stars [value]="merchant.averageRating ?? 0" [size]="16" />
+              @if (merchant.averageRating) {
+                <coop-rating-stars [value]="merchant.averageRating" [size]="16" />
+              } @else {
+                <span class="no-rating">لا توجد تقييمات بعد</span>
+              }
               @if (merchant.description) {
                 <p class="merchant-description">{{ merchant.description }}</p>
               }
@@ -56,6 +60,12 @@
           </div>
         </div>
 
+        @if (followErrorMessage(); as message) {
+          <coop-alert tone="danger">{{ message }}</coop-alert>
+        }
+
+        <p class="rate-hint">يمكنك تقييم المتجر بعد استلام طلبك من صفحة الطلب.</p>
+
         <h2 class="section-title">العروض</h2>
 
         @if (offers().length === 0) {
@@ -66,6 +76,70 @@
               <app-offer-card [offer]="offer" />
             }
           </div>
+        }
+
+        <h2 class="section-title">التقييمات</h2>
+
+        @switch (reviewsStatus()) {
+          @case ('loading') {
+            <div class="reviews-loading">
+              <coop-spinner [size]="24" />
+            </div>
+          }
+
+          @case ('error') {
+            <coop-alert tone="danger">{{ reviewsErrorMessage() }}</coop-alert>
+          }
+
+          @case ('loaded') {
+            @if (reviews().length === 0) {
+              <span class="no-rating">لا توجد تقييمات بعد</span>
+            } @else {
+              <div class="reviews-list">
+                @for (review of reviews(); track review.id) {
+                  <div class="review-row">
+                    <div class="review-header">
+                      <span class="review-customer">{{ review.customerName }}</span>
+                      <coop-rating-stars [value]="review.merchantRating" [size]="16" />
+                      <span class="review-date">{{ review.createdAt | coopDate }}</span>
+                    </div>
+
+                    @if (review.comment) {
+                      <div class="review-comment">{{ review.comment }}</div>
+                    }
+                  </div>
+                }
+              </div>
+
+              @if (!reviewsExpanded()) {
+                <button type="button" class="show-all-reviews" (click)="expandReviews()">
+                  عرض كل التقييمات
+                </button>
+              } @else {
+                <div class="reviews-pagination">
+                  <coop-button
+                    variant="secondary"
+                    size="sm"
+                    [disabled]="reviewsPageNumber() <= 1"
+                    (click)="reviewsGoToPreviousPage()"
+                  >
+                    السابق
+                  </coop-button>
+
+                  <span class="reviews-pagination-info">صفحة {{ reviewsPageNumber() }}</span>
+
+                  <coop-button
+                    variant="secondary"
+                    size="sm"
+                    [disabled]="!reviewsHasNextPage()"
+                    (click)="reviewsGoToNextPage()"
+                  >
+                    التالي
+                  </coop-button>
+                </div>
+              }
+            }
+          }
         }
       </div>
     }
