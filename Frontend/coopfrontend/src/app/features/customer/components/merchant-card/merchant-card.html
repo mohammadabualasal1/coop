@@ -1,0 +1,24 @@
+<a class="merchant-card" [routerLink]="['/shop/merchants', merchant().id]">
+  <div class="logo-circle">
+    @if (merchant().logoUrl) {
+      <img [src]="merchant().logoUrl" [alt]="merchant().name" />
+    } @else {
+      {{ merchant().name.charAt(0) }}
+    }
+  </div>
+
+  <h3 class="merchant-name">{{ merchant().name }}</h3>
+
+  <coop-rating-stars [value]="merchant().averageRating ?? 0" [size]="16" />
+
+  @if (showUnfollowButton()) {
+    <button
+      type="button"
+      class="unfollow-button"
+      [disabled]="unfollowSaving()"
+      (click)="unfollow($event)"
+    >
+      إلغاء المتابعة
+    </button>
+  }
+</a>

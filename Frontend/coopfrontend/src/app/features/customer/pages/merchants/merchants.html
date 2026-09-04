@@ -1,0 +1,63 @@
+@switch (status()) {
+  @case ('loading') {
+    <div class="loading-state">
+      <coop-spinner [size]="32" />
+    </div>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div class="page-content">
+      <h2 class="page-title">المتاجر</h2>
+
+      <input
+        type="search"
+        class="search-box"
+        placeholder="ابحث عن متجر"
+        [value]="searchInputValue()"
+        (input)="onSearchInput($event)"
+      />
+
+      @if (merchants().length === 0) {
+        <coop-empty-state title="لا توجد متاجر" message="جرّب كلمة بحث أخرى" />
+      } @else {
+        <div class="merchants-grid">
+          @for (merchant of merchants(); track merchant.id) {
+            <app-merchant-card [merchant]="merchant" />
+          }
+        </div>
+
+        <div class="pagination">
+          <coop-button
+            variant="secondary"
+            size="sm"
+            [disabled]="pageNumber() <= 1"
+            (click)="goToPreviousPage()"
+          >
+            السابق
+          </coop-button>
+
+          <div class="pagination-info">
+            <span>صفحة {{ pageNumber() }} من {{ totalPages() }}</span>
+            <span>إجمالي {{ totalCount() }} متجر</span>
+          </div>
+
+          <coop-button
+            variant="secondary"
+            size="sm"
+            [disabled]="pageNumber() >= totalPages()"
+            (click)="goToNextPage()"
+          >
+            التالي
+          </coop-button>
+        </div>
+      }
+    </div>
+  }
+}

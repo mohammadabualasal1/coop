@@ -1,0 +1,42 @@
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--coop-space-2xl) 0;
+  color: var(--coop-primary);
+}
+
+.page-content {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-block: var(--coop-space-xl);
+  padding-inline: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--coop-space-lg);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--coop-text);
+}
+
+.merchants-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .merchants-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .merchants-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

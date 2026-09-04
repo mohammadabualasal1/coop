@@ -55,6 +55,35 @@
   font-weight: 700;
 }
 
+.favorite-button {
+  position: absolute;
+  inset-block-start: var(--coop-space-sm);
+  inset-inline-start: var(--coop-space-sm);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--coop-surface) 88%, transparent);
+  color: var(--coop-text-muted);
+  cursor: pointer;
+}
+
+.favorite-button:hover {
+  color: var(--coop-primary);
+}
+
+.favorite-button.active {
+  color: var(--coop-primary);
+}
+
+.favorite-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .body {
   display: flex;
   flex-direction: column;

@@ -1,3 +1,4 @@
+<div class="site-header">
 <header class="topbar">
   <div class="topbar-inner">
     <a routerLink="/shop" class="wordmark">COOP</a>
@@ -50,9 +51,8 @@
 
           @if (menuOpen()) {
             <div class="dropdown">
-              <a routerLink="/shop/orders" class="dropdown-item">طلباتي</a>
               <a routerLink="/shop/addresses" class="dropdown-item">عناويني</a>
-              <a routerLink="/shop/favorites" class="dropdown-item">المفضلة</a>
+              <button type="button" class="dropdown-item" disabled>تغيير كلمة المرور</button>
               <button type="button" class="dropdown-item" (click)="logout()">تسجيل الخروج</button>
             </div>
           }
@@ -61,6 +61,26 @@
     </div>
   </div>
 </header>
+
+<nav class="nav-row">
+  <div class="nav-row-inner">
+    <a
+      routerLink="/shop"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="nav-link"
+    >
+      الرئيسية
+    </a>
+    <a routerLink="/shop/merchants" routerLinkActive="active" class="nav-link">المتاجر</a>
+    @if (isCustomer()) {
+      <a routerLink="/shop/favorites" routerLinkActive="active" class="nav-link">المفضلة</a>
+      <a routerLink="/shop/following" routerLinkActive="active" class="nav-link">متاجري المتابَعة</a>
+      <a routerLink="/shop/orders" routerLinkActive="active" class="nav-link">طلباتي</a>
+    }
+  </div>
+</nav>
+</div>
 
 <main class="content">
   <router-outlet />

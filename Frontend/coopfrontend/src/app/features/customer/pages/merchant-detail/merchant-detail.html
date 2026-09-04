@@ -1,0 +1,73 @@
+@switch (status()) {
+  @case ('loading') {
+    <div class="loading-state">
+      <coop-spinner [size]="32" />
+    </div>
+  }
+
+  @case ('notfound') {
+    <coop-empty-state title="المتجر غير موجود" message="قد يكون تم حذفه">
+      <a coopEmptyStateAction routerLink="/shop" class="empty-action">العودة إلى المتجر</a>
+    </coop-empty-state>
+  }
+
+  @case ('error') {
+    <div class="page-content">
+      <coop-alert tone="danger">{{ loadErrorMessage() }}</coop-alert>
+      <coop-button variant="secondary" (click)="retry()">إعادة المحاولة</coop-button>
+    </div>
+  }
+
+  @case ('loaded') {
+    @if (merchant(); as merchant) {
+      <div class="page-content">
+        <div class="merchant-header">
+          @if (merchant.coverImageUrl) {
+            <img class="cover-image" [src]="merchant.coverImageUrl" [alt]="merchant.name" />
+          } @else {
+            <div class="cover-placeholder"></div>
+          }
+
+          <div class="header-info">
+            <div class="logo-circle">
+              @if (merchant.logoUrl) {
+                <img [src]="merchant.logoUrl" [alt]="merchant.name" />
+              } @else {
+                {{ merchant.name.charAt(0) }}
+              }
+            </div>
+
+            <div class="header-text">
+              <h1 class="merchant-name">{{ merchant.name }}</h1>
+              <coop-rating-stars [value]="merchant.averageRating ?? 0" [size]="16" />
+              @if (merchant.description) {
+                <p class="merchant-description">{{ merchant.description }}</p>
+              }
+            </div>
+
+            <coop-button
+              [variant]="isFollowing() ? 'secondary' : 'primary'"
+              size="sm"
+              [loading]="followSaving()"
+              (click)="toggleFollow()"
+            >
+              {{ isFollowing() ? 'إلغاء المتابعة' : 'متابعة' }}
+            </coop-button>
+          </div>
+        </div>
+
+        <h2 class="section-title">العروض</h2>
+
+        @if (offers().length === 0) {
+          <coop-empty-state title="لا توجد عروض حالياً" message="عد لاحقاً لمشاهدة عروض هذا المتجر" />
+        } @else {
+          <div class="offers-grid">
+            @for (offer of offers(); track offer.id) {
+              <app-offer-card [offer]="offer" />
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+}

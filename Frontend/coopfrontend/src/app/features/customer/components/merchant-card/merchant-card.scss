@@ -1,0 +1,73 @@
+.merchant-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--coop-space-sm);
+  padding: var(--coop-space-lg);
+  background: var(--coop-surface);
+  border-radius: var(--coop-radius-lg);
+  box-shadow: var(--coop-shadow-md);
+  text-align: center;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.merchant-card:hover {
+  box-shadow: var(--coop-shadow-lg);
+  transform: translateY(-2px);
+}
+
+.logo-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--coop-primary);
+  color: var(--coop-surface);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.logo-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.merchant-name {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--coop-text);
+}
+
+.unfollow-button {
+  margin-block-start: var(--coop-space-xs);
+  min-height: 36px;
+  padding-inline: var(--coop-space-md);
+  border: 1px solid var(--coop-border);
+  border-radius: var(--coop-radius-md);
+  background: none;
+  color: var(--coop-text-muted);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.unfollow-button:hover:not(:disabled) {
+  background: var(--coop-bg);
+  color: var(--coop-danger);
+  border-color: var(--coop-danger);
+}
+
+.unfollow-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

@@ -1,7 +1,7 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { catchError, interval, of, startWith, switchMap } from 'rxjs';
 
 import { UserRole } from '../../../../core/enums';
@@ -15,7 +15,7 @@ const UNREAD_COUNT_POLL_MS = 60000;
 
 @Component({
   selector: 'app-shop-layout',
-  imports: [ReactiveFormsModule, RouterOutlet, RouterLink, UiButtonComponent],
+  imports: [ReactiveFormsModule, RouterOutlet, RouterLink, RouterLinkActive, UiButtonComponent],
   templateUrl: './shop-layout.html',
   styleUrl: './shop-layout.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

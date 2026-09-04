@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 
 import { OfferSummary } from '../../../../core/models/marketplace.models';
+import { AuthService } from '../../../../core/services/auth.service';
+import { FavoriteService } from '../../../../core/services/favorite.service';
 import { DiscountPercentPipe } from '../../../../shared/pipes/discount-percent.pipe';
 import { JodPipe } from '../../../../shared/pipes/jod.pipe';
 
@@ -16,7 +18,14 @@ const MS_PER_HOUR = 3_600_000;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OfferCardComponent {
+  private readonly auth = inject(AuthService);
+  private readonly favoriteService = inject(FavoriteService);
+  private readonly router = inject(Router);
+
   readonly offer = input.required<OfferSummary>();
+
+  readonly isFavorite = computed(() => this.favoriteService.isFavorite(this.offer().id));
+  readonly favoriteSaving = signal(false);
 
   readonly hoursRemaining = computed<number | null>(() => {
     const endAt = new Date(this.offer().endAt).getTime();
@@ -33,4 +42,27 @@ export class OfferCardComponent {
     const km = this.offer().distanceKm;
     return km !== undefined ? km.toFixed(1) : null;
   });
+
+  toggleFavorite(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!this.auth.isAuthenticated()) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
+    if (this.favoriteSaving()) {
+      return;
+    }
+
+    this.favoriteSaving.set(true);
+    const offerId = this.offer().id;
+    const request$ = this.isFavorite() ? this.favoriteService.remove(offerId) : this.favoriteService.add(offerId);
+
+    request$.subscribe({
+      next: () => this.favoriteSaving.set(false),
+      error: () => this.favoriteSaving.set(false)
+    });
+  }
 }

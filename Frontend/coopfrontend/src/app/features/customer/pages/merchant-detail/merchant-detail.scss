@@ -1,0 +1,129 @@
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--coop-space-2xl) 0;
+  color: var(--coop-primary);
+}
+
+.page-content {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-block: var(--coop-space-xl);
+  padding-inline: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--coop-space-lg);
+}
+
+.empty-action {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--coop-space-lg);
+  border: none;
+  border-radius: var(--coop-radius-md);
+  background: var(--coop-primary);
+  color: var(--coop-surface);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.empty-action:hover {
+  background: var(--coop-primary-dark);
+}
+
+.merchant-header {
+  border-radius: var(--coop-radius-lg);
+  overflow: hidden;
+  background: var(--coop-surface);
+  border: 1px solid var(--coop-border);
+}
+
+.cover-image,
+.cover-placeholder {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  background: var(--coop-border);
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--coop-space-md);
+  padding: var(--coop-space-lg);
+}
+
+.logo-circle {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--coop-surface);
+  border: 3px solid var(--coop-surface);
+  box-shadow: var(--coop-shadow-md);
+  color: var(--coop-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.logo-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-text {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.merchant-name {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--coop-text);
+}
+
+.merchant-description {
+  margin: var(--coop-space-xs) 0 0;
+  font-size: 0.875rem;
+  color: var(--coop-text-muted);
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--coop-text);
+}
+
+.offers-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .offers-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .offers-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

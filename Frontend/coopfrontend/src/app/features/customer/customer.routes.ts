@@ -24,9 +24,25 @@ export const CUSTOMER_ROUTES: Routes = [
           import('./pages/offer-detail/offer-detail').then((m) => m.OfferDetailComponent)
       },
       {
+        path: 'merchants',
+        loadComponent: () => import('./pages/merchants/merchants').then((m) => m.MerchantsComponent)
+      },
+      {
         path: 'merchants/:id',
         loadComponent: () =>
           import('./pages/merchant-detail/merchant-detail').then((m) => m.MerchantDetailComponent)
+      },
+      {
+        path: 'favorites',
+        canActivate: [authGuard, roleGuard(UserRole.Customer)],
+        loadComponent: () =>
+          import('./pages/favorites/favorites').then((m) => m.FavoritesComponent)
+      },
+      {
+        path: 'following',
+        canActivate: [authGuard, roleGuard(UserRole.Customer)],
+        loadComponent: () =>
+          import('./pages/following/following').then((m) => m.FollowingComponent)
       },
       {
         path: 'cart',
