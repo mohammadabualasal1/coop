@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
 
@@ -45,7 +45,7 @@ const MS_PER_HOUR = 3_600_000;
   styleUrl: './offer-detail.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class OfferDetailComponent implements OnInit {
+export class OfferDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
@@ -128,7 +128,7 @@ export class OfferDetailComponent implements OnInit {
     return hoursLeft > 0 && hoursLeft <= ENDING_SOON_HOURS;
   });
 
-  ngOnInit(): void {
+  constructor() {
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       const id = params.get('id');
 

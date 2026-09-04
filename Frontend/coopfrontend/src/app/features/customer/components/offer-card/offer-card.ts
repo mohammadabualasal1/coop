@@ -28,4 +28,9 @@ export class OfferCardComponent {
     const hours = Math.ceil((endAt - Date.now()) / MS_PER_HOUR);
     return hours > 0 && hours <= ENDING_SOON_HOURS ? hours : null;
   });
+
+  readonly distanceLabel = computed<string | null>(() => {
+    const km = this.offer().distanceKm;
+    return km !== undefined ? km.toFixed(1) : null;
+  });
 }

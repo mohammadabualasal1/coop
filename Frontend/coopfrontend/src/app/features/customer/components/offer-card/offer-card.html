@@ -3,7 +3,14 @@
     @if (offer().mainImageUrl) {
       <img [src]="offer().mainImageUrl" [alt]="offer().title" />
     } @else {
-      <div class="cover-placeholder"></div>
+      <div class="cover-placeholder">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 6h15l-1.5 9h-12z" />
+          <path d="M6 6 4.5 3H2" />
+          <circle cx="9.5" cy="19.5" r="1.5" />
+          <circle cx="17.5" cy="19.5" r="1.5" />
+        </svg>
+      </div>
     }
     <span class="discount-pill">خصم {{ offer().discountPercentage | discountPercent }}%</span>
   </div>
@@ -16,6 +23,10 @@
       <span class="discounted-price">{{ offer().discountedPrice | jod }}</span>
       <span class="original-price">{{ offer().originalPrice | jod }}</span>
     </div>
+
+    @if (distanceLabel(); as km) {
+      <p class="distance-line">يبعد {{ km }} كم</p>
+    }
 
     @if (hoursRemaining(); as hours) {
       <p class="ending-soon">ينتهي خلال {{ hours }} ساعة</p>

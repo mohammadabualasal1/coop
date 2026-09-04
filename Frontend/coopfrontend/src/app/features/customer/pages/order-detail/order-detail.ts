@@ -1,5 +1,5 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
@@ -58,7 +58,7 @@ type PageStatus = 'loading' | 'error' | 'loaded';
   styleUrl: './order-detail.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class OrderDetailComponent implements OnInit, OnDestroy {
+export class OrderDetailComponent implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly orderService = inject(OrderService);
   private readonly reviewService = inject(ReviewService);
@@ -123,7 +123,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   readonly reviewComment = signal('');
   readonly reviewSubmitDisabled = computed(() => this.reviewSaving() || this.reviewMerchantRating() === 0);
 
-  ngOnInit(): void {
+  constructor() {
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       const id = params.get('id');
 

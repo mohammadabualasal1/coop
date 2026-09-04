@@ -2,49 +2,115 @@
   <div class="hero-inner">
     <h1 class="hero-title">خصومات حقيقية من متاجر قريبة منك</h1>
     <p class="hero-subtitle">اطلب واستلم بسرعة</p>
+    <p class="hero-tagline">المزيد من العروض. مكان واحد.</p>
   </div>
 </section>
 
 <div class="page-content">
-  <section class="offer-section">
-    <div class="section-header">
-      <h2 class="section-title">ينتهي قريباً</h2>
-      <a class="see-all" routerLink="/shop/search">عرض الكل</a>
-    </div>
-    <div class="offer-row">
-      @for (offer of endingSoon(); track offer.id) {
-        <div class="offer-row-item">
-          <app-offer-card [offer]="offer" />
-        </div>
+  @if (categories().length > 0) {
+    <div class="categories-strip">
+      @for (category of categories(); track category.id) {
+        <a class="category-chip" routerLink="/shop/search" [queryParams]="{ categoryId: category.id }">
+          <span class="category-avatar">
+            @if (category.imageUrl) {
+              <img [src]="category.imageUrl" [alt]="category.nameAr" />
+            } @else {
+              {{ category.nameAr.charAt(0) }}
+            }
+          </span>
+          <span class="category-name">{{ category.nameAr }}</span>
+        </a>
       }
     </div>
+  }
+
+  <section class="nearby-section">
+    @switch (nearbyStatus()) {
+      @case ('idle') {
+        <div class="nearby-card">
+          <p class="nearby-text">اعرف العروض القريبة منك</p>
+          <coop-button size="sm" (click)="requestNearby()">تحديد موقعي</coop-button>
+        </div>
+      }
+      @case ('loading') {
+        <div class="nearby-card">
+          <coop-spinner [size]="24" />
+        </div>
+      }
+      @case ('denied') {
+        <p class="muted-line">يمكنك تصفّح كل العروض بدون تحديد الموقع.</p>
+      }
+      @case ('granted') {
+        @if (nearbyVisible().length > 0) {
+          <div class="offer-section">
+            <div class="section-header">
+              <h2 class="section-title">قريب منك</h2>
+              @if (nearby().length > cardCap) {
+                <a class="see-all" routerLink="/shop/search">عرض الكل</a>
+              }
+            </div>
+            <div class="offer-grid">
+              @for (offer of nearbyVisible(); track offer.id) {
+                <app-offer-card [offer]="offer" />
+              }
+            </div>
+          </div>
+        } @else {
+          <p class="muted-line">لا توجد عروض قريبة منك حالياً.</p>
+        }
+      }
+    }
   </section>
 
-  <section class="offer-section">
-    <div class="section-header">
-      <h2 class="section-title">أعلى الخصومات</h2>
-      <a class="see-all" routerLink="/shop/search">عرض الكل</a>
-    </div>
-    <div class="offer-row">
-      @for (offer of topDiscounts(); track offer.id) {
-        <div class="offer-row-item">
-          <app-offer-card [offer]="offer" />
+  @if (allEmpty()) {
+    <coop-empty-state title="لا توجد عروض حالياً" message="تابعنا — عروض جديدة تُضاف باستمرار" />
+  } @else {
+    @if (endingSoon().length > 0) {
+      <section class="offer-section">
+        <div class="section-header">
+          <h2 class="section-title">ينتهي قريباً</h2>
+          @if (endingSoon().length > cardCap) {
+            <a class="see-all" routerLink="/shop/search">عرض الكل</a>
+          }
         </div>
-      }
-    </div>
-  </section>
+        <div class="offer-grid">
+          @for (offer of endingSoonVisible(); track offer.id) {
+            <app-offer-card [offer]="offer" />
+          }
+        </div>
+      </section>
+    }
 
-  <section class="offer-section">
-    <div class="section-header">
-      <h2 class="section-title">أحدث العروض</h2>
-      <a class="see-all" routerLink="/shop/search">عرض الكل</a>
-    </div>
-    <div class="offer-row">
-      @for (offer of latest(); track offer.id) {
-        <div class="offer-row-item">
-          <app-offer-card [offer]="offer" />
+    @if (topDiscounts().length > 0) {
+      <section class="offer-section">
+        <div class="section-header">
+          <h2 class="section-title">أعلى الخصومات</h2>
+          @if (topDiscounts().length > cardCap) {
+            <a class="see-all" routerLink="/shop/search">عرض الكل</a>
+          }
         </div>
-      }
-    </div>
-  </section>
+        <div class="offer-grid">
+          @for (offer of topDiscountsVisible(); track offer.id) {
+            <app-offer-card [offer]="offer" />
+          }
+        </div>
+      </section>
+    }
+
+    @if (latest().length > 0) {
+      <section class="offer-section">
+        <div class="section-header">
+          <h2 class="section-title">أحدث العروض</h2>
+          @if (latest().length > cardCap) {
+            <a class="see-all" routerLink="/shop/search">عرض الكل</a>
+          }
+        </div>
+        <div class="offer-grid">
+          @for (offer of latestVisible(); track offer.id) {
+            <app-offer-card [offer]="offer" />
+          }
+        </div>
+      </section>
+    }
+  }
 </div>

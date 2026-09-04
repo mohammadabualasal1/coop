@@ -24,6 +24,15 @@
         }
       </h2>
 
+      @if (categoryName(); as name) {
+        <div class="active-filter-chip">
+          <span>{{ name }}</span>
+          <button type="button" class="remove-filter" (click)="clearCategoryFilter()" aria-label="إزالة الفلتر">
+            &times;
+          </button>
+        </div>
+      }
+
       @if (offers().length === 0) {
         <coop-empty-state title="لا توجد نتائج" message="جرّب كلمات بحث أخرى" />
       } @else {
