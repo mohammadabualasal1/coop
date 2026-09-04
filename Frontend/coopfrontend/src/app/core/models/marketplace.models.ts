@@ -19,6 +19,8 @@ export interface OfferBranchAvailability {
   city: string;
   area: string;
   availableStock: number;
+  latitude: number;
+  longitude: number;
 }
 
 export interface OfferDetail extends OfferSummary {

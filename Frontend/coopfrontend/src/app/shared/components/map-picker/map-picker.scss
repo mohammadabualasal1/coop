@@ -1,0 +1,102 @@
+:host {
+  display: block;
+}
+
+.map-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--coop-space-sm);
+}
+
+.search-input {
+  width: 100%;
+  min-height: 44px;
+  padding-inline: var(--coop-space-md);
+  border: 1px solid var(--coop-border);
+  border-radius: var(--coop-radius-md);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: var(--coop-text);
+  background: var(--coop-surface);
+}
+
+.search-input:focus-visible {
+  outline: 2px solid var(--coop-primary);
+  outline-offset: 2px;
+}
+
+.map-container {
+  width: 100%;
+  border-radius: var(--coop-radius-md);
+  overflow: hidden;
+  background: var(--coop-bg);
+}
+
+.current-location-btn {
+  align-self: flex-start;
+  min-height: 36px;
+  padding-inline: var(--coop-space-md);
+  border: 1px solid var(--coop-border);
+  border-radius: var(--coop-radius-md);
+  background: var(--coop-surface);
+  color: var(--coop-primary);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.current-location-btn:hover:not(:disabled) {
+  background: var(--coop-bg);
+}
+
+.current-location-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.muted-line {
+  margin: var(--coop-space-sm) 0 0;
+  font-size: 0.8125rem;
+  color: var(--coop-text-muted);
+}
+
+.error-line {
+  color: var(--coop-danger);
+}
+
+.map-fallback {
+  padding: var(--coop-space-md);
+  border-radius: var(--coop-radius-md);
+  background: var(--coop-bg);
+  text-align: center;
+}
+
+.fallback-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--coop-space-md);
+  margin-block-start: var(--coop-space-md);
+}
+
+.fallback-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 140px;
+  font-size: 0.875rem;
+  color: var(--coop-text);
+  text-align: start;
+}
+
+.fallback-field input {
+  min-height: 44px;
+  padding-inline: var(--coop-space-md);
+  border: 1px solid var(--coop-border);
+  border-radius: var(--coop-radius-md);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: var(--coop-text);
+  background: var(--coop-surface);
+}

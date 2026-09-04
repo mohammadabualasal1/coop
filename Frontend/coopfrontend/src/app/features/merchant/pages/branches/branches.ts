@@ -5,6 +5,7 @@ import { BranchRequest, MerchantBranch } from '../../../../core/models/branch.mo
 import { BranchService } from '../../../../core/services/branch.service';
 import { extractErrorMessage } from '../../../../core/utils/http-error';
 import {
+  MapPickerComponent,
   UiAlertComponent,
   UiBadgeComponent,
   UiButtonComponent,
@@ -42,7 +43,8 @@ function stripSeconds(time: string): string {
     UiSpinnerComponent,
     UiEmptyStateComponent,
     UiModalComponent,
-    UiConfirmModalComponent
+    UiConfirmModalComponent,
+    MapPickerComponent
   ],
   templateUrl: './branches.html',
   styleUrl: './branches.scss',
@@ -80,8 +82,8 @@ export class BranchesComponent implements OnInit {
     area: ['', [Validators.required]],
     address: ['', [Validators.required]],
     phoneNumber: ['', [Validators.required, Validators.pattern(PHONE_PATTERN)]],
-    latitude: [0, [Validators.required, Validators.min(-90), Validators.max(90)]],
-    longitude: [0, [Validators.required, Validators.min(-180), Validators.max(180)]],
+    latitude: [null as number | null, [Validators.required, Validators.min(-90), Validators.max(90)]],
+    longitude: [null as number | null, [Validators.required, Validators.min(-180), Validators.max(180)]],
     openingTime: ['', [Validators.required]],
     closingTime: ['', [Validators.required]],
     deliveryRadiusKm: [1, [Validators.required, Validators.min(0.5)]],
@@ -126,8 +128,8 @@ export class BranchesComponent implements OnInit {
       area: '',
       address: '',
       phoneNumber: '',
-      latitude: 0,
-      longitude: 0,
+      latitude: null,
+      longitude: null,
       openingTime: '',
       closingTime: '',
       deliveryRadiusKm: 1,
@@ -213,32 +215,13 @@ export class BranchesComponent implements OnInit {
     return null;
   }
 
-  latitudeErrorMessage(): string | null {
-    const control = this.form.controls.latitude;
-
-    if (!control.invalid) {
-      return null;
-    }
-
-    if (control.hasError('required')) {
-      return 'خط العرض مطلوب';
-    }
-
-    return 'خط العرض يجب أن يكون بين -90 و 90';
+  locationErrorMessage(): string | null {
+    const { latitude, longitude } = this.form.controls;
+    return latitude.invalid || longitude.invalid ? 'يجب تحديد الموقع على الخريطة' : null;
   }
 
-  longitudeErrorMessage(): string | null {
-    const control = this.form.controls.longitude;
-
-    if (!control.invalid) {
-      return null;
-    }
-
-    if (control.hasError('required')) {
-      return 'خط الطول مطلوب';
-    }
-
-    return 'خط الطول يجب أن يكون بين -180 و 180';
+  onLocationChange(location: { latitude: number; longitude: number }): void {
+    this.form.patchValue(location);
   }
 
   openingTimeErrorMessage(): string | null {
@@ -305,8 +288,8 @@ export class BranchesComponent implements OnInit {
       area: raw.area,
       address: raw.address,
       phoneNumber: raw.phoneNumber,
-      latitude: raw.latitude,
-      longitude: raw.longitude,
+      latitude: raw.latitude!,
+      longitude: raw.longitude!,
       openingTime: appendSeconds(raw.openingTime),
       closingTime: appendSeconds(raw.closingTime),
       deliveryRadiusKm: raw.deliveryRadiusKm,

@@ -65,23 +65,20 @@
       </coop-field>
     </div>
 
-    <coop-field
-      label="خط العرض"
-      [error]="latitudeErrorMessage()"
-      [touched]="form.controls.latitude.touched"
-    >
-      <input formControlName="latitude" type="number" step="any" />
-    </coop-field>
-
-    <coop-field
-      label="خط الطول"
-      [error]="longitudeErrorMessage()"
-      [touched]="form.controls.longitude.touched"
-    >
-      <input formControlName="longitude" type="number" step="any" />
-    </coop-field>
-
-    <p class="coordinates-note span-2">يمكنك أخذ الإحداثيات من خرائط جوجل</p>
+    <div class="span-2">
+      <coop-field
+        label="الموقع على الخريطة"
+        [required]="true"
+        [error]="locationErrorMessage()"
+        [touched]="form.controls.latitude.touched || form.controls.longitude.touched"
+      >
+        <coop-map-picker
+          [latitude]="form.controls.latitude.value"
+          [longitude]="form.controls.longitude.value"
+          (locationChange)="onLocationChange($event)"
+        />
+      </coop-field>
+    </div>
   </form>
 
   <div modal-footer>

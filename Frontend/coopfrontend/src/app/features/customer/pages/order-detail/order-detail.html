@@ -57,11 +57,15 @@
 
               <coop-card title="الموقع">
                 @if (driverLatitude() !== null && driverLongitude() !== null) {
-                  <p class="location-coords">{{ driverLatitude() }}, {{ driverLongitude() }}</p>
+                  <coop-map-picker
+                    [latitude]="driverLatitude()"
+                    [longitude]="driverLongitude()"
+                    [readonly]="true"
+                    height="260px"
+                  />
                 } @else {
                   <p class="location-coords muted">لا يتوفر موقع السائق بعد</p>
                 }
-                <p class="map-note">الخريطة قيد الإضافة</p>
               </coop-card>
             }
 

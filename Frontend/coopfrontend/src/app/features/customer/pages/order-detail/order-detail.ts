@@ -20,6 +20,7 @@ import { ReviewService } from '../../../../core/services/review.service';
 import { TrackingHubService } from '../../../../core/services/tracking-hub.service';
 import { extractErrorMessage } from '../../../../core/utils/http-error';
 import {
+  MapPickerComponent,
   UiAlertComponent,
   UiBadgeComponent,
   UiButtonComponent,
@@ -50,7 +51,8 @@ type PageStatus = 'loading' | 'error' | 'loaded';
     UiModalComponent,
     UiConfirmModalComponent,
     UiCodeModalComponent,
-    UiRatingStarsComponent
+    UiRatingStarsComponent,
+    MapPickerComponent
   ],
   templateUrl: './order-detail.html',
   styleUrl: './order-detail.scss',

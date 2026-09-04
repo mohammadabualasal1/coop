@@ -5,6 +5,7 @@ import { Address, AddressRequest } from '../../../../core/models/address.models'
 import { AddressService } from '../../../../core/services/address.service';
 import { extractErrorMessage } from '../../../../core/utils/http-error';
 import {
+  MapPickerComponent,
   UiAlertComponent,
   UiButtonComponent,
   UiFieldComponent,
@@ -16,7 +17,14 @@ const LABEL_PRESETS = ['المنزل', 'العمل', 'أخرى'];
 
 @Component({
   selector: 'app-address-form-modal',
-  imports: [ReactiveFormsModule, UiModalComponent, UiFieldComponent, UiAlertComponent, UiButtonComponent],
+  imports: [
+    ReactiveFormsModule,
+    UiModalComponent,
+    UiFieldComponent,
+    UiAlertComponent,
+    UiButtonComponent,
+    MapPickerComponent
+  ],
   templateUrl: './address-form-modal.html',
   styleUrl: './address-form-modal.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -46,8 +54,8 @@ export class AddressFormModalComponent {
     building: [''],
     floor: [''],
     additionalDirections: [''],
-    latitude: [0, [Validators.required, Validators.min(-90), Validators.max(90)]],
-    longitude: [0, [Validators.required, Validators.min(-180), Validators.max(180)]]
+    latitude: [null as number | null, [Validators.required, Validators.min(-90), Validators.max(90)]],
+    longitude: [null as number | null, [Validators.required, Validators.min(-180), Validators.max(180)]]
   });
 
   constructor() {
@@ -68,8 +76,8 @@ export class AddressFormModalComponent {
         building: editing?.building ?? '',
         floor: editing?.floor ?? '',
         additionalDirections: editing?.additionalDirections ?? '',
-        latitude: editing?.latitude ?? 0,
-        longitude: editing?.longitude ?? 0
+        latitude: editing?.latitude ?? null,
+        longitude: editing?.longitude ?? null
       });
     });
   }
@@ -126,32 +134,13 @@ export class AddressFormModalComponent {
       : null;
   }
 
-  latitudeErrorMessage(): string | null {
-    const control = this.form.controls.latitude;
-
-    if (!control.invalid || !control.touched) {
-      return null;
-    }
-
-    if (control.hasError('required')) {
-      return 'خط العرض مطلوب';
-    }
-
-    return 'خط العرض يجب أن يكون بين -90 و 90';
+  locationErrorMessage(): string | null {
+    const { latitude, longitude } = this.form.controls;
+    return latitude.invalid || longitude.invalid ? 'يجب تحديد الموقع على الخريطة' : null;
   }
 
-  longitudeErrorMessage(): string | null {
-    const control = this.form.controls.longitude;
-
-    if (!control.invalid || !control.touched) {
-      return null;
-    }
-
-    if (control.hasError('required')) {
-      return 'خط الطول مطلوب';
-    }
-
-    return 'خط الطول يجب أن يكون بين -180 و 180';
+  onLocationChange(location: { latitude: number; longitude: number }): void {
+    this.form.patchValue(location);
   }
 
   cancel(): void {
@@ -180,8 +169,8 @@ export class AddressFormModalComponent {
       building: raw.building.trim() ? raw.building : null,
       floor: raw.floor.trim() ? raw.floor : null,
       additionalDirections: raw.additionalDirections.trim() ? raw.additionalDirections : null,
-      latitude: raw.latitude,
-      longitude: raw.longitude
+      latitude: raw.latitude!,
+      longitude: raw.longitude!
     };
 
     this.saving.set(true);

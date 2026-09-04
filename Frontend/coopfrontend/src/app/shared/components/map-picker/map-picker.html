@@ -1,0 +1,57 @@
+@if (loadFailed()) {
+  <div class="map-fallback">
+    <p class="muted-line">تعذّر تحميل الخريطة</p>
+
+    @if (!readonly()) {
+      <div class="fallback-inputs">
+        <label class="fallback-field">
+          <span>خط العرض</span>
+          <input
+            type="number"
+            step="any"
+            [value]="currentLat() !== null ? currentLat()!.toString() : ''"
+            (change)="onFallbackCoordinateChange('latitude', $event)"
+          />
+        </label>
+        <label class="fallback-field">
+          <span>خط الطول</span>
+          <input
+            type="number"
+            step="any"
+            [value]="currentLng() !== null ? currentLng()!.toString() : ''"
+            (change)="onFallbackCoordinateChange('longitude', $event)"
+          />
+        </label>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="map-picker">
+    @if (!readonly()) {
+      <input #searchInput type="text" class="search-input" placeholder="ابحث عن موقع..." />
+    }
+
+    <div #mapContainer class="map-container" [style.height]="height()"></div>
+
+    @if (!readonly()) {
+      <button
+        type="button"
+        class="current-location-btn"
+        [disabled]="locatingCurrent()"
+        (click)="useCurrentLocation()"
+      >
+        موقعي الحالي
+      </button>
+    }
+  </div>
+
+  @if (geoErrorMessage(); as message) {
+    <p class="muted-line error-line">{{ message }}</p>
+  }
+
+  @if (currentLat() !== null && currentLng() !== null) {
+    <p class="muted-line coordinates-line">
+      الإحداثيات: {{ currentLat()!.toFixed(5) }}, {{ currentLng()!.toFixed(5) }}
+    </p>
+  }
+}

@@ -12,3 +12,4 @@ export * from './ui-stat-tile/ui-stat-tile';
 export * from './notifications-page/notifications-page';
 export * from './ui-rating-stars/ui-rating-stars';
 export * from './ui-code-modal/ui-code-modal';
+export * from './map-picker/map-picker';

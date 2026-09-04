@@ -204,6 +204,17 @@
   color: var(--coop-danger);
 }
 
+.branch-map {
+  margin-block-start: var(--coop-space-md);
+}
+
+.branch-map-title {
+  margin: 0 0 var(--coop-space-sm);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--coop-text);
+}
+
 .add-to-cart-block {
   display: flex;
   flex-direction: column;

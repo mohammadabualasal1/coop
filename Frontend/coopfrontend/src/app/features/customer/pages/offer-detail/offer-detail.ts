@@ -11,6 +11,7 @@ import { CartService } from '../../../../core/services/cart.service';
 import { MarketplaceService } from '../../../../core/services/marketplace.service';
 import { extractErrorMessage } from '../../../../core/utils/http-error';
 import {
+  MapPickerComponent,
   UiAlertComponent,
   UiButtonComponent,
   UiConfirmModalComponent,
@@ -37,7 +38,8 @@ const MS_PER_HOUR = 3_600_000;
     UiButtonComponent,
     UiConfirmModalComponent,
     UiEmptyStateComponent,
-    UiSpinnerComponent
+    UiSpinnerComponent,
+    MapPickerComponent
   ],
   templateUrl: './offer-detail.html',
   styleUrl: './offer-detail.scss',
@@ -90,6 +92,18 @@ export class OfferDetailComponent implements OnInit {
   });
 
   readonly outOfStock = computed(() => this.totalAvailableStock() === 0);
+
+  readonly topStockBranch = computed(() => {
+    const offer = this.offer();
+
+    if (!offer || offer.branches.length === 0) {
+      return null;
+    }
+
+    return offer.branches.reduce((best, branch) =>
+      branch.availableStock > best.availableStock ? branch : best
+    );
+  });
 
   readonly addButtonDisabled = computed(
     () => this.outOfStock() || this.isStaff() || this.addingToCart()

@@ -54,6 +54,15 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
+## إعداد مفتاح خرائط Google
+
+يحتاج هذا المشروع مفتاح Google Maps API لعمل الخرائط. لإعداده محليًا:
+
+1. انسخ الملف `src/environments/maps-key.example.ts` إلى `src/environments/maps-key.ts`.
+2. الصق مفتاحك الخاص في القيمة `MAPS_API_KEY`.
+
+ملف `maps-key.ts` مُستثنى من Git (`.gitignore`) حتى لا يُرفع المفتاح إلى المستودع بالخطأ. باقي الكود يقرأ المفتاح من `environment.mapsApiKey` ولا يستورد ملف المفتاح مباشرة.
+
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

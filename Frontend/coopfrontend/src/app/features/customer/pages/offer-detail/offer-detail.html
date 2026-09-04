@@ -75,6 +75,18 @@
                   </div>
                 }
               </div>
+
+              @if (topStockBranch(); as branch) {
+                <div class="branch-map">
+                  <h3 class="branch-map-title">فرع {{ branch.branchName }}</h3>
+                  <coop-map-picker
+                    [latitude]="branch.latitude"
+                    [longitude]="branch.longitude"
+                    [readonly]="true"
+                    height="240px"
+                  />
+                </div>
+              }
             </div>
           </div>
         </div>

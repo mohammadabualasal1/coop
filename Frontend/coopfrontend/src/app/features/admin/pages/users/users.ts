@@ -1,7 +1,7 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { UserRole, UserRoleLabels, UserRoleTones, UserStatus, UserStatusLabels, UserStatusTones } from '../../../../core/enums';
@@ -80,7 +80,7 @@ function parseEnumParam<T extends number>(raw: string | null, enumObj: Record<st
   styleUrl: './users.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UsersComponent implements OnInit {
+export class UsersComponent {
   private readonly fb = inject(FormBuilder);
   private readonly adminService = inject(AdminService);
   private readonly route = inject(ActivatedRoute);
@@ -103,6 +103,7 @@ export class UsersComponent implements OnInit {
   readonly successMessage = signal<string | null>(null);
 
   private readonly searchInput$ = new Subject<string>();
+  private hasAppliedQueryParams = false;
 
   readonly confirmSuspendOpen = signal(false);
   readonly userToSuspend = signal<AdminUser | null>(null);
@@ -167,25 +168,26 @@ export class UsersComponent implements OnInit {
         this.pageNumber.set(1);
         this.load();
       });
+
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      this.applyQueryParams(params);
+    });
   }
 
-  ngOnInit(): void {
-    this.seedFiltersFromQueryParams();
+  private applyQueryParams(params: ParamMap): void {
+    const role = parseEnumParam<UserRole>(params.get('role'), UserRole) ?? 'all';
+    const status = parseEnumParam<UserStatus>(params.get('status'), UserStatus) ?? 'all';
+
+    if (this.hasAppliedQueryParams && role === this.roleFilter() && status === this.statusFilter()) {
+      // Echo of this page's own navigate() call — filters already match, skip the reload.
+      return;
+    }
+
+    this.hasAppliedQueryParams = true;
+    this.roleFilter.set(role);
+    this.statusFilter.set(status);
+    this.pageNumber.set(1);
     this.load();
-  }
-
-  private seedFiltersFromQueryParams(): void {
-    const params = this.route.snapshot.queryParamMap;
-    const role = parseEnumParam<UserRole>(params.get('role'), UserRole);
-    const status = parseEnumParam<UserStatus>(params.get('status'), UserStatus);
-
-    if (role !== null) {
-      this.roleFilter.set(role);
-    }
-
-    if (status !== null) {
-      this.statusFilter.set(status);
-    }
   }
 
   private syncFiltersToUrl(): void {
