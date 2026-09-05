@@ -6,7 +6,9 @@ import { Category } from '../../../../core/models/category.models';
 import { OfferSummary, PagedResponse } from '../../../../core/models/marketplace.models';
 import { CategoryService } from '../../../../core/services/category.service';
 import { MarketplaceService } from '../../../../core/services/marketplace.service';
+import { extractErrorMessage } from '../../../../core/utils/http-error';
 import {
+  UiAlertComponent,
   UiButtonComponent,
   UiEmptyStateComponent,
   UiSpinnerComponent
@@ -24,7 +26,14 @@ function emptyPage(): PagedResponse<OfferSummary> {
 
 @Component({
   selector: 'app-customer-home',
-  imports: [RouterLink, OfferCardComponent, UiEmptyStateComponent, UiButtonComponent, UiSpinnerComponent],
+  imports: [
+    RouterLink,
+    OfferCardComponent,
+    UiAlertComponent,
+    UiEmptyStateComponent,
+    UiButtonComponent,
+    UiSpinnerComponent
+  ],
   templateUrl: './home.html',
   styleUrl: './home.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -52,13 +61,28 @@ export class HomeComponent implements OnInit {
   readonly nearby = signal<OfferSummary[]>([]);
   readonly nearbyVisible = computed(() => this.nearby().slice(0, this.cardCap));
 
+  // Each section degrades to empty independently so a single failing endpoint
+  // doesn't blank the whole page — but the failure itself must stay visible,
+  // otherwise a backend outage renders identically to "no offers today".
+  readonly loadErrorMessage = signal<string | null>(null);
+
   ngOnInit(): void {
+    this.load();
+  }
+
+  load(): void {
+    this.loadErrorMessage.set(null);
+
     forkJoin({
-      endingSoon: this.marketplace.endingSoon().pipe(catchError(() => of<OfferSummary[]>([]))),
-      topDiscounts: this.marketplace.topDiscounts().pipe(catchError(() => of<OfferSummary[]>([]))),
+      endingSoon: this.marketplace
+        .endingSoon()
+        .pipe(catchError((err: unknown) => this.recordLoadErrorAndFallback(err, []))),
+      topDiscounts: this.marketplace
+        .topDiscounts()
+        .pipe(catchError((err: unknown) => this.recordLoadErrorAndFallback(err, []))),
       latest: this.marketplace
         .searchOffers({ pageNumber: 1, pageSize: LATEST_PAGE_SIZE })
-        .pipe(catchError(() => of(emptyPage())))
+        .pipe(catchError((err: unknown) => this.recordLoadErrorAndFallback(err, emptyPage())))
     }).subscribe((result) => {
       this.endingSoon.set(result.endingSoon);
       this.topDiscounts.set(result.topDiscounts);
@@ -67,7 +91,7 @@ export class HomeComponent implements OnInit {
 
     this.categoryService
       .getAll()
-      .pipe(catchError(() => of<Category[]>([])))
+      .pipe(catchError((err: unknown) => this.recordLoadErrorAndFallback(err, [])))
       .subscribe((categories) => {
         this.categories.set(
           categories
@@ -75,6 +99,14 @@ export class HomeComponent implements OnInit {
             .sort((a, b) => a.displayOrder - b.displayOrder)
         );
       });
+  }
+
+  private recordLoadErrorAndFallback<T>(err: unknown, fallback: T) {
+    if (!this.loadErrorMessage()) {
+      this.loadErrorMessage.set(extractErrorMessage(err));
+    }
+
+    return of(fallback);
   }
 
   requestNearby(): void {

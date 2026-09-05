@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 
 import { ComplaintStatus, ComplaintStatusLabels, ComplaintStatusTones } from '../../../../core/enums';
@@ -62,7 +62,7 @@ function optionalUrlValidator(control: AbstractControl): ValidationErrors | null
   styleUrl: './complaints.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ComplaintsComponent implements OnInit {
+export class ComplaintsComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly complaintService = inject(ComplaintService);
   private readonly merchantService = inject(MerchantService);
@@ -104,6 +104,12 @@ export class ComplaintsComponent implements OnInit {
     this.load();
     this.loadOrders();
     this.ensureMerchantId();
+  }
+
+  ngOnDestroy(): void {
+    if (this.successMessageTimeout) {
+      clearTimeout(this.successMessageTimeout);
+    }
   }
 
   load(): void {

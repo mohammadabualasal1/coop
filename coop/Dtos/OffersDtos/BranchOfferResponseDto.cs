@@ -4,6 +4,7 @@
     {
         public Guid Id { get; set; }
         public Guid MerchantBranchId { get; set; }
+        public string BranchName { get; set; }
         public int TotalStock { get; set; }
         public int ReservedStock { get; set; }
         public int SoldStock { get; set; }

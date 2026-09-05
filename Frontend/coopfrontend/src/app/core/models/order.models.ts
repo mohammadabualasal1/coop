@@ -44,8 +44,8 @@ export interface PickupCodeResponse {
 
 export interface MarkReadyResponse {
   order: MerchantOrderSummary;
-  pickupCode: string;
-  expiresAt: string;
+  pickupCode: string | null;
+  pickupCodeExpiresAt: string | null;
 }
 
 export interface PlaceOrderRequest {

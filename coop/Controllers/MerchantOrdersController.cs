@@ -337,6 +337,7 @@ namespace coop.Controllers
             var task = await _dbcontext.DeliveryTasks.FirstOrDefaultAsync(t => t.OrderId == order.Id);
 
             string? pickupCode = null;
+            DateTime? pickupCodeExpiresAt = null;
 
             if (task != null)
             {
@@ -351,6 +352,7 @@ namespace coop.Controllers
                     old.IsRevoked = true;
 
                 pickupCode = GenerateNumericCode();
+                pickupCodeExpiresAt = now.AddHours(6);
 
                 _dbcontext.ConfirmationTokens.Add(new ConfirmationToken
                 {
@@ -358,7 +360,7 @@ namespace coop.Controllers
                     DeliveryTaskId = task.Id,
                     Type = ConfirmationTokenType.MerchantPickup,
                     TokenHash = HashCode(pickupCode),
-                    ExpiresAt = now.AddHours(6),
+                    ExpiresAt = pickupCodeExpiresAt.Value,
                     IsRevoked = false,
                     CreatedAt = now
                 });
@@ -399,7 +401,8 @@ namespace coop.Controllers
                     TotalAmount = order.TotalAmount,
                     PlacedAt = order.PlacedAt
                 },
-                PickupCode = pickupCode
+                PickupCode = pickupCode,
+                PickupCodeExpiresAt = pickupCodeExpiresAt
             });
         }
         [HttpPost("{id}/pickup-code")]

@@ -60,9 +60,13 @@ export class NotificationsPageComponent implements OnInit {
   readonly deleteSaving = signal(false);
   readonly deleteErrorMessage = signal<string | null>(null);
 
+  readonly actionErrorMessage = signal<string | null>(null);
+
   ngOnInit(): void {
     this.load();
-    this.notificationService.getUnreadCount().subscribe();
+    this.notificationService.getUnreadCount().subscribe({
+      error: (err: unknown) => this.actionErrorMessage.set(extractErrorMessage(err))
+    });
   }
 
   load(): void {
@@ -90,8 +94,11 @@ export class NotificationsPageComponent implements OnInit {
       return;
     }
 
-    this.notificationService.markAllRead().subscribe(() => {
-      this.notifications.update((list) => list.map((n) => ({ ...n, isRead: true })));
+    this.actionErrorMessage.set(null);
+
+    this.notificationService.markAllRead().subscribe({
+      next: () => this.notifications.update((list) => list.map((n) => ({ ...n, isRead: true }))),
+      error: (err: unknown) => this.actionErrorMessage.set(extractErrorMessage(err))
     });
   }
 
@@ -115,10 +122,12 @@ export class NotificationsPageComponent implements OnInit {
 
   onRowClick(notification: AppNotification): void {
     if (!notification.isRead) {
-      this.notificationService.markRead(notification.id).subscribe(() => {
-        this.notifications.update((list) =>
-          list.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
-        );
+      this.notificationService.markRead(notification.id).subscribe({
+        next: () =>
+          this.notifications.update((list) =>
+            list.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
+          ),
+        error: (err: unknown) => this.actionErrorMessage.set(extractErrorMessage(err))
       });
     }
 

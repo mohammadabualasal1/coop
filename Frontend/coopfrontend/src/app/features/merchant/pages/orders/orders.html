@@ -24,6 +24,10 @@
         <coop-alert tone="danger">{{ message }}</coop-alert>
       }
 
+      @if (refreshErrorMessage(); as message) {
+        <coop-alert tone="danger">تعذّر تحديث القائمة: {{ message }}</coop-alert>
+      }
+
       <div class="status-filter">
         <button
           type="button"

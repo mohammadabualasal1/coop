@@ -96,6 +96,10 @@ export class OrdersComponent {
 
   readonly status = signal<PageStatus>('loading');
   readonly loadErrorMessage = signal<string | null>(null);
+  // Set when a background poll/refresh fails after data is already on screen —
+  // kept separate from loadErrorMessage so a transient outage doesn't blank the
+  // list the merchant is already looking at, while still never staying silent.
+  readonly refreshErrorMessage = signal<string | null>(null);
   readonly orders = signal<MerchantOrderSummary[]>([]);
   readonly selectedStatus = signal<OrderStatus | 'all'>('all');
   readonly actionErrorMessage = signal<string | null>(null);
@@ -174,7 +178,10 @@ export class OrdersComponent {
         if (Array.isArray(result)) {
           this.orders.set(result);
           this.status.set('loaded');
-        } else if (this.status() !== 'loaded') {
+          this.refreshErrorMessage.set(null);
+        } else if (this.status() === 'loaded') {
+          this.refreshErrorMessage.set(extractErrorMessage(result.error));
+        } else {
           this.loadErrorMessage.set(extractErrorMessage(result.error));
           this.status.set('error');
         }
@@ -326,7 +333,12 @@ export class OrdersComponent {
     this.orderService.markReady(order.id).subscribe({
       next: (response) => {
         this.markingReadyId.set(null);
-        this.openPickupCodeModal(response.pickupCode, response.expiresAt, false);
+
+        if (response.pickupCode) {
+          this.openPickupCodeModal(response.pickupCode, response.pickupCodeExpiresAt, false);
+        } else {
+          this.actionErrorMessage.set('لا توجد مهمة توصيل لهذا الطلب بعد، تعذّر إنشاء رمز الاستلام');
+        }
       },
       error: (err: unknown) => {
         this.markingReadyId.set(null);
@@ -355,7 +367,7 @@ export class OrdersComponent {
     });
   }
 
-  private openPickupCodeModal(code: string, expiresAt: string, isReissue: boolean): void {
+  private openPickupCodeModal(code: string, expiresAt: string | null, isReissue: boolean): void {
     this.pickupCode.set(code);
     this.pickupCodeExpiresAt.set(expiresAt);
     this.pickupCodeIsReissue.set(isReissue);

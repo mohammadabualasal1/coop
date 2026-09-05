@@ -23,6 +23,10 @@
         </coop-button>
       </div>
 
+      @if (actionErrorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+      }
+
       <div class="filter-chips">
         <button
           type="button"
@@ -52,7 +56,10 @@
                 class="notification-row"
                 [class.unread]="!notification.isRead"
                 [class.clickable]="isClickable(notification)"
+                [attr.role]="isClickable(notification) ? 'button' : null"
+                [attr.tabindex]="isClickable(notification) ? 0 : null"
                 (click)="onRowClick(notification)"
+                (keydown.enter)="onRowClick(notification)"
               >
                 @if (!notification.isRead) {
                   <span class="unread-dot" aria-hidden="true"></span>

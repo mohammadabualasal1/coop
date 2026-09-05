@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { PendingOffer } from '../../../../core/models/admin.models';
@@ -40,7 +40,7 @@ const SUCCESS_MESSAGE_MS = 4000;
   styleUrl: './offers.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class OffersComponent implements OnInit {
+export class OffersComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly adminService = inject(AdminService);
 
@@ -76,6 +76,12 @@ export class OffersComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+  }
+
+  ngOnDestroy(): void {
+    if (this.successMessageTimeout) {
+      clearTimeout(this.successMessageTimeout);
+    }
   }
 
   load(): void {

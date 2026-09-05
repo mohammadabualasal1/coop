@@ -45,6 +45,8 @@ namespace coop.Controllers
                     Title = n.Title,
                     Message = n.Message,
                     Type = n.Type,
+                    RelatedEntityType = n.RelatedEntityType,
+                    RelatedEntityId = n.RelatedEntityId,
                     IsRead = n.IsRead,
                     CreatedAt = n.CreatedAt
                 })

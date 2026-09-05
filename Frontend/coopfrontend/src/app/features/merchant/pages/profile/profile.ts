@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -61,7 +61,7 @@ function optionalUrlValidator(control: AbstractControl): ValidationErrors | null
   styleUrl: './profile.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly merchantService = inject(MerchantService);
 
@@ -92,6 +92,10 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.successTimeoutId);
   }
 
   load(): void {

@@ -2,9 +2,8 @@ import { OfferStatus } from '../enums';
 
 export interface BranchOffer {
   id: string;
-  offerId: string;
   merchantBranchId: string;
-  branchName?: string;
+  branchName: string;
   totalStock: number;
   reservedStock: number;
   soldStock: number;

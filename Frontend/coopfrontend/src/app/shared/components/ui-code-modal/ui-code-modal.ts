@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, input, output, signal } from '@angular/core';
 
 import { CoopDatePipe } from '../../pipes/coop-date.pipe';
 import { UiAlertComponent } from '../ui-alert/ui-alert';
@@ -59,7 +59,7 @@ const COPY_LABEL_RESET_MS = 2000;
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UiCodeModalComponent {
+export class UiCodeModalComponent implements OnDestroy {
   readonly title = input('الرمز');
   readonly open = input(false);
   readonly code = input<string | null>(null);
@@ -71,6 +71,12 @@ export class UiCodeModalComponent {
 
   readonly copied = signal(false);
   private copyTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  ngOnDestroy(): void {
+    if (this.copyTimeout) {
+      clearTimeout(this.copyTimeout);
+    }
+  }
 
   copy(): void {
     const value = this.code();

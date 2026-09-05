@@ -1,6 +1,13 @@
-import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, effect, input, output, viewChild } from '@angular/core';
 
 export type ModalSize = 'sm' | 'md' | 'lg';
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
+function isFocusable(element: HTMLElement): boolean {
+  return !element.hasAttribute('disabled') && element.tabIndex !== -1;
+}
 
 @Component({
   selector: 'coop-modal',
@@ -8,10 +15,12 @@ export type ModalSize = 'sm' | 'md' | 'lg';
     @if (open()) {
       <div class="overlay" (click)="closed.emit()">
         <div
+          #modalEl
           class="modal"
           [class]="'size-' + size()"
           role="dialog"
           aria-modal="true"
+          tabindex="-1"
           (click)="$event.stopPropagation()"
         >
           <div class="modal-header">
@@ -64,6 +73,10 @@ export type ModalSize = 'sm' | 'md' | 'lg';
       background: var(--coop-surface);
       border-radius: var(--coop-radius-lg);
       box-shadow: var(--coop-shadow-lg);
+    }
+
+    .modal:focus-visible {
+      outline: none;
     }
 
     .size-sm {
@@ -139,6 +152,10 @@ export class UiModalComponent {
 
   readonly closed = output<void>();
 
+  private readonly modalEl = viewChild<ElementRef<HTMLElement>>('modalEl');
+
+  private previouslyFocusedElement: HTMLElement | null = null;
+
   constructor() {
     effect((onCleanup) => {
       if (!this.open()) {
@@ -146,19 +163,78 @@ export class UiModalComponent {
       }
 
       document.body.style.overflow = 'hidden';
+      this.previouslyFocusedElement = document.activeElement as HTMLElement | null;
+
+      // The modal's content isn't in the DOM yet in this same tick (it's behind
+      // an @if), so defer the initial focus move until after it renders.
+      const focusTimeout = setTimeout(() => this.focusFirstElement());
 
       const handleKeydown = (event: KeyboardEvent) => {
         if (event.key === 'Escape') {
           this.closed.emit();
+          return;
+        }
+
+        if (event.key === 'Tab') {
+          this.trapFocus(event);
         }
       };
 
       window.addEventListener('keydown', handleKeydown);
 
       onCleanup(() => {
+        clearTimeout(focusTimeout);
         document.body.style.overflow = '';
         window.removeEventListener('keydown', handleKeydown);
+        this.previouslyFocusedElement?.focus?.();
+        this.previouslyFocusedElement = null;
       });
     });
+  }
+
+  private getFocusableElements(): HTMLElement[] {
+    const root = this.modalEl()?.nativeElement;
+
+    if (!root) {
+      return [];
+    }
+
+    return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(isFocusable);
+  }
+
+  private focusFirstElement(): void {
+    const [first] = this.getFocusableElements();
+    (first ?? this.modalEl()?.nativeElement)?.focus();
+  }
+
+  private trapFocus(event: KeyboardEvent): void {
+    const root = this.modalEl()?.nativeElement;
+
+    if (!root) {
+      return;
+    }
+
+    const focusable = this.getFocusableElements();
+
+    if (focusable.length === 0) {
+      event.preventDefault();
+      root.focus();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+    const activeIsInsideModal = active instanceof Node && root.contains(active);
+
+    if (event.shiftKey) {
+      if (!activeIsInsideModal || active === first) {
+        event.preventDefault();
+        last.focus();
+      }
+    } else if (!activeIsInsideModal || active === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 }

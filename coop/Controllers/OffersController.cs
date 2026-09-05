@@ -102,6 +102,7 @@ namespace coop.Controllers
                 {
                     Id = bo.Id,
                     MerchantBranchId = bo.MerchantBranchId,
+                    BranchName = bo.MerchantBranch.Name,
                     TotalStock = bo.TotalStock,
                     ReservedStock = bo.ReservedStock,
                     SoldStock = bo.SoldStock,
@@ -213,6 +214,7 @@ namespace coop.Controllers
             {
                 Id = branchOffer.Id,
                 MerchantBranchId = branchOffer.MerchantBranchId,
+                BranchName = branch.Name,
                 TotalStock = branchOffer.TotalStock,
                 ReservedStock = branchOffer.ReservedStock,
                 SoldStock = branchOffer.SoldStock,
@@ -232,7 +234,9 @@ namespace coop.Controllers
             if (offer == null)
                 return NotFound("العرض غير موجود");
 
-            var branchOffer = await _dbcontext.BranchOffers.FirstOrDefaultAsync(bo => bo.Id == branchOfferId && bo.OfferId == id);
+            var branchOffer = await _dbcontext.BranchOffers
+                .Include(bo => bo.MerchantBranch)
+                .FirstOrDefaultAsync(bo => bo.Id == branchOfferId && bo.OfferId == id);
             if (branchOffer == null)
                 return NotFound("الفرع غير مضاف لهذا العرض");
 
@@ -248,6 +252,7 @@ namespace coop.Controllers
             {
                 Id = branchOffer.Id,
                 MerchantBranchId = branchOffer.MerchantBranchId,
+                BranchName = branchOffer.MerchantBranch.Name,
                 TotalStock = branchOffer.TotalStock,
                 ReservedStock = branchOffer.ReservedStock,
                 SoldStock = branchOffer.SoldStock,

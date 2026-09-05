@@ -7,6 +7,11 @@
 </section>
 
 <div class="page-content">
+  @if (loadErrorMessage(); as message) {
+    <coop-alert tone="danger">{{ message }}</coop-alert>
+    <coop-button variant="secondary" size="sm" (click)="load()">إعادة المحاولة</coop-button>
+  }
+
   @if (categories().length > 0) {
     <div class="categories-strip">
       @for (category of categories(); track category.id) {
@@ -62,9 +67,9 @@
     }
   </section>
 
-  @if (allEmpty()) {
+  @if (allEmpty() && !loadErrorMessage()) {
     <coop-empty-state title="لا توجد عروض حالياً" message="تابعنا — عروض جديدة تُضاف باستمرار" />
-  } @else {
+  } @else if (!allEmpty()) {
     @if (endingSoon().length > 0) {
       <section class="offer-section">
         <div class="section-header">
