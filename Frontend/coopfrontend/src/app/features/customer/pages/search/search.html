@@ -1,3 +1,96 @@
+<ng-template #filtersPanel>
+  <div class="filters-panel">
+    <section class="filter-group">
+      <h3 class="filter-group-title">التصنيف</h3>
+      <div class="category-filter-list">
+        <button
+          type="button"
+          class="category-option"
+          [class.active]="categoryFilter() === null"
+          (click)="selectCategory(null)"
+        >
+          الكل
+        </button>
+
+        @for (root of categoryTree() ?? []; track root.id) {
+          <button
+            type="button"
+            class="category-option"
+            [class.active]="categoryFilter() === root.id"
+            (click)="selectCategory(root.id)"
+          >
+            {{ root.nameAr }}
+          </button>
+
+          @for (child of root.children ?? []; track child.id) {
+            <button
+              type="button"
+              class="category-option child"
+              [class.active]="categoryFilter() === child.id"
+              (click)="selectCategory(child.id)"
+            >
+              {{ child.nameAr }}
+            </button>
+          }
+        }
+      </div>
+    </section>
+
+    <section class="filter-group">
+      <h3 class="filter-group-title">السعر</h3>
+      <div class="price-inputs">
+        <label class="price-field">
+          <span>من</span>
+          <input type="number" min="0" [value]="minPriceDraft()" (input)="onMinPriceInput($event)" />
+        </label>
+        <label class="price-field">
+          <span>إلى</span>
+          <input type="number" min="0" [value]="maxPriceDraft()" (input)="onMaxPriceInput($event)" />
+        </label>
+      </div>
+      @if (priceValidationError(); as message) {
+        <p class="filter-error">{{ message }}</p>
+      }
+    </section>
+
+    <section class="filter-group">
+      <h3 class="filter-group-title">نسبة الخصم</h3>
+      <div class="chip-row">
+        @for (option of discountOptions; track option.value) {
+          <button
+            type="button"
+            class="filter-chip"
+            [class.active]="minimumDiscount() === option.value"
+            (click)="selectDiscount(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="filter-group">
+      <h3 class="filter-group-title">المدينة</h3>
+      <input
+        type="text"
+        class="city-input"
+        placeholder="مثال: عمّان"
+        [value]="cityDraft()"
+        (input)="onCityInput($event)"
+      />
+    </section>
+
+    <section class="filter-group">
+      <h3 class="filter-group-title">الترتيب</h3>
+      <select class="sort-select" [value]="sortBy()" (change)="onSortChange($event)">
+        @for (option of sortOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </section>
+  </div>
+</ng-template>
+
 @switch (status()) {
   @case ('loading') {
     <coop-card>
@@ -24,49 +117,132 @@
         }
       </h2>
 
-      @if (categoryName(); as name) {
-        <div class="active-filter-chip">
-          <span>{{ name }}</span>
-          <button type="button" class="remove-filter" (click)="clearCategoryFilter()" aria-label="إزالة الفلتر">
-            &times;
-          </button>
-        </div>
-      }
+      <div class="search-layout">
+        <aside class="filters-sidebar">
+          <ng-container *ngTemplateOutlet="filtersPanel" />
+        </aside>
 
-      @if (offers().length === 0) {
-        <coop-empty-state title="لا توجد نتائج" message="جرّب كلمات بحث أخرى" />
-      } @else {
-        <div class="offers-grid">
-          @for (offer of offers(); track offer.id) {
-            <app-offer-card [offer]="offer" />
+        <div class="results-column">
+          <button type="button" class="filter-toggle-button" (click)="openFiltersModal()">تصفية</button>
+
+          @if (hasActiveFilters()) {
+            <div class="active-filters-row">
+              @if (categoryName(); as name) {
+                <div class="active-filter-chip">
+                  <span>{{ name }}</span>
+                  <button
+                    type="button"
+                    class="remove-filter"
+                    (click)="clearCategory()"
+                    aria-label="إزالة فلتر التصنيف"
+                  >
+                    &times;
+                  </button>
+                </div>
+              }
+
+              @if (priceRangeLabel(); as label) {
+                <div class="active-filter-chip">
+                  <span>{{ label }}</span>
+                  <button
+                    type="button"
+                    class="remove-filter"
+                    (click)="clearPrice()"
+                    aria-label="إزالة فلتر السعر"
+                  >
+                    &times;
+                  </button>
+                </div>
+              }
+
+              @if (discountLabel(); as label) {
+                <div class="active-filter-chip">
+                  <span>{{ label }}</span>
+                  <button
+                    type="button"
+                    class="remove-filter"
+                    (click)="clearDiscount()"
+                    aria-label="إزالة فلتر الخصم"
+                  >
+                    &times;
+                  </button>
+                </div>
+              }
+
+              @if (city(); as cityValue) {
+                <div class="active-filter-chip">
+                  <span>{{ cityValue }}</span>
+                  <button
+                    type="button"
+                    class="remove-filter"
+                    (click)="clearCity()"
+                    aria-label="إزالة فلتر المدينة"
+                  >
+                    &times;
+                  </button>
+                </div>
+              }
+
+              <button type="button" class="clear-all-link" (click)="clearAllFilters()">مسح الكل</button>
+            </div>
+          }
+
+          <p class="results-count">عدد النتائج: {{ totalCount() }}</p>
+
+          @if (offers().length === 0) {
+            @if (hasActiveFilters()) {
+              <coop-empty-state
+                title="لا توجد نتائج مطابقة"
+                message="جرّب توسيع نطاق البحث أو إزالة بعض الفلاتر"
+              >
+                <button coopEmptyStateAction type="button" class="empty-action" (click)="clearAllFilters()">
+                  مسح الفلاتر
+                </button>
+              </coop-empty-state>
+            } @else {
+              <coop-empty-state title="لا توجد نتائج" message="جرّب كلمات بحث أخرى" />
+            }
+          } @else {
+            <div class="offers-grid">
+              @for (offer of offers(); track offer.id) {
+                <app-offer-card [offer]="offer" />
+              }
+            </div>
+
+            <div class="pagination">
+              <coop-button
+                variant="secondary"
+                size="sm"
+                [disabled]="pageNumber() <= 1"
+                (click)="goToPreviousPage()"
+              >
+                السابق
+              </coop-button>
+
+              <div class="pagination-info">
+                <span>صفحة {{ pageNumber() }} من {{ totalPages() }}</span>
+              </div>
+
+              <coop-button
+                variant="secondary"
+                size="sm"
+                [disabled]="pageNumber() >= totalPages()"
+                (click)="goToNextPage()"
+              >
+                التالي
+              </coop-button>
+            </div>
           }
         </div>
-
-        <div class="pagination">
-          <coop-button
-            variant="secondary"
-            size="sm"
-            [disabled]="pageNumber() <= 1"
-            (click)="goToPreviousPage()"
-          >
-            السابق
-          </coop-button>
-
-          <div class="pagination-info">
-            <span>صفحة {{ pageNumber() }} من {{ totalPages() }}</span>
-            <span>إجمالي {{ totalCount() }} عرض</span>
-          </div>
-
-          <coop-button
-            variant="secondary"
-            size="sm"
-            [disabled]="pageNumber() >= totalPages()"
-            (click)="goToNextPage()"
-          >
-            التالي
-          </coop-button>
-        </div>
-      }
+      </div>
     </div>
   }
 }
+
+<coop-modal title="تصفية" [open]="filtersModalOpen()" size="sm" (closed)="closeFiltersModal()">
+  <ng-container *ngTemplateOutlet="filtersPanel" />
+
+  <div modal-footer>
+    <coop-button size="sm" (click)="closeFiltersModal()">تطبيق</coop-button>
+  </div>
+</coop-modal>
