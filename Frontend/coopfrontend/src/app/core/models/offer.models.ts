@@ -29,7 +29,13 @@ export interface Offer {
   approvedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  branches?: BranchOffer[]; // only on GET /offers/{id}
+}
+
+// GET /offers/{id} does not return a flat Offer — it wraps the offer and its
+// branch stock rows in separate top-level keys.
+export interface OfferDetailResponse {
+  offer: Offer;
+  branches: BranchOffer[];
 }
 
 export interface OfferRequest {

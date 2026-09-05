@@ -6,7 +6,7 @@ import { OfferStatus, OrderStatus, OrderStatusLabels, OrderStatusTones } from '.
 import { MerchantBranch } from '../../../../core/models/branch.models';
 import { Merchant } from '../../../../core/models/merchant.models';
 import { Offer } from '../../../../core/models/offer.models';
-import { MerchantOrder } from '../../../../core/models/order.models';
+import { MerchantOrderSummary } from '../../../../core/models/order.models';
 import { Product } from '../../../../core/models/product.models';
 import { BranchService } from '../../../../core/services/branch.service';
 import { MerchantOrderService } from '../../../../core/services/merchant-order.service';
@@ -65,7 +65,7 @@ export class OverviewComponent implements OnInit {
   readonly branches = signal<MerchantBranch[]>([]);
   readonly products = signal<Product[]>([]);
   readonly offers = signal<Offer[]>([]);
-  readonly orders = signal<MerchantOrder[]>([]);
+  readonly orders = signal<MerchantOrderSummary[]>([]);
 
   readonly newOrdersCount = computed(
     () => this.orders().filter((order) => order.status === OrderStatus.PendingMerchantConfirmation).length
@@ -117,7 +117,7 @@ export class OverviewComponent implements OnInit {
 
   readonly latestOrders = computed(() =>
     [...this.orders()]
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime())
       .slice(0, LATEST_ORDERS_COUNT)
   );
 

@@ -69,11 +69,11 @@ export class AuthService {
   }
 
   updateProfile(request: UpdateProfileRequest): Observable<AuthUser> {
-    return this.http.put<AuthUser>(`${this.baseUrl}/me`, request);
+    return this.http.put<AuthUser>(`${this.baseUrl}/profile`, request);
   }
 
   changePassword(request: ChangePasswordRequest): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/change-password`, request);
+    return this.http.put<void>(`${this.baseUrl}/change-password`, request);
   }
 
   sendVerificationCode(request: SendVerificationCodeRequest): Observable<SimulatedCodeResponse> {

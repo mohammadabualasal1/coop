@@ -7,6 +7,8 @@ export interface Category {
   imageUrl: string | null;
   displayOrder: number;
   isActive: boolean;
+  // Nested subcategories — only populated by GET /categories (the tree endpoint).
+  children?: Category[];
 }
 
 export interface CategoryRequest {

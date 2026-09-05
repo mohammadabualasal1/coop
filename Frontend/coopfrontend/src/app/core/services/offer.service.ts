@@ -7,6 +7,7 @@ import {
   AddBranchOfferRequest,
   BranchOffer,
   Offer,
+  OfferDetailResponse,
   OfferRequest,
   UpdateBranchOfferRequest
 } from '../models/offer.models';
@@ -20,8 +21,8 @@ export class OfferService {
     return this.http.get<Offer[]>(`${this.baseUrl}/my`);
   }
 
-  getById(id: string): Observable<Offer> {
-    return this.http.get<Offer>(`${this.baseUrl}/${id}`);
+  getById(id: string): Observable<OfferDetailResponse> {
+    return this.http.get<OfferDetailResponse>(`${this.baseUrl}/${id}`);
   }
 
   create(body: OfferRequest): Observable<Offer> {

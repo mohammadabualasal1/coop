@@ -1,32 +1,40 @@
-import { OrderStatus, PaymentMethod, PaymentStatus } from '../enums';
+import { OrderStatus, PaymentMethod } from '../enums';
 
 export interface MerchantOrderItem {
   id: string;
-  offerId: string;
   productName: string;
   quantity: number;
-  unitPrice: number;
-  originalPrice: number;
+  discountedUnitPrice: number;
   lineTotal: number;
 }
 
-export interface MerchantOrder {
+// GET /merchant-orders and the accept/reject responses — nothing more than this.
+export interface MerchantOrderSummary {
   id: string;
   orderNumber: string;
+  customerName: string;
   status: OrderStatus;
+  totalAmount: number;
+  placedAt: string;
+}
+
+// GET /merchant-orders/{id} — matches MerchantOrderDetailResponseDto exactly.
+export interface MerchantOrderDetail {
+  id: string;
+  orderNumber: string;
   customerName: string;
   customerPhone: string;
-  branchName: string;
+  status: OrderStatus;
   paymentMethod: PaymentMethod;
-  paymentStatus: PaymentStatus;
   subtotal: number;
   totalDiscount: number;
   deliveryFee: number;
   totalAmount: number;
   customerNotes: string | null;
-  createdAt: string;
+  placedAt: string;
   acceptedAt: string | null;
-  items?: MerchantOrderItem[]; // only on GET /{id}
+  readyAt: string | null;
+  items: MerchantOrderItem[];
 }
 
 export interface PickupCodeResponse {
@@ -35,7 +43,7 @@ export interface PickupCodeResponse {
 }
 
 export interface MarkReadyResponse {
-  order: MerchantOrder;
+  order: MerchantOrderSummary;
   pickupCode: string;
   expiresAt: string;
 }

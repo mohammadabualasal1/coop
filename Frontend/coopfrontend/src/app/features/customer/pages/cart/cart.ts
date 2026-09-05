@@ -44,6 +44,7 @@ export class CartComponent implements OnInit, OnDestroy {
   readonly actionErrorMessage = signal<string | null>(null);
 
   readonly cart = this.cartService.cart;
+  readonly initialLoadErrorMessage = this.cartService.initialLoadErrorMessage;
   readonly isEmpty = computed(() => {
     const cart = this.cart();
     return !cart || cart.id === EMPTY_GUID || cart.items.length === 0;

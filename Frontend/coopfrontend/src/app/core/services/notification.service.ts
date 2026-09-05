@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import { AppNotification } from '../models/notification.models';
 
 export interface UnreadCountResponse {
-  unreadCount: number;
+  count: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -18,9 +18,13 @@ export class NotificationService {
   readonly unreadCount = this._unreadCount.asReadonly();
 
   getUnreadCount(): Observable<UnreadCountResponse> {
-    return this.http
-      .get<UnreadCountResponse>(`${this.baseUrl}/unread-count`)
-      .pipe(tap((res) => this._unreadCount.set(res.unreadCount)));
+    return this.http.get<UnreadCountResponse>(`${this.baseUrl}/unread-count`).pipe(
+      tap((res) => {
+        if (typeof res.count === 'number') {
+          this._unreadCount.set(res.count);
+        }
+      })
+    );
   }
 
   getAll(): Observable<AppNotification[]> {

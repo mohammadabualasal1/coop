@@ -271,16 +271,16 @@ export class OffersComponent implements OnInit {
     this.stockModalErrorMessage.set(null);
 
     forkJoin({
-      offer: this.offerService.getById(offerId),
-      branches: this.branchService.getAll()
+      offerDetail: this.offerService.getById(offerId),
+      merchantBranches: this.branchService.getAll()
     }).subscribe({
-      next: ({ offer, branches }) => {
+      next: ({ offerDetail, merchantBranches }) => {
         // stockModalOfferId is the source of truth for the id used in every
         // branch API call — it is set synchronously from the card offer and
         // must never be replaced by this async response.
-        this.stockModalOffer.set(offer);
-        this.stockBranches.set(offer.branches ?? []);
-        this.merchantBranches.set(branches);
+        this.stockModalOffer.set(offerDetail.offer);
+        this.stockBranches.set(offerDetail.branches);
+        this.merchantBranches.set(merchantBranches);
         this.stockModalStatus.set('loaded');
       },
       error: (err: unknown) => {
@@ -654,10 +654,10 @@ export class OffersComponent implements OnInit {
     this.submittingId.set(offer.id);
 
     this.offerService.getById(offer.id).subscribe({
-      next: (detail) => {
+      next: (offerDetail) => {
         this.submittingId.set(null);
 
-        if (!detail.branches || detail.branches.length === 0) {
+        if (offerDetail.branches.length === 0) {
           this.openStockManagement(offer, true);
           return;
         }

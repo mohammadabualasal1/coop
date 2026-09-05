@@ -1,11 +1,21 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  computed,
+  input,
+  viewChild
+} from '@angular/core';
+
+let nextFieldId = 0;
 
 @Component({
   selector: 'coop-field',
   template: `
     <div class="field">
       @if (label()) {
-        <label class="field-label">
+        <label class="field-label" [for]="fieldId">
           {{ label() }}
           @if (required()) {
             <span class="required" aria-hidden="true">*</span>
@@ -13,7 +23,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
         </label>
       }
 
-      <div class="control" [class.has-error]="showError()">
+      <div class="control" [class.has-error]="showError()" #controlHost>
         <ng-content />
       </div>
 
@@ -80,7 +90,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UiFieldComponent {
+export class UiFieldComponent implements AfterViewInit {
   readonly label = input<string | null>(null);
   readonly required = input(false);
   readonly error = input<string | null>(null);
@@ -90,4 +100,18 @@ export class UiFieldComponent {
   readonly touched = input(false);
 
   readonly showError = computed(() => !!this.error() && this.touched());
+
+  private readonly controlHost = viewChild.required<ElementRef<HTMLElement>>('controlHost');
+
+  readonly fieldId = `coop-field-${nextFieldId++}`;
+
+  ngAfterViewInit(): void {
+    const control = this.controlHost().nativeElement.querySelector<HTMLElement>(
+      'input, select, textarea'
+    );
+
+    if (control && !control.id) {
+      control.id = this.fieldId;
+    }
+  }
 }

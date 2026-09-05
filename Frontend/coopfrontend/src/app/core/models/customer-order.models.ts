@@ -69,7 +69,7 @@ export interface OrderTracking {
 
 export interface OrderStatusChangedEvent {
   orderId: string;
-  status: OrderStatus;
+  newStatus: OrderStatus;
   changedAt: string;
 }
 
@@ -83,7 +83,7 @@ export interface DriverAssignedEvent {
 
 export interface DeliveryStatusChangedEvent {
   orderId: string;
-  deliveryStatus: DeliveryStatus;
+  newStatus: DeliveryStatus;
 }
 
 export interface DriverLocationUpdatedEvent {

@@ -97,7 +97,7 @@
                     <td>{{ order.orderNumber }}</td>
                     <td><coop-badge [tone]="statusTone(order.status)">{{ statusLabel(order.status) }}</coop-badge></td>
                     <td>{{ order.totalAmount | jod }}</td>
-                    <td>{{ order.createdAt | coopDate: 'datetime' }}</td>
+                    <td>{{ order.placedAt | coopDate: 'datetime' }}</td>
                   </tr>
                 }
               </tbody>

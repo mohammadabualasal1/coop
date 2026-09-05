@@ -10,20 +10,20 @@ export interface CategoryOption {
   label: string;
 }
 
-function flattenCategories(
-  categories: Category[],
-  parentId: string | null = null,
-  depth = 0
-): CategoryOption[] {
+function flattenCategories(categories: Category[], depth = 0): CategoryOption[] {
   const prefix = '— '.repeat(depth);
 
   return categories
-    .filter((category) => category.parentCategoryId === parentId)
+    .slice()
     .sort((a, b) => a.displayOrder - b.displayOrder)
     .flatMap((category) => [
       { id: category.id, label: `${prefix}${category.nameAr}` },
-      ...flattenCategories(categories, category.id, depth + 1)
+      ...flattenCategories(category.children ?? [], depth + 1)
     ]);
+}
+
+function flattenAll(categories: Category[]): Category[] {
+  return categories.flatMap((category) => [category, ...flattenAll(category.children ?? [])]);
 }
 
 @Injectable({ providedIn: 'root' })
@@ -37,7 +37,7 @@ export class CategoryService {
   readonly options = computed<CategoryOption[]>(() => flattenCategories(this._categories() ?? []));
 
   private readonly categoryMap = computed(
-    () => new Map((this._categories() ?? []).map((category) => [category.id, category]))
+    () => new Map(flattenAll(this._categories() ?? []).map((category) => [category.id, category]))
   );
 
   getAll(): Observable<Category[]> {

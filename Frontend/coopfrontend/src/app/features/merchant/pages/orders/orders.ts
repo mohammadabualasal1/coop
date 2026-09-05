@@ -15,15 +15,8 @@ import {
   tap
 } from 'rxjs';
 
-import {
-  OrderStatus,
-  OrderStatusLabels,
-  OrderStatusTones,
-  PaymentMethodLabels,
-  PaymentStatusLabels,
-  PaymentStatusTones
-} from '../../../../core/enums';
-import { MerchantOrder } from '../../../../core/models/order.models';
+import { OrderStatus, OrderStatusLabels, OrderStatusTones, PaymentMethodLabels } from '../../../../core/enums';
+import { MerchantOrderDetail, MerchantOrderSummary } from '../../../../core/models/order.models';
 import { MerchantOrderService } from '../../../../core/services/merchant-order.service';
 import { extractErrorMessage } from '../../../../core/utils/http-error';
 import {
@@ -103,17 +96,17 @@ export class OrdersComponent {
 
   readonly status = signal<PageStatus>('loading');
   readonly loadErrorMessage = signal<string | null>(null);
-  readonly orders = signal<MerchantOrder[]>([]);
+  readonly orders = signal<MerchantOrderSummary[]>([]);
   readonly selectedStatus = signal<OrderStatus | 'all'>('all');
   readonly actionErrorMessage = signal<string | null>(null);
 
   readonly detailsModalOpen = signal(false);
-  readonly detailsOrder = signal<MerchantOrder | null>(null);
+  readonly detailsOrder = signal<MerchantOrderDetail | null>(null);
   readonly detailsStatus = signal<ModalStatus>('loading');
   readonly detailsErrorMessage = signal<string | null>(null);
 
   readonly confirmAcceptOpen = signal(false);
-  readonly orderToAccept = signal<MerchantOrder | null>(null);
+  readonly orderToAccept = signal<MerchantOrderSummary | null>(null);
   readonly acceptSaving = signal(false);
   readonly acceptErrorMessage = signal<string | null>(null);
   readonly acceptMessage = computed(() => {
@@ -122,7 +115,7 @@ export class OrdersComponent {
   });
 
   readonly confirmRejectOpen = signal(false);
-  readonly orderToReject = signal<MerchantOrder | null>(null);
+  readonly orderToReject = signal<MerchantOrderSummary | null>(null);
   readonly rejectSaving = signal(false);
   readonly rejectErrorMessage = signal<string | null>(null);
   readonly rejectMessage = computed(() => {
@@ -205,24 +198,15 @@ export class OrdersComponent {
     return OrderStatusTones[status];
   }
 
-  paymentMethodLabel(method: MerchantOrder['paymentMethod']): string {
+  paymentMethodLabel(method: MerchantOrderDetail['paymentMethod']): string {
     return PaymentMethodLabels[method];
   }
 
-  paymentStatusLabel(status: MerchantOrder['paymentStatus']): string {
-    return PaymentStatusLabels[status];
-  }
-
-  paymentStatusTone(status: MerchantOrder['paymentStatus']) {
-    return PaymentStatusTones[status];
-  }
-
-  orderActions(order: MerchantOrder): OrderAction[] {
+  orderActions(order: MerchantOrderSummary): OrderAction[] {
     return orderActionsForStatus(order.status);
   }
 
-  openDetailsModal(order: MerchantOrder): void {
-    this.detailsOrder.set(order);
+  openDetailsModal(order: MerchantOrderSummary): void {
     this.detailsModalOpen.set(true);
     this.detailsStatus.set('loading');
     this.detailsErrorMessage.set(null);
@@ -244,7 +228,7 @@ export class OrdersComponent {
     this.detailsOrder.set(null);
   }
 
-  openAcceptConfirm(order: MerchantOrder): void {
+  openAcceptConfirm(order: MerchantOrderSummary): void {
     this.orderToAccept.set(order);
     this.acceptErrorMessage.set(null);
     this.confirmAcceptOpen.set(true);
@@ -283,7 +267,7 @@ export class OrdersComponent {
     });
   }
 
-  openRejectConfirm(order: MerchantOrder): void {
+  openRejectConfirm(order: MerchantOrderSummary): void {
     this.orderToReject.set(order);
     this.rejectErrorMessage.set(null);
     this.rejectForm.reset({ reason: '' });
@@ -331,7 +315,7 @@ export class OrdersComponent {
     });
   }
 
-  markReady(order: MerchantOrder): void {
+  markReady(order: MerchantOrderSummary): void {
     if (this.markingReadyId()) {
       return;
     }
@@ -351,7 +335,7 @@ export class OrdersComponent {
     });
   }
 
-  reissuePickupCode(order: MerchantOrder): void {
+  reissuePickupCode(order: MerchantOrderSummary): void {
     if (this.reissuingId()) {
       return;
     }

@@ -3,7 +3,7 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 
 import { ComplaintStatus, ComplaintStatusLabels, ComplaintStatusTones } from '../../../../core/enums';
 import { Complaint, CreateComplaintRequest } from '../../../../core/models/complaint.models';
-import { MerchantOrder } from '../../../../core/models/order.models';
+import { MerchantOrderSummary } from '../../../../core/models/order.models';
 import { ComplaintService } from '../../../../core/services/complaint.service';
 import { MerchantOrderService } from '../../../../core/services/merchant-order.service';
 import { MerchantService } from '../../../../core/services/merchant.service';
@@ -81,7 +81,7 @@ export class ComplaintsComponent implements OnInit {
   readonly complaints = signal<Complaint[]>([]);
   readonly selectedStatus = signal<ComplaintStatus | 'all'>('all');
 
-  readonly orders = signal<MerchantOrder[]>([]);
+  readonly orders = signal<MerchantOrderSummary[]>([]);
   readonly merchantId = signal<string | null>(null);
 
   readonly successMessage = signal<string | null>(null);

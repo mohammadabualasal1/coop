@@ -54,27 +54,11 @@
               <div class="order-header">
                 <span class="order-number">{{ order.orderNumber }}</span>
                 <coop-badge [tone]="statusTone(order.status)">{{ statusLabel(order.status) }}</coop-badge>
-                <span class="order-date">{{ order.createdAt | coopDate: 'datetime' }}</span>
+                <span class="order-date">{{ order.placedAt | coopDate: 'datetime' }}</span>
               </div>
 
-              <p class="order-meta">الزبون: {{ order.customerName }} — {{ order.customerPhone }}</p>
-              <p class="order-meta">الفرع: {{ order.branchName }}</p>
-
-              <div class="payment-line">
-                <span>{{ paymentMethodLabel(order.paymentMethod) }}</span>
-                <coop-badge [tone]="paymentStatusTone(order.paymentStatus)">
-                  {{ paymentStatusLabel(order.paymentStatus) }}
-                </coop-badge>
-              </div>
-
+              <p class="order-meta">الزبون: {{ order.customerName }}</p>
               <p class="order-total">{{ order.totalAmount | jod }}</p>
-
-              @if (order.customerNotes) {
-                <div class="customer-notes">
-                  <strong>ملاحظات الزبون:</strong>
-                  {{ order.customerNotes }}
-                </div>
-              }
 
               <div class="order-actions">
                 @if (orderActions(order).includes('details')) {
@@ -136,18 +120,11 @@
         <div class="order-header">
           <span class="order-number">{{ order.orderNumber }}</span>
           <coop-badge [tone]="statusTone(order.status)">{{ statusLabel(order.status) }}</coop-badge>
-          <span class="order-date">{{ order.createdAt | coopDate: 'datetime' }}</span>
+          <span class="order-date">{{ order.placedAt | coopDate: 'datetime' }}</span>
         </div>
 
         <p class="order-meta">الزبون: {{ order.customerName }} — {{ order.customerPhone }}</p>
-        <p class="order-meta">الفرع: {{ order.branchName }}</p>
-
-        <div class="payment-line">
-          <span>{{ paymentMethodLabel(order.paymentMethod) }}</span>
-          <coop-badge [tone]="paymentStatusTone(order.paymentStatus)">
-            {{ paymentStatusLabel(order.paymentStatus) }}
-          </coop-badge>
-        </div>
+        <p class="order-meta">{{ paymentMethodLabel(order.paymentMethod) }}</p>
 
         @if (order.customerNotes) {
           <div class="customer-notes">
@@ -156,7 +133,7 @@
           </div>
         }
 
-        @if (order.items && order.items.length > 0) {
+        @if (order.items.length > 0) {
           <div class="items-table-wrap">
             <table class="items-table">
               <thead>
@@ -172,7 +149,7 @@
                   <tr>
                     <td>{{ item.productName }}</td>
                     <td>{{ item.quantity }}</td>
-                    <td>{{ item.unitPrice | jod }}</td>
+                    <td>{{ item.discountedUnitPrice | jod }}</td>
                     <td>{{ item.lineTotal | jod }}</td>
                   </tr>
                 }

@@ -69,16 +69,11 @@ export class CategoriesComponent implements OnInit {
   readonly categories = signal<Category[]>([]);
 
   readonly tree = computed<CategoryTreeNode[]>(() => {
-    const all = this.categories();
-    const roots = all
-      .filter((category) => category.parentCategoryId === null)
-      .sort((a, b) => a.displayOrder - b.displayOrder);
+    const roots = [...this.categories()].sort((a, b) => a.displayOrder - b.displayOrder);
 
     return roots.map((root) => ({
       root,
-      children: all
-        .filter((category) => category.parentCategoryId === root.id)
-        .sort((a, b) => a.displayOrder - b.displayOrder)
+      children: [...(root.children ?? [])].sort((a, b) => a.displayOrder - b.displayOrder)
     }));
   });
 

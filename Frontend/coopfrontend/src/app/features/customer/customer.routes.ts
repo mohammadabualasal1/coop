@@ -71,6 +71,12 @@ export const CUSTOMER_ROUTES: Routes = [
         loadComponent: () =>
           import('./pages/order-detail/order-detail').then((m) => m.OrderDetailComponent)
       },
+      {
+        path: 'notifications',
+        canActivate: [authGuard, roleGuard(UserRole.Customer)],
+        loadComponent: () =>
+          import('./pages/notifications/notifications').then((m) => m.NotificationsComponent)
+      },
       { path: '**', redirectTo: '' }
     ]
   }

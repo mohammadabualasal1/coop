@@ -16,7 +16,10 @@
     <div class="page-content">
       <h2 class="page-title">السلة</h2>
 
-      @if (isEmpty()) {
+      @if (isEmpty() && initialLoadErrorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+        <coop-button variant="secondary" (click)="load()">إعادة المحاولة</coop-button>
+      } @else if (isEmpty()) {
         <coop-empty-state title="سلتك فارغة" message="تصفّح العروض وأضف ما يعجبك">
           <a coopEmptyStateAction routerLink="/shop" class="empty-action">تصفّح العروض</a>
         </coop-empty-state>

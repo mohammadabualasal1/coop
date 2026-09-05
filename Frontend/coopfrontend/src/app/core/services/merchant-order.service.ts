@@ -4,33 +4,38 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { OrderStatus } from '../enums';
-import { MarkReadyResponse, MerchantOrder, PickupCodeResponse } from '../models/order.models';
+import {
+  MarkReadyResponse,
+  MerchantOrderDetail,
+  MerchantOrderSummary,
+  PickupCodeResponse
+} from '../models/order.models';
 
 @Injectable({ providedIn: 'root' })
 export class MerchantOrderService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/merchant-orders`;
 
-  getAll(status?: OrderStatus | null): Observable<MerchantOrder[]> {
+  getAll(status?: OrderStatus | null): Observable<MerchantOrderSummary[]> {
     let params = new HttpParams();
 
     if (status != null) {
       params = params.set('status', status);
     }
 
-    return this.http.get<MerchantOrder[]>(this.baseUrl, { params });
+    return this.http.get<MerchantOrderSummary[]>(this.baseUrl, { params });
   }
 
-  getById(id: string): Observable<MerchantOrder> {
-    return this.http.get<MerchantOrder>(`${this.baseUrl}/${id}`);
+  getById(id: string): Observable<MerchantOrderDetail> {
+    return this.http.get<MerchantOrderDetail>(`${this.baseUrl}/${id}`);
   }
 
-  accept(id: string): Observable<MerchantOrder> {
-    return this.http.post<MerchantOrder>(`${this.baseUrl}/${id}/accept`, null);
+  accept(id: string): Observable<MerchantOrderSummary> {
+    return this.http.post<MerchantOrderSummary>(`${this.baseUrl}/${id}/accept`, null);
   }
 
-  reject(id: string, reason: string): Observable<MerchantOrder> {
-    return this.http.post<MerchantOrder>(`${this.baseUrl}/${id}/reject`, { reason });
+  reject(id: string, reason: string): Observable<MerchantOrderSummary> {
+    return this.http.post<MerchantOrderSummary>(`${this.baseUrl}/${id}/reject`, { reason });
   }
 
   markReady(id: string): Observable<MarkReadyResponse> {

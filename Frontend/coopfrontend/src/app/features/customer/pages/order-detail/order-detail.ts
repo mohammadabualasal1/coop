@@ -138,12 +138,12 @@ export class OrderDetailComponent implements OnDestroy {
         return;
       }
 
-      this.currentStatus.set(event.status);
+      this.currentStatus.set(event.newStatus);
       this.historyEntries.update((list) => [
         ...list,
-        { oldStatus: event.status, newStatus: event.status, note: null, createdAt: event.changedAt }
+        { oldStatus: event.newStatus, newStatus: event.newStatus, note: null, createdAt: event.changedAt }
       ]);
-      this.order.update((order) => (order ? { ...order, status: event.status } : order));
+      this.order.update((order) => (order ? { ...order, status: event.newStatus } : order));
     });
 
     this.trackingHub.driverAssigned$.pipe(takeUntilDestroyed()).subscribe((event) => {
@@ -162,7 +162,7 @@ export class OrderDetailComponent implements OnDestroy {
         return;
       }
 
-      this.deliveryStatus.set(event.deliveryStatus);
+      this.deliveryStatus.set(event.newStatus);
     });
 
     this.trackingHub.driverLocationUpdated$.pipe(takeUntilDestroyed()).subscribe((event) => {
