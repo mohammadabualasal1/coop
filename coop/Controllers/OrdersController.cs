@@ -111,6 +111,18 @@ namespace coop.Controllers
                     if (availableStock < cartItem.Quantity)
                         return BadRequest($"الكمية المتاحة من \"{offer.Title}\" هي {availableStock} فقط");
 
+                    if (offer.MaximumQuantityPerCustomer != null)
+                    {
+                        var previouslyOrdered = await GetPreviouslyOrderedQuantityAsync(userId, offer.Id);
+                        var remaining = offer.MaximumQuantityPerCustomer.Value - previouslyOrdered;
+
+                        if (remaining <= 0)
+                            return BadRequest($"لقد وصلت للحد الأقصى المسموح به من \"{offer.Title}\" ({offer.MaximumQuantityPerCustomer})");
+
+                        if (cartItem.Quantity > remaining)
+                            return BadRequest($"يمكنك طلب {remaining} فقط من \"{offer.Title}\"، لأنك طلبت {previouslyOrdered} سابقاً");
+                    }
+
                     var product = await _dbcontext.Products.FirstOrDefaultAsync(p => p.Id == offer.ProductId);
                     if (product == null)
                         return BadRequest($"المنتج المرتبط بـ \"{offer.Title}\" غير موجود");
@@ -555,6 +567,22 @@ namespace coop.Controllers
 
             return Ok(new { Code = code, ExpiresAt = expiresAt });
         }
+        private static readonly OrderStatus[] NonCountingOrderStatuses =
+        {
+            OrderStatus.Cancelled,
+            OrderStatus.Rejected,
+            OrderStatus.DeliveryFailed
+        };
+
+        private async Task<int> GetPreviouslyOrderedQuantityAsync(Guid customerId, Guid offerId)
+        {
+            return await _dbcontext.OrderItems
+                .Where(oi => oi.OfferId == offerId
+                          && oi.Order.CustomerUserId == customerId
+                          && !NonCountingOrderStatuses.Contains(oi.Order.Status))
+                .SumAsync(oi => (int?)oi.Quantity) ?? 0;
+        }
+
         private Guid GetCurrentUserId() =>
          Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     }

@@ -19,10 +19,15 @@ namespace coop.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCategoryTree()
+        public async Task<IActionResult> GetCategoryTree([FromQuery] bool includeInactive = false)
         {
-            var categories = await _dbcontext.Categories
-                .Where(c => c.IsActive)
+            var isAdmin = User.Identity?.IsAuthenticated == true && User.IsInRole("Admin");
+            var query = _dbcontext.Categories.AsQueryable();
+
+            if (!(includeInactive && isAdmin))
+                query = query.Where(c => c.IsActive);
+
+            var categories = await query
                 .OrderBy(c => c.DisplayOrder)
                 .Select(c => new CategoryResponse
                 {
@@ -30,8 +35,10 @@ namespace coop.Controllers
                     ParentCategoryId = c.ParentCategoryId,
                     NameEn = c.NameEn,
                     NameAr = c.NameAr,
+                    Description = c.Description,
                     ImageUrl = c.ImageUrl,
                     DisplayOrder = c.DisplayOrder,
+                    IsActive = c.IsActive,
                     Children = new List<CategoryResponse>()
                 })
                 .ToListAsync();
@@ -139,6 +146,7 @@ namespace coop.Controllers
             category.Description = dto.Description;
             category.ImageUrl = dto.ImageUrl;
             category.DisplayOrder = dto.DisplayOrder;
+            category.IsActive = dto.IsActive;
 
             await _dbcontext.SaveChangesAsync();
 

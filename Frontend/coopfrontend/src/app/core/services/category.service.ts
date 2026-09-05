@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, of, tap } from 'rxjs';
 
@@ -40,7 +40,18 @@ export class CategoryService {
     () => new Map(flattenAll(this._categories() ?? []).map((category) => [category.id, category]))
   );
 
-  getAll(): Observable<Category[]> {
+  /**
+   * `includeInactive` is honoured by the backend for Admin callers only. It always
+   * hits the network and never touches the shared cache below, so an admin-only
+   * inclusive fetch can never leak inactive categories to a customer/merchant call.
+   */
+  getAll(includeInactive = false): Observable<Category[]> {
+    if (includeInactive) {
+      return this.http.get<Category[]>(this.baseUrl, {
+        params: new HttpParams().set('includeInactive', true)
+      });
+    }
+
     const cached = this._categories();
 
     if (cached) {

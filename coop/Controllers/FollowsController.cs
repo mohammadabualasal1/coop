@@ -32,7 +32,9 @@ namespace coop.Controllers
                     Id = f.Id,
                     MerchantId = f.MerchantId,
                     Name = f.Merchant.Name,
+                    Description = f.Merchant.Description,
                     LogoUrl = f.Merchant.LogoUrl,
+                    AverageRating = f.Merchant.AverageRating,
                     CreatedAt = f.CreatedAt
                 })
                 .ToListAsync();
@@ -74,7 +76,9 @@ namespace coop.Controllers
                 Id = follow.Id,
                 MerchantId = follow.MerchantId,
                 Name = merchant.Name,
+                Description = merchant.Description,
                 LogoUrl = merchant.LogoUrl,
+                AverageRating = merchant.AverageRating,
                 CreatedAt = follow.CreatedAt
             });
         }

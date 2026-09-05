@@ -32,7 +32,13 @@ namespace coop.Controllers
                     Id = f.Id,
                     OfferId = f.OfferId,
                     Title = f.Offer.Title,
+                    MerchantId = f.Offer.MerchantId,
+                    MerchantName = f.Offer.Merchant.Name,
+                    MainImageUrl = f.Offer.Product.MainImageUrl,
+                    OriginalPrice = f.Offer.OriginalPrice,
                     DiscountedPrice = f.Offer.DiscountedPrice,
+                    DiscountPercentage = f.Offer.DiscountPercentage,
+                    EndAt = f.Offer.EndAt,
                     CreatedAt = f.CreatedAt
                 })
                 .ToListAsync();
@@ -44,7 +50,10 @@ namespace coop.Controllers
         {
             var userId = GetCurrentUserId();
 
-            var offer = await _dbcontext.Offers.FirstOrDefaultAsync(o => o.Id == offerId);
+            var offer = await _dbcontext.Offers
+                .Include(o => o.Merchant)
+                .Include(o => o.Product)
+                .FirstOrDefaultAsync(o => o.Id == offerId);
             if (offer == null)
                 return NotFound("العرض غير موجود");
 
@@ -73,7 +82,13 @@ namespace coop.Controllers
                 Id = favorite.Id,
                 OfferId = favorite.OfferId,
                 Title = offer.Title,
+                MerchantId = offer.MerchantId,
+                MerchantName = offer.Merchant.Name,
+                MainImageUrl = offer.Product.MainImageUrl,
+                OriginalPrice = offer.OriginalPrice,
                 DiscountedPrice = offer.DiscountedPrice,
+                DiscountPercentage = offer.DiscountPercentage,
+                EndAt = offer.EndAt,
                 CreatedAt = favorite.CreatedAt
             });
         }

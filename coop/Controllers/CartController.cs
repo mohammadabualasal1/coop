@@ -143,8 +143,17 @@ namespace coop.Controllers
             if (newQuantity > availableStock)
                 return BadRequest($"الكمية المتاحة من هذا العرض هي {availableStock} فقط");
 
-            if (offer.MaximumQuantityPerCustomer != null && newQuantity > offer.MaximumQuantityPerCustomer)
-                return BadRequest($"الحد الأقصى لهذا العرض هو {offer.MaximumQuantityPerCustomer} لكل زبون");
+            if (offer.MaximumQuantityPerCustomer != null)
+            {
+                var previouslyOrdered = await GetPreviouslyOrderedQuantityAsync(userId, offer.Id);
+                var remaining = offer.MaximumQuantityPerCustomer.Value - previouslyOrdered;
+
+                if (remaining <= 0)
+                    return BadRequest($"لقد وصلت للحد الأقصى المسموح به من هذا العرض ({offer.MaximumQuantityPerCustomer})");
+
+                if (newQuantity > remaining)
+                    return BadRequest($"يمكنك طلب {remaining} فقط من هذا العرض، لأنك طلبت {previouslyOrdered} سابقاً");
+            }
 
             if (existingItem != null)
             {
@@ -240,8 +249,17 @@ namespace coop.Controllers
             if (dto.Quantity > availableStock)
                 return BadRequest($"الكمية المتاحة من هذا العرض هي {availableStock} فقط");
 
-            if (offer.MaximumQuantityPerCustomer != null && dto.Quantity > offer.MaximumQuantityPerCustomer)
-                return BadRequest($"الحد الأقصى لهذا العرض هو {offer.MaximumQuantityPerCustomer} لكل زبون");
+            if (offer.MaximumQuantityPerCustomer != null)
+            {
+                var previouslyOrdered = await GetPreviouslyOrderedQuantityAsync(userId, offer.Id);
+                var remaining = offer.MaximumQuantityPerCustomer.Value - previouslyOrdered;
+
+                if (remaining <= 0)
+                    return BadRequest($"لقد وصلت للحد الأقصى المسموح به من هذا العرض ({offer.MaximumQuantityPerCustomer})");
+
+                if (dto.Quantity > remaining)
+                    return BadRequest($"يمكنك طلب {remaining} فقط من هذا العرض، لأنك طلبت {previouslyOrdered} سابقاً");
+            }
 
             item.Quantity = dto.Quantity;
             item.UpdatedAt = now;
@@ -412,8 +430,16 @@ namespace coop.Controllers
                 if (availableStock < item.Quantity)
                     issues.Add($"الكمية المتاحة من \"{item.OfferTitle}\" هي {availableStock} فقط");
 
-                if (item.MaximumQuantityPerCustomer != null && item.Quantity > item.MaximumQuantityPerCustomer)
-                    issues.Add($"الحد الأقصى لـ \"{item.OfferTitle}\" هو {item.MaximumQuantityPerCustomer} لكل زبون");
+                if (item.MaximumQuantityPerCustomer != null)
+                {
+                    var previouslyOrdered = await GetPreviouslyOrderedQuantityAsync(userId, item.OfferId);
+                    var remaining = item.MaximumQuantityPerCustomer.Value - previouslyOrdered;
+
+                    if (remaining <= 0)
+                        issues.Add($"لقد وصلت للحد الأقصى المسموح به من \"{item.OfferTitle}\" ({item.MaximumQuantityPerCustomer})");
+                    else if (item.Quantity > remaining)
+                        issues.Add($"يمكنك طلب {remaining} فقط من \"{item.OfferTitle}\"، لأنك طلبت {previouslyOrdered} سابقاً");
+                }
 
                 if (item.AddedUnitPrice != item.DiscountedPrice)
                     issues.Add($"تغيّر سعر \"{item.OfferTitle}\"، السعر الحالي {item.DiscountedPrice}");
@@ -451,6 +477,22 @@ namespace coop.Controllers
                     EstimatedTotal = subtotal - totalDiscount
                 }
             });
+        }
+
+        private static readonly OrderStatus[] NonCountingOrderStatuses =
+        {
+            OrderStatus.Cancelled,
+            OrderStatus.Rejected,
+            OrderStatus.DeliveryFailed
+        };
+
+        private async Task<int> GetPreviouslyOrderedQuantityAsync(Guid customerId, Guid offerId)
+        {
+            return await _dbcontext.OrderItems
+                .Where(oi => oi.OfferId == offerId
+                          && oi.Order.CustomerUserId == customerId
+                          && !NonCountingOrderStatuses.Contains(oi.Order.Status))
+                .SumAsync(oi => (int?)oi.Quantity) ?? 0;
         }
 
         private Guid GetCurrentUserId() =>

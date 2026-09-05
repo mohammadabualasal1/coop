@@ -16,33 +16,15 @@
     <div class="page-content">
       <h2 class="page-title">المفضلة</h2>
 
-      @if (removeErrorMessage(); as message) {
-        <coop-alert tone="danger">{{ message }}</coop-alert>
-      }
-
-      @if (favorites().length === 0) {
+      @if (offers().length === 0) {
         <coop-empty-state
           title="لا توجد عروض في المفضلة"
           message="اضغط على القلب في أي عرض لحفظه هنا"
         />
       } @else {
-        <div class="favorites-list">
-          @for (favorite of favorites(); track favorite.id) {
-            <div class="favorite-row">
-              <a class="favorite-link" [routerLink]="['/shop/offers', favorite.offerId]">
-                <span class="favorite-title">{{ favorite.title }}</span>
-                <span class="favorite-price">{{ favorite.discountedPrice | jod }}</span>
-              </a>
-
-              <button
-                type="button"
-                class="remove-button"
-                [disabled]="removingOfferId() === favorite.offerId"
-                (click)="remove(favorite.offerId)"
-              >
-                إزالة
-              </button>
-            </div>
+        <div class="offers-grid">
+          @for (offer of offers(); track offer.id) {
+            <app-offer-card [offer]="offer" />
           }
         </div>
       }

@@ -103,6 +103,9 @@ export class CategoriesComponent implements OnInit {
     return category ? `هل أنت متأكد من إلغاء تفعيل تصنيف «${category.nameAr}»؟` : '';
   });
 
+  readonly reactivatingId = signal<string | null>(null);
+  readonly reactivateErrorMessage = signal<string | null>(null);
+
   readonly form = this.fb.nonNullable.group({
     nameAr: ['', [Validators.required, Validators.minLength(2)]],
     nameEn: ['', [Validators.required, Validators.minLength(2)]],
@@ -120,7 +123,7 @@ export class CategoriesComponent implements OnInit {
     this.status.set('loading');
     this.loadErrorMessage.set(null);
 
-    this.categoryService.getAll().subscribe({
+    this.categoryService.getAll(true).subscribe({
       next: (categories) => {
         this.categories.set(categories);
         this.status.set('loaded');
@@ -319,6 +322,36 @@ export class CategoriesComponent implements OnInit {
       error: (err: unknown) => {
         this.deactivateSaving.set(false);
         this.deactivateErrorMessage.set(extractErrorMessage(err));
+      }
+    });
+  }
+
+  reactivate(category: Category): void {
+    if (this.reactivatingId()) {
+      return;
+    }
+
+    this.reactivatingId.set(category.id);
+    this.reactivateErrorMessage.set(null);
+
+    const body: UpdateCategoryRequest = {
+      parentCategoryId: category.parentCategoryId,
+      nameAr: category.nameAr,
+      nameEn: category.nameEn,
+      description: category.description,
+      imageUrl: category.imageUrl,
+      displayOrder: category.displayOrder,
+      isActive: true
+    };
+
+    this.categoryService.update(category.id, body).subscribe({
+      next: () => {
+        this.reactivatingId.set(null);
+        this.load();
+      },
+      error: (err: unknown) => {
+        this.reactivatingId.set(null);
+        this.reactivateErrorMessage.set(extractErrorMessage(err));
       }
     });
   }

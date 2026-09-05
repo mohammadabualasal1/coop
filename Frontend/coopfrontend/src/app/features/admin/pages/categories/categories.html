@@ -21,6 +21,10 @@
         <coop-button (click)="openCreateRootModal()">إضافة تصنيف رئيسي</coop-button>
       </div>
 
+      @if (reactivateErrorMessage(); as message) {
+        <coop-alert tone="danger">{{ message }}</coop-alert>
+      }
+
       @if (tree().length === 0) {
         <coop-empty-state
           title="لا توجد تصنيفات"
@@ -64,9 +68,20 @@
                   <coop-button variant="secondary" size="sm" (click)="openCreateSubModal(node.root)">
                     إضافة تصنيف فرعي
                   </coop-button>
-                  <coop-button variant="danger" size="sm" (click)="openDeactivateConfirm(node.root)">
-                    إلغاء تفعيل
-                  </coop-button>
+                  @if (node.root.isActive === false) {
+                    <coop-button
+                      size="sm"
+                      [loading]="reactivatingId() === node.root.id"
+                      [disabled]="reactivatingId() === node.root.id"
+                      (click)="reactivate(node.root)"
+                    >
+                      إعادة تفعيل
+                    </coop-button>
+                  } @else {
+                    <coop-button variant="danger" size="sm" (click)="openDeactivateConfirm(node.root)">
+                      إلغاء تفعيل
+                    </coop-button>
+                  }
                 </div>
               </div>
 
@@ -95,9 +110,20 @@
                         <coop-button variant="secondary" size="sm" (click)="openEditModal(child)">
                           تعديل
                         </coop-button>
-                        <coop-button variant="danger" size="sm" (click)="openDeactivateConfirm(child)">
-                          إلغاء تفعيل
-                        </coop-button>
+                        @if (child.isActive === false) {
+                          <coop-button
+                            size="sm"
+                            [loading]="reactivatingId() === child.id"
+                            [disabled]="reactivatingId() === child.id"
+                            (click)="reactivate(child)"
+                          >
+                            إعادة تفعيل
+                          </coop-button>
+                        } @else {
+                          <coop-button variant="danger" size="sm" (click)="openDeactivateConfirm(child)">
+                            إلغاء تفعيل
+                          </coop-button>
+                        }
                       </div>
                     </div>
                   }

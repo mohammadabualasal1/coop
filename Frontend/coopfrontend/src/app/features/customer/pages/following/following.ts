@@ -45,10 +45,10 @@ export class FollowingComponent implements OnInit {
           follows.map((follow) => ({
             id: follow.merchantId,
             name: follow.name,
-            description: null,
+            description: follow.description,
             logoUrl: follow.logoUrl,
             coverImageUrl: null,
-            averageRating: null
+            averageRating: follow.averageRating
           }))
         );
         this.status.set('loaded');

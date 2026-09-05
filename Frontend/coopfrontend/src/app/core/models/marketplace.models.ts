@@ -1,7 +1,7 @@
 export interface OfferSummary {
   id: string;
   title: string;
-  productName: string;
+  productName?: string; // not returned by every offer-summary endpoint
   merchantId: string;
   merchantName: string;
   originalPrice: number;
@@ -67,20 +67,29 @@ export interface SearchMerchantsParams {
   pageSize?: number;
 }
 
-// Shape of a row from GET /api/favorites — a favorite record, not an OfferSummary.
+// Shape of a row from GET /api/favorites — a favorite record wrapping an offer.
+// Field names match OfferSummary so a favorite can be mapped onto one directly.
 export interface FavoriteOffer {
   id: string;
   offerId: string;
   title: string;
+  merchantId: string;
+  merchantName: string;
+  mainImageUrl: string | null;
+  originalPrice: number;
   discountedPrice: number;
+  discountPercentage: number;
+  endAt: string;
   createdAt: string;
 }
 
-// Shape of a row from GET /api/follows — a follow record, not a MerchantSummary.
+// Shape of a row from GET /api/follows — a follow record wrapping a merchant.
 export interface FollowedMerchant {
   id: string;
   merchantId: string;
   name: string;
+  description: string | null;
   logoUrl: string | null;
+  averageRating: number | null;
   createdAt: string;
 }

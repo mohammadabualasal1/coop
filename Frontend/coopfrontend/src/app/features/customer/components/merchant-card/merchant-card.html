@@ -15,6 +15,10 @@
     <span class="no-rating">لا توجد تقييمات بعد</span>
   }
 
+  @if (merchant().description) {
+    <p class="merchant-description">{{ merchant().description }}</p>
+  }
+
   @if (showUnfollowButton()) {
     <button
       type="button"
